@@ -1,0 +1,32 @@
+# Dependencies and build output
+node_modules/
+dist/
+build/
+target/
+coverage/
+test-results/
+playwright-report/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.local
+*.log
+
+# IDE and tool-local state
+.idea/
+.vscode/
+.agents/
+.codex/
+*.iml
+
+# SQL Server local artifacts
+*.bak
+*.mdf
+*.ldf
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

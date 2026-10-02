@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="BlueStock - hệ thống quản lý kho theo vai trò, lô hàng và vị trí.">
+  <meta name="theme-color" content="#153f34">
+  <title>BlueStock | Trung tâm vận hành kho</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23153f34'/%3E%3Cpath d='M14 23 32 13l18 10v21L32 54 14 44V23Z' fill='none' stroke='%23f7f4eb' stroke-width='5' stroke-linejoin='round'/%3E%3Cpath d='m14 23 18 10 18-10M32 33v21' fill='none' stroke='%23c7d7b7' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Bỏ qua điều hướng</a>
+
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="icon-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z"/></symbol>
+    <symbol id="icon-box" viewBox="0 0 24 24"><path d="m4 7 8-4 8 4v10l-8 4-8-4V7Zm0 0 8 4 8-4m-8 4v10"/></symbol>
+    <symbol id="icon-warehouse" viewBox="0 0 24 24"><path d="m3 10 9-6 9 6v10H3V10Zm4 10v-6h10v6M7 10h.01M12 10h.01M17 10h.01"/></symbol>
+    <symbol id="icon-users" viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2m6.5-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7.5 4a4 4 0 0 1 4 4v2m-4-10a4 4 0 0 0 0-8"/></symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6V3Zm8 0v5h5M9 13h6M9 17h6"/></symbol>
+    <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Zm-3 9 2 2 4-4"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></symbol>
+    <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Zm-8 12h4"/></symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+    <symbol id="icon-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6 7v5l-4 2v-7L4 5Z"/></symbol>
+    <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m3 0-1 14H7L6 7m4 4v6m4-6v6"/></symbol>
+    <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="icon-alert" viewBox="0 0 24 24"><path d="M12 4 3 20h18L12 4Zm0 6v4m0 3h.01"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Điều hướng chính">
+      <div class="brand-block">
+        <a class="brand" href="#dashboard" data-view-link="dashboard" aria-label="BlueStock - về tổng quan">
+          <span class="brand-mark"><svg aria-hidden="true"><use href="#icon-box"/></svg></span>
+          <span><strong>BlueStock</strong><small>Warehouse operations</small></span>
+        </a>
+        <button class="sidebar-close" id="sidebarClose" type="button" aria-label="Đóng menu">×</button>
+      </div>
+
+      <div class="location-context">
+        <span class="context-label">Kho đang làm việc</span>
+        <strong>Kho trung tâm · K01</strong>
+        <span><i></i> Ca sáng đang hoạt động</span>
+      </div>
+
+      <nav class="nav-groups" id="navGroups"></nav>
+
+      <div class="sidebar-footer">
+        <div class="sync-status"><span></span><div><strong>Dữ liệu demo</strong><small>Sẵn sàng kết nối API</small></div></div>
+        <button class="support-link" type="button" id="helpButton">Hướng dẫn vận hành <svg aria-hidden="true"><use href="#icon-arrow"/></svg></button>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu" aria-controls="sidebar" aria-expanded="false"><svg aria-hidden="true"><use href="#icon-menu"/></svg></button>
+          <div class="page-heading"><h1 id="pageTitle">Tổng quan kho</h1><p id="pageSubtitle">Theo dõi vận hành trong ngày</p></div>
+        </div>
+        <div class="topbar-actions">
+          <label class="global-search">
+            <svg aria-hidden="true"><use href="#icon-search"/></svg>
+            <span class="sr-only">Tìm nhanh</span>
+            <input id="globalSearch" type="search" placeholder="Tìm sản phẩm, lô, phiếu..." autocomplete="off">
+            <kbd>Ctrl K</kbd>
+          </label>
+          <button class="icon-button notification-button" id="notificationButton" type="button" aria-label="Thông báo, có 3 thông báo mới"><svg aria-hidden="true"><use href="#icon-bell"/></svg><span>3</span></button>
+          <label class="role-switcher">
+            <span>Vai trò demo</span>
+            <select id="roleSwitcher" aria-label="Chuyển vai trò demo">
+              <option value="manager">Quản lý kho</option>
+              <option value="staff">Nhân viên kho</option>
+              <option value="admin">Quản trị viên</option>
+            </select>
+          </label>
+          <div class="user-profile"><span class="avatar" id="userAvatar">NT</span><span><strong id="userName">Nguyễn Trung</strong><small id="userRole">Quản lý kho</small></span></div>
+        </div>
+      </header>
+
+      <main class="main-content" id="mainContent" tabindex="-1">
+        <section class="view active" id="dashboardView" data-page="dashboard">
+          <div class="dashboard-intro">
+            <div><h2>Nhịp kho hôm nay</h2><p>Dữ liệu minh họa · Cập nhật lần cuối lúc <time id="updatedTime">09:42</time></p></div>
+            <div class="intro-actions"><time class="date-chip" id="currentDate"></time><button class="button button-primary" type="button" data-quick-action="primary"><svg aria-hidden="true"><use href="#icon-plus"/></svg><span id="primaryActionLabel">Lập phiếu nhập</span></button></div>
+          </div>
+
+          <section class="metric-strip" aria-label="Chỉ số vận hành">
+            <article><div class="metric-heading"><span>Tổng giá trị tồn</span><span class="trend positive">+4,8%</span></div><strong>2,84 tỷ</strong><small>12.480 đơn vị · 128 sản phẩm</small></article>
+            <article><div class="metric-heading"><span>Chứng từ hôm nay</span><span class="trend neutral">42 phiếu</span></div><strong>24 <em>/ 18</em></strong><small>Phiếu nhập / phiếu xuất</small></article>
+            <article><div class="metric-heading"><span>Cần xử lý</span><span class="trend warning">9 việc</span></div><strong>06</strong><small>3 chờ duyệt · 6 lệch kiểm kê</small></article>
+            <article><div class="metric-heading"><span>Cảnh báo tồn</span><span class="trend danger">Ưu tiên</span></div><strong>07</strong><small>5 sắp hết hạn · 2 dưới định mức</small></article>
+          </section>
+
+          <div class="dashboard-grid">
+            <article class="panel flow-panel">
+              <div class="panel-heading"><div><h3>Luồng nhập — xuất trong 7 ngày</h3><p>Số lượng đơn vị đã hoàn tất</p></div><div class="chart-legend"><span><i class="inbound-dot"></i>Nhập</span><span><i class="outbound-dot"></i>Xuất</span></div></div>
+              <div class="bar-chart" role="img" aria-label="Biểu đồ nhập xuất 7 ngày, lượng nhập cao nhất vào thứ năm">
+                <div class="chart-scale"><span>600</span><span>400</span><span>200</span><span>0</span></div>
+                <div class="chart-bars">
+                  <div><span class="bar-pair"><i style="--bar:44%"></i><b style="--bar:31%"></b></span><small>T2</small></div>
+                  <div><span class="bar-pair"><i style="--bar:59%"></i><b style="--bar:48%"></b></span><small>T3</small></div>
+                  <div><span class="bar-pair"><i style="--bar:52%"></i><b style="--bar:39%"></b></span><small>T4</small></div>
+                  <div><span class="bar-pair"><i style="--bar:86%"></i><b style="--bar:62%"></b></span><small>T5</small></div>
+                  <div><span class="bar-pair"><i style="--bar:68%"></i><b style="--bar:77%"></b></span><small>T6</small></div>
+                  <div><span class="bar-pair"><i style="--bar:38%"></i><b style="--bar:29%"></b></span><small>T7</small></div>
+                  <div><span class="bar-pair"><i style="--bar:32%"></i><b style="--bar:24%"></b></span><small>CN</small></div>
+                </div>
+              </div>
+            </article>
+
+            <aside class="attention-panel">
+              <div class="panel-heading"><div><h3>Hàng chờ xử lý</h3><p>Xếp theo mức độ ưu tiên</p></div><button class="text-button" type="button" data-view-link="inventory">Xem tồn kho</button></div>
+              <ol class="attention-list">
+                <li><span class="priority-marker high">01</span><div><strong>Lô LO240108 còn 12 ngày</strong><small>Sữa tươi · A-01-03 · tồn 48</small></div><button type="button" aria-label="Mở lô LO240108"><svg><use href="#icon-chevron"/></svg></button></li>
+                <li><span class="priority-marker medium">02</span><div><strong>PX-260928 chờ duyệt</strong><small>18 dòng hàng · 126,4 triệu</small></div><button type="button" aria-label="Mở phiếu PX-260928"><svg><use href="#icon-chevron"/></svg></button></li>
+                <li><span class="priority-marker low">03</span><div><strong>Vị trí B-04-02 gần đầy</strong><small>Đang dùng 92% sức chứa</small></div><button type="button" aria-label="Mở vị trí B-04-02"><svg><use href="#icon-chevron"/></svg></button></li>
+              </ol>
+            </aside>
+          </div>
+
+          <article class="panel recent-panel">
+            <div class="panel-heading"><div><h3>Chứng từ gần đây</h3><p>Theo dõi lần cập nhật mới nhất tại Kho trung tâm</p></div><button class="text-button" type="button" data-view-link="inbound">Mở tất cả phiếu</button></div>
+            <div class="table-wrap"><table><thead><tr><th>Mã phiếu</th><th>Nghiệp vụ</th><th>Đối tác / Kho đích</th><th>Người thực hiện</th><th>Cập nhật</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+              <tr><td><a href="#outbound" data-view-link="outbound">PX-260928</a></td><td>Xuất kho</td><td>Siêu thị An Phú</td><td>Phạm Lan</td><td>09:42</td><td><span class="status status-pending">Chờ xuất</span></td><td><button class="row-action" type="button" aria-label="Mở phiếu PX-260928"><svg><use href="#icon-chevron"/></svg></button></td></tr>
+              <tr><td><a href="#inbound" data-view-link="inbound">PN-260941</a></td><td>Nhập kho</td><td>Vinamilk miền Nam</td><td>Nguyễn Trung</td><td>08:15</td><td><span class="status status-success">Đã nhập</span></td><td><button class="row-action" type="button" aria-label="Mở phiếu PN-260941"><svg><use href="#icon-chevron"/></svg></button></td></tr>
+              <tr><td><a href="#transfer" data-view-link="transfer">CK-260114</a></td><td>Chuyển kho</td><td>Kho trung tâm → Kho lạnh</td><td>Lê Duy</td><td>Hôm qua</td><td><span class="status status-info">Đang chuyển</span></td><td><button class="row-action" type="button" aria-label="Mở phiếu CK-260114"><svg><use href="#icon-chevron"/></svg></button></td></tr>
+              <tr><td><a href="#return" data-view-link="return">TH-260032</a></td><td>Trả hàng</td><td>Đại lý Thành Công</td><td>Phạm Lan</td><td>Hôm qua</td><td><span class="status status-danger">Có hàng hỏng</span></td><td><button class="row-action" type="button" aria-label="Mở phiếu TH-260032"><svg><use href="#icon-chevron"/></svg></button></td></tr>
+            </tbody></table></div>
+          </article>
+        </section>
+
+        <section class="view" id="listView" data-page="list" hidden>
+          <div class="section-toolbar"><div><h2 id="listTitle">Danh sách sản phẩm</h2><p id="listDescription">Tra cứu và quản lý danh mục hàng hóa.</p></div><div class="toolbar-actions"><button class="button button-secondary" id="exportButton" type="button">Xuất dữ liệu</button><button class="button button-primary" id="addRecordButton" type="button"><svg><use href="#icon-plus"/></svg><span id="addRecordLabel">Thêm sản phẩm</span></button></div></div>
+          <article class="data-surface">
+            <div class="data-toolbar">
+              <label class="search-box"><svg aria-hidden="true"><use href="#icon-search"/></svg><span class="sr-only">Tìm kiếm trong danh sách</span><input id="listSearch" type="search" placeholder="Tìm theo mã hoặc tên..."></label>
+              <div class="filter-row">
+                <label><span>Từ ngày</span><input id="dateFromFilter" type="date"></label>
+                <label><span>Đến ngày</span><input id="dateToFilter" type="date"></label>
+                <label><span>Trạng thái</span><select id="statusFilter"><option value="">Tất cả trạng thái</option><option>Đang hoạt động</option><option>Chờ xử lý</option><option>Ngừng hoạt động</option></select></label>
+                <button class="button button-quiet" id="clearFiltersButton" type="button"><svg><use href="#icon-filter"/></svg>Xóa lọc</button>
+              </div>
+            </div>
+            <div class="table-wrap"><table id="dataTable"><thead></thead><tbody></tbody></table></div>
+            <div class="empty-state" id="listEmpty" hidden><svg><use href="#icon-search"/></svg><h3>Không có kết quả phù hợp</h3><p>Thử đổi từ khóa hoặc xóa bớt bộ lọc đang dùng.</p><button class="button button-secondary" type="button" data-clear-filters>Xóa bộ lọc</button></div>
+            <footer class="pagination"><span id="recordRange">Hiển thị 1–8 trong 24 bản ghi</span><div><button id="previousPage" type="button" aria-label="Trang trước">‹</button><span id="pageNumbers"></span><button id="nextPage" type="button" aria-label="Trang sau">›</button></div></footer>
+          </article>
+        </section>
+
+        <section class="view" id="inventoryView" data-page="inventory" hidden>
+          <div class="section-toolbar"><div><h2>Tra cứu tồn kho</h2><p>Tồn khả dụng theo sản phẩm, lô và vị trí tại thời điểm hiện tại.</p></div><div class="toolbar-actions"><span class="live-indicator"><i></i>Dữ liệu demo lúc 09:42</span><button class="button button-primary" id="refreshInventoryButton" type="button">Làm mới dữ liệu</button></div></div>
+          <div class="inventory-summary"><div><span>Tổng đơn vị khả dụng</span><strong>12.480</strong></div><div><span>Đang giữ chỗ</span><strong>684</strong></div><div><span>Sắp hết hạn</span><strong class="text-danger">155</strong></div><div><span>Vị trí đang dùng</span><strong>86 / 104</strong></div></div>
+          <article class="data-surface">
+            <div class="data-toolbar"><label class="search-box"><svg><use href="#icon-search"/></svg><span class="sr-only">Tìm tồn kho</span><input id="inventorySearch" type="search" placeholder="Mã sản phẩm, tên, mã lô hoặc vị trí..."></label><div class="filter-row"><label><span>Kho</span><select><option>Kho trung tâm</option><option>Kho lạnh</option><option>Kho hàng trả</option></select></label><label><span>Hạn sử dụng</span><select><option>Tất cả</option><option>Trong 30 ngày</option><option>Trong 60 ngày</option></select></label></div></div>
+            <div class="table-wrap"><table id="inventoryTable"><thead><tr><th>Sản phẩm</th><th>Lô hàng</th><th>Vị trí</th><th>Hạn sử dụng</th><th class="number-cell">Tồn thực tế</th><th class="number-cell">Giữ chỗ</th><th class="number-cell">Khả dụng</th><th>Trạng thái</th></tr></thead><tbody></tbody></table></div>
+          </article>
+        </section>
+
+        <section class="view" id="documentView" data-page="document" hidden>
+          <form id="documentForm" novalidate>
+            <div class="section-toolbar document-toolbar"><div><div class="document-title-line"><h2 id="documentTitle">Lập phiếu nhập kho</h2><span class="status status-draft">Bản nháp</span></div><p id="documentDescription">Tiếp nhận hàng hóa và chỉ định vị trí nhập.</p></div><div class="toolbar-actions"><button class="button button-secondary" id="saveDraftButton" type="button">Lưu nháp</button><button class="button button-primary" type="submit"><svg><use href="#icon-check"/></svg><span id="completeDocumentLabel">Tạo phiếu nhập</span></button></div></div>
+            <div class="document-layout">
+              <div class="document-main">
+                <article class="panel form-panel">
+                  <div class="panel-heading"><div><h3>Thông tin chung</h3><p>Nhập đầy đủ thông tin trước khi thêm chi tiết hàng hóa.</p></div><span class="document-code" id="documentCode">PN-261002-01</span></div>
+                  <div class="form-grid four-columns">
+                    <label class="field"><span>Mã phiếu</span><input id="documentCodeInput" value="PN-261002-01" readonly></label>
+                    <label class="field"><span>Ngày thao tác *</span><input id="documentDate" type="date" required></label>
+                    <label class="field"><span id="partnerLabel">Nhà cung cấp *</span><select id="documentPartner" required><option value="">Chọn nhà cung cấp</option><option value="NCC001">Vinamilk miền Nam</option><option value="NCC002">Thực phẩm Á Châu</option><option value="NCC003">Nông sản Đà Lạt</option></select></label>
+                    <label class="field"><span>Nhân viên *</span><select id="documentEmployee" required><option value="NV012">NV012 · Nguyễn Trung</option><option value="NV018">NV018 · Phạm Lan</option><option value="NV021">NV021 · Lê Duy</option></select></label>
+                    <label class="field field-wide"><span>Ghi chú</span><textarea id="documentNote" rows="2" maxlength="255" placeholder="Thông tin giao nhận, số xe hoặc yêu cầu bảo quản..."></textarea></label>
+                  </div>
+                </article>
+                <article class="panel line-panel">
+                  <div class="panel-heading"><div><h3>Chi tiết hàng hóa</h3><p id="lineHelp">Mỗi sản phẩm cần có số lượng, đơn giá và trạng thái xử lý.</p></div><button class="button button-secondary" id="addDocumentRow" type="button"><svg><use href="#icon-plus"/></svg>Thêm dòng</button></div>
+                  <div class="table-wrap"><table class="editable-table"><thead><tr><th class="row-number">#</th><th>Mã sản phẩm</th><th>Vị trí</th><th class="number-cell">Số lượng</th><th class="number-cell">Đơn giá</th><th>Trạng thái</th><th class="action-cell"></th></tr></thead><tbody id="documentRows"></tbody></table></div>
+                  <div class="inline-error" id="documentError" role="alert" hidden><svg><use href="#icon-alert"/></svg><span></span></div>
+                </article>
+              </div>
+              <aside class="document-summary">
+                <div><span>Tổng số dòng</span><strong id="documentLineCount">0</strong></div>
+                <div><span>Tổng số lượng</span><strong id="documentQuantity">0</strong></div>
+                <div class="summary-total"><span>Tổng giá trị</span><strong id="documentTotal">0 ₫</strong></div>
+                <hr>
+                <p><svg><use href="#icon-shield"/></svg><span>Hoàn tất phiếu sẽ được backend kiểm tra lại tồn kho, quyền hạn và tính nguyên tử của giao dịch.</span></p>
+              </aside>
+            </div>
+          </form>
+        </section>
+
+        <section class="view" id="countView" data-page="count" hidden>
+          <div class="section-toolbar"><div><h2>Phiếu kiểm kê hàng hóa</h2><p>Đối chiếu snapshot hệ thống với số lượng đếm thực tế.</p></div><div class="toolbar-actions"><button class="button button-secondary" id="saveCountButton" type="button">Lưu kết quả đếm</button><button class="button button-primary" id="submitCountButton" type="button">Gửi duyệt điều chỉnh</button></div></div>
+          <article class="panel form-panel"><div class="form-grid four-columns"><label class="field"><span>Mã phiếu</span><input value="KK-261002-03" readonly></label><label class="field"><span>Kho kiểm kê</span><select><option>Kho trung tâm · K01</option></select></label><label class="field"><span>Ngày kiểm kê</span><input id="countDate" type="date"></label><label class="field"><span>Người kiểm kê</span><input value="NV018 · Phạm Lan" readonly></label></div></article>
+          <article class="data-surface count-surface"><div class="panel-heading"><div><h3>Kết quả đếm</h3><p>Chênh lệch được tính trên giao diện để hỗ trợ nhập liệu; backend quyết định điều chỉnh cuối cùng.</p></div><span class="record-count">4 vị trí · 6 mặt hàng</span></div><div class="table-wrap"><table id="countTable"><thead><tr><th>Sản phẩm / Lô</th><th>Vị trí</th><th class="number-cell">SL hệ thống</th><th class="number-cell">SL thực tế</th><th class="number-cell">Chênh lệch</th><th>Ghi chú</th></tr></thead><tbody></tbody></table></div><footer class="variance-footer"><span><i class="variance-positive"></i>Thừa <strong id="surplusCount">0</strong></span><span><i class="variance-negative"></i>Thiếu <strong id="shortageCount">0</strong></span><span>Cần giải trình <strong id="varianceRows">0 dòng</strong></span></footer></article>
+        </section>
+
+        <section class="view" id="returnView" data-page="return" hidden>
+          <form id="returnForm">
+            <div class="section-toolbar"><div><h2>Phiếu trả hàng</h2><p>Tiếp nhận hàng trả sau xuất và phân loại tình trạng.</p></div><button class="button button-primary" type="submit">Tạo phiếu trả</button></div>
+            <article class="panel form-panel"><div class="form-grid four-columns"><label class="field"><span>Mã phiếu</span><input value="TH-261002-01" readonly></label><label class="field"><span>Phiếu xuất nguồn *</span><select required><option value="">Chọn phiếu xuất</option><option>PX-260928 · Siêu thị An Phú</option><option>PX-260921 · Đại lý Thành Công</option></select></label><label class="field"><span>Ngày trả *</span><input id="returnDate" type="date" required></label><label class="field"><span>Người tiếp nhận</span><input value="NV012 · Nguyễn Trung" readonly></label></div></article>
+            <article class="data-surface"><div class="panel-heading"><div><h3>Hàng hóa nhận lại</h3><p>Số lượng trả không được vượt quá lượng đã xuất của chứng từ nguồn.</p></div><button class="button button-secondary" id="addReturnRow" type="button"><svg><use href="#icon-plus"/></svg>Thêm dòng</button></div><div class="table-wrap"><table class="editable-table"><thead><tr><th>#</th><th>Mã sản phẩm</th><th class="number-cell">Đã xuất</th><th class="number-cell">Số lượng trả</th><th>Tình trạng</th><th>Vị trí nhận</th><th></th></tr></thead><tbody id="returnRows"></tbody></table></div><div class="condition-note"><span class="condition-good"><i></i>Hàng tốt: nhập lại vị trí khả dụng</span><span class="condition-damaged"><i></i>Hư hỏng: chuyển khu cách ly</span></div></article>
+          </form>
+        </section>
+
+        <section class="view" id="reportsView" data-page="reports" hidden>
+          <div class="section-toolbar"><div><h2>Báo cáo nhập — xuất — tồn</h2><p>Tổng hợp biến động kho theo khoảng thời gian và nhóm hàng.</p></div><button class="button button-primary" id="runReportButton" type="button">Chạy báo cáo</button></div>
+          <article class="report-builder"><div class="report-filters"><label class="field"><span>Từ ngày</span><input id="reportFrom" type="date"></label><label class="field"><span>Đến ngày</span><input id="reportTo" type="date"></label><label class="field"><span>Kho</span><select><option>Tất cả kho</option><option>Kho trung tâm</option><option>Kho lạnh</option></select></label><label class="field"><span>Nhóm hàng</span><select><option>Tất cả nhóm hàng</option><option>Thực phẩm</option><option>Đồ uống</option><option>Gia dụng</option></select></label></div><div class="report-kpis"><div><span>Tồn đầu kỳ</span><strong>10.842</strong></div><div><span>Nhập trong kỳ</span><strong>+3.286</strong></div><div><span>Xuất trong kỳ</span><strong>−1.648</strong></div><div><span>Tồn cuối kỳ</span><strong>12.480</strong></div></div><div class="table-wrap"><table><thead><tr><th>Mã sản phẩm</th><th>Tên sản phẩm</th><th class="number-cell">Tồn đầu</th><th class="number-cell">Nhập</th><th class="number-cell">Xuất</th><th class="number-cell">Tồn cuối</th><th>Đơn vị</th></tr></thead><tbody id="reportRows"></tbody></table></div></article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <aside class="record-editor" id="recordEditor" aria-labelledby="recordEditorTitle" hidden>
+    <div class="editor-header"><div><h2 id="recordEditorTitle">Thêm sản phẩm</h2><p>Tạo bản ghi mới trong dữ liệu demo.</p></div><button class="icon-button" id="closeRecordEditor" type="button" aria-label="Đóng bảng nhập">×</button></div>
+    <form id="recordForm"><div class="editor-body"><label class="field"><span>Mã bản ghi *</span><input id="recordCode" required maxlength="12" placeholder="VD: SP0129"></label><label class="field"><span>Tên hiển thị *</span><input id="recordName" required maxlength="120"></label><label class="field"><span>Phân loại</span><select id="recordCategory"><option>Thực phẩm</option><option>Đồ uống</option><option>Gia dụng</option><option>Khác</option></select></label><label class="field"><span>Trạng thái</span><select id="recordStatus"><option>Đang hoạt động</option><option>Chờ xử lý</option><option>Ngừng hoạt động</option></select></label><label class="field"><span>Ghi chú</span><textarea id="recordNote" rows="4" placeholder="Thông tin bổ sung..."></textarea></label></div><div class="editor-footer"><button class="button button-secondary" id="cancelRecordButton" type="button">Hủy</button><button class="button button-primary" type="submit">Lưu bản ghi</button></div></form>
+  </aside>
+
+  <div class="command-results" id="commandResults" hidden></div>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
+  <div class="editor-overlay" id="editorOverlay" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>

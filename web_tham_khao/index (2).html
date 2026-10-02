@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Botanica — Better Living</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* =========================================================
+           DESIGN TOKENS
+        ========================================================= */
+
+        :root {
+            --bg: #F9F8F4;
+            --bg-soft: #F2F0EB;
+            --forest: #2D3A31;
+            --sage: #8C9A84;
+            --clay: #DCCFC2;
+            --stone: #E6E2DA;
+            --terracotta: #C27B66;
+            --white: #FFFFFF;
+
+            --shadow-sm:
+                0 4px 6px -1px rgba(45, 58, 49, 0.05);
+
+            --shadow-md:
+                0 10px 15px -3px rgba(45, 58, 49, 0.05);
+
+            --shadow-lg:
+                0 20px 40px -10px rgba(45, 58, 49, 0.05);
+
+            --radius-card: 24px;
+            --container: 1280px;
+        }
+
+        /* =========================================================
+           RESET
+        ========================================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--forest);
+            font-family: "Source Sans 3", sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        img {
+            width: 100%;
+            display: block;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* =========================================================
+           PAPER GRAIN
+        ========================================================= */
+
+        .grain {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.025;
+
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* =========================================================
+           COMMON
+        ========================================================= */
+
+        .container {
+            width: min(100% - 48px, var(--container));
+            margin: auto;
+        }
+
+        .serif {
+            font-family: "Playfair Display", serif;
+        }
+
+        .eyebrow {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+        }
+
+        .section {
+            padding: 120px 0;
+        }
+
+        .btn {
+            min-height: 48px;
+            padding: 0 25px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+
+            cursor: pointer;
+            transition:
+                transform .3s ease,
+                background .3s ease,
+                color .3s ease,
+                border-color .3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--forest);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--terracotta);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border-color: var(--sage);
+            color: var(--forest);
+        }
+
+        .btn-secondary:hover {
+            background: var(--sage);
+            color: white;
+        }
+
+        /* =========================================================
+           NAVBAR
+        ========================================================= */
+
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+        }
+
+        .navbar {
+            height: 88px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            font-family: "Playfair Display", serif;
+            font-size: 21px;
+            font-weight: 600;
+        }
+
+        .logo svg {
+            width: 22px;
+            height: 22px;
+            color: var(--forest);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 34px;
+
+            font-size: 13px;
+        }
+
+        .nav-links a {
+            position: relative;
+            transition: color .3s ease;
+        }
+
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -7px;
+            width: 0;
+            height: 1px;
+            background: var(--forest);
+            transition: width .3s ease;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .search-btn {
+            border: 0;
+            background: none;
+            cursor: pointer;
+            color: var(--forest);
+        }
+
+        .sign-in {
+            min-height: 40px;
+            padding: 0 22px;
+            border-radius: 999px;
+            background: var(--forest);
+            color: white;
+            border: none;
+
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+
+            cursor: pointer;
+        }
+
+        .menu-btn {
+            display: none;
+            border: 0;
+            background: none;
+            cursor: pointer;
+        }
+
+        /* =========================================================
+           HERO
+        ========================================================= */
+
+        .hero {
+            min-height: 760px;
+            padding-top: 150px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.05fr .95fr;
+            align-items: center;
+            gap: 80px;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-eyebrow {
+            margin-bottom: 18px;
+        }
+
+        .hero-title {
+            max-width: 720px;
+
+            font-family: "Playfair Display", serif;
+            font-size: clamp(55px, 6vw, 88px);
+            font-weight: 500;
+            line-height: .98;
+            letter-spacing: -.045em;
+        }
+
+        .hero-title em {
+            color: var(--forest);
+            font-weight: 400;
+        }
+
+        .hero-description {
+            max-width: 490px;
+            margin: 28px 0 32px;
+
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        /* Decorative flower */
+
+        .flower-line {
+            position: absolute;
+            left: -20px;
+            bottom: -50px;
+            width: 130px;
+            opacity: .65;
+            transform: rotate(-8deg);
+        }
+
+        /* Hero image */
+
+        .hero-visual {
+            position: relative;
+            height: 600px;
+        }
+
+        .hero-image {
+            position: absolute;
+            right: 50px;
+            top: 0;
+
+            width: 82%;
+            height: 100%;
+
+            object-fit: cover;
+
+            border-radius: 220px 220px 0 0;
+
+            box-shadow: var(--shadow-lg);
+        }
+
+        .hero-orb {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+
+            right: -5px;
+            top: 70px;
+
+            background: var(--clay);
+            border-radius: 50%;
+            opacity: .7;
+        }
+
+        .hero-leaf {
+            position: absolute;
+            right: -10px;
+            bottom: 30px;
+            width: 120px;
+        }
+
+        /* Quote */
+
+        .quote-card {
+            position: absolute;
+            right: -5px;
+            bottom: 55px;
+
+            width: 230px;
+            padding: 28px;
+
+            background: rgba(255,255,255,.88);
+            backdrop-filter: blur(8px);
+
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .quote-card h3 {
+            font-family: "Playfair Display", serif;
+            font-size: 23px;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .quote-card p {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: .15em;
+            line-height: 1.6;
+            text-transform: uppercase;
+        }
+
+        /* =========================================================
+           VALUES
+        ========================================================= */
+
+        .values {
+            background: var(--white);
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: .8fr 1fr 1fr 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .values-intro {
+            padding: 15px 30px 0 0;
+        }
+
+        .values-title {
+            margin: 13px 0 20px;
+
+            font-family: "Playfair Display", serif;
+            font-size: 43px;
+            line-height: 1.05;
+            font-weight: 500;
+        }
+
+        .values-intro p {
+            max-width: 280px;
+            font-size: 15px;
+        }
+
+        .story-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            margin-top: 25px;
+
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+
+            border-bottom: 1px solid var(--forest);
+            padding-bottom: 5px;
+        }
+
+        .value-card {
+            min-height: 280px;
+            padding: 28px;
+
+            background: var(--bg);
+            border: 1px solid var(--stone);
+            border-radius: var(--radius-card);
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            transition:
+                transform .5s ease,
+                box-shadow .5s ease;
+        }
+
+        .value-card:nth-child(3) {
+            transform: translateY(25px);
+            background: #EEE7DC;
+        }
+
+        .value-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .value-card:nth-child(3):hover {
+            transform: translateY(17px);
+        }
+
+        .value-icon {
+            width: 43px;
+            height: 43px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 50%;
+            background: #E8E5DA;
+        }
+
+        .value-icon svg {
+            width: 21px;
+            height: 21px;
+            stroke-width: 1.5;
+        }
+
+        .value-card h3 {
+            margin-top: 45px;
+
+            font-family: "Playfair Display", serif;
+            font-size: 20px;
+            line-height: 1.15;
+        }
+
+        .value-card p {
+            margin-top: 10px;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .value-arrow {
+            margin-top: 20px;
+        }
+
+        /* =========================================================
+           STATS
+        ========================================================= */
+
+        .stats {
+            padding: 55px 0;
+            background: #F1F0E6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .stat {
+            text-align: center;
+            padding: 0 30px;
+            border-right: 1px solid #D6D4CA;
+        }
+
+        .stat:last-child {
+            border-right: none;
+        }
+
+        .stat-number {
+            font-family: "Playfair Display", serif;
+            font-size: 38px;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+        }
+
+        /* =========================================================
+           STORY
+        ========================================================= */
+
+        .story-section {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .story-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 100px;
+        }
+
+        .story-images {
+            position: relative;
+            height: 500px;
+        }
+
+        .story-main-image {
+            position: absolute;
+            left: 0;
+            top: 0;
+
+            width: 80%;
+            height: 100%;
+
+            object-fit: cover;
+
+            border-radius: 180px 180px 80px 80px;
+        }
+
+        .story-small-image {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+
+            width: 180px;
+            height: 180px;
+
+            object-fit: cover;
+
+            border-radius: 60px 60px 60px 20px;
+
+            border: 8px solid var(--bg);
+        }
+
+        .handwriting {
+            position: absolute;
+            top: 30px;
+            right: 60px;
+
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            font-size: 24px;
+            transform: rotate(-8deg);
+        }
+
+        .story-content {
+            position: relative;
+        }
+
+        .story-content h2 {
+            max-width: 580px;
+            margin: 15px 0 25px;
+
+            font-family: "Playfair Display", serif;
+            font-size: clamp(43px, 4.5vw, 64px);
+            line-height: 1;
+            font-weight: 500;
+            letter-spacing: -.035em;
+        }
+
+        .story-content h2 em {
+            font-weight: 400;
+        }
+
+        .story-content p {
+            max-width: 490px;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        /* Decorative leaf */
+
+        .decor-leaf {
+            position: absolute;
+            right: -50px;
+            bottom: 10px;
+            width: 120px;
+            opacity: .7;
+        }
+
+        /* =========================================================
+           JOURNAL
+        ========================================================= */
+
+        .journal-header {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+
+            margin-bottom: 45px;
+        }
+
+        .journal-title {
+            margin-top: 10px;
+
+            font-family: "Playfair Display", serif;
+            font-size: clamp(42px, 4vw, 58px);
+            line-height: 1;
+            font-weight: 500;
+        }
+
+        .view-all {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        .journal-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .article {
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+
+            box-shadow: var(--shadow-sm);
+
+            transition:
+                transform .5s ease,
+                box-shadow .5s ease;
+        }
+
+        .article:hover {
+            transform: translateY(-7px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .article-image-wrapper {
+            height: 210px;
+            overflow: hidden;
+        }
+
+        .article-image {
+            height: 100%;
+            object-fit: cover;
+
+            transition: transform .7s ease;
+        }
+
+        .article:hover .article-image {
+            transform: scale(1.06);
+        }
+
+        .article-body {
+            padding: 24px;
+        }
+
+        .article-category {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+        }
+
+        .article h3 {
+            margin: 8px 0;
+
+            font-family: "Playfair Display", serif;
+            font-size: 20px;
+            line-height: 1.15;
+        }
+
+        .article p {
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .article-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-top: 22px;
+
+            font-size: 10px;
+            letter-spacing: .12em;
+        }
+
+        .article-arrow {
+            transition: transform .3s ease;
+        }
+
+        .article:hover .article-arrow {
+            transform: translateX(5px);
+        }
+
+        /* =========================================================
+           CTA
+        ========================================================= */
+
+        .cta-section {
+            padding: 0 0 30px;
+        }
+
+        .cta {
+            position: relative;
+            min-height: 190px;
+
+            padding: 35px 110px;
+
+            background: var(--forest);
+            color: white;
+
+            border-radius: 100px 100px 100px 35px;
+
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+
+            overflow: hidden;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-title {
+            margin-top: 8px;
+
+            font-family: "Playfair Display", serif;
+            font-size: 35px;
+            line-height: 1;
+        }
+
+        .cta-title em {
+            font-weight: 400;
+        }
+
+        .cta-form {
+            position: relative;
+            z-index: 2;
+
+            display: flex;
+            align-items: center;
+
+            max-width: 390px;
+        }
+
+        .cta-form input {
+            width: 100%;
+            height: 50px;
+
+            padding: 0 50px 0 18px;
+
+            border: 0;
+            outline: none;
+
+            border-radius: 999px;
+
+            background: white;
+            color: var(--forest);
+
+            font-size: 13px;
+        }
+
+        .cta-form button {
+            position: absolute;
+            right: 5px;
+
+            width: 40px;
+            height: 40px;
+
+            display: grid;
+            place-items: center;
+
+            border: 0;
+            border-radius: 50%;
+
+            background: var(--forest);
+            color: white;
+
+            cursor: pointer;
+        }
+
+        .cta-flower {
+            position: absolute;
+            right: -10px;
+            bottom: -35px;
+
+            width: 210px;
+            height: 130px;
+
+            border-radius: 100px 100px 0 100px;
+
+            background:
+                url("https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=500&q=80")
+                center/cover;
+        }
+
+        /* =========================================================
+           FOOTER
+        ========================================================= */
+
+        footer {
+            padding: 35px 0;
+        }
+
+        .footer-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+        .footer-nav {
+            display: flex;
+            gap: 28px;
+            font-size: 12px;
+        }
+
+        .socials {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .socials a {
+            transition: color .3s ease;
+        }
+
+        .socials a:hover {
+            color: var(--terracotta);
+        }
+
+        .copyright {
+            padding-left: 20px;
+            border-left: 1px solid var(--stone);
+
+            font-size: 11px;
+        }
+
+        /* =========================================================
+           SCROLL ANIMATION
+        ========================================================= */
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(25px);
+            transition:
+                opacity .8s ease,
+                transform .8s ease;
+        }
+
+        .reveal.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* =========================================================
+           MOBILE MENU
+        ========================================================= */
+
+        .mobile-menu {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+
+            padding: 110px 35px 40px;
+
+            background: var(--bg);
+
+            transform: translateY(-100%);
+            transition: transform .6s ease;
+        }
+
+        .mobile-menu.open {
+            transform: translateY(0);
+        }
+
+        .mobile-menu a {
+            display: block;
+
+            padding: 18px 0;
+
+            border-bottom: 1px solid var(--stone);
+
+            font-family: "Playfair Display", serif;
+            font-size: 38px;
+        }
+
+        .close-menu {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+
+            border: 0;
+            background: none;
+
+            cursor: pointer;
+        }
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+        @media (max-width: 1000px) {
+
+            .hero-grid {
+                gap: 40px;
+            }
+
+            .hero-title {
+                font-size: 60px;
+            }
+
+            .values-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .values-intro {
+                grid-column: span 2;
+                padding-bottom: 30px;
+            }
+
+            .story-grid {
+                gap: 50px;
+            }
+
+            .cta {
+                padding: 35px 60px;
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            .container {
+                width: min(100% - 32px, var(--container));
+            }
+
+            .section {
+                padding: 80px 0;
+            }
+
+            /* Navbar */
+
+            .nav-links,
+            .nav-actions {
+                display: none;
+            }
+
+            .menu-btn {
+                display: block;
+            }
+
+            /* Hero */
+
+            .hero {
+                min-height: auto;
+                padding: 125px 0 80px;
+            }
+
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-title {
+                font-size: clamp(48px, 14vw, 68px);
+            }
+
+            .hero-description {
+                font-size: 16px;
+            }
+
+            .hero-visual {
+                height: 480px;
+                margin-top: 25px;
+            }
+
+            .hero-image {
+                right: 8%;
+                width: 84%;
+                border-radius: 160px 160px 0 0;
+            }
+
+            .quote-card {
+                right: 0;
+                bottom: 25px;
+            }
+
+            .flower-line {
+                display: none;
+            }
+
+            /* Values */
+
+            .values-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .values-intro {
+                grid-column: auto;
+            }
+
+            .value-card {
+                min-height: 250px;
+            }
+
+            .value-card:nth-child(3) {
+                transform: none;
+            }
+
+            .value-card:nth-child(3):hover {
+                transform: translateY(-8px);
+            }
+
+            /* Stats */
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 35px 0;
+            }
+
+            .stat:nth-child(2) {
+                border-right: none;
+            }
+
+            .stat:nth-child(3),
+            .stat:nth-child(4) {
+                border-top: 1px solid #D6D4CA;
+                padding-top: 30px;
+            }
+
+            /* Story */
+
+            .story-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .story-images {
+                height: 430px;
+            }
+
+            .story-content h2 {
+                font-size: 45px;
+            }
+
+            .decor-leaf {
+                display: none;
+            }
+
+            /* Journal */
+
+            .journal-header {
+                display: block;
+            }
+
+            .view-all {
+                margin-top: 20px;
+            }
+
+            .journal-grid {
+                grid-template-columns: 1fr;
+            }
+
+            /* CTA */
+
+            .cta {
+                padding: 45px 30px;
+                border-radius: 45px;
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .cta-title {
+                font-size: 34px;
+            }
+
+            .cta-flower {
+                opacity: .35;
+            }
+
+            /* Footer */
+
+            .footer-inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .footer-nav {
+                flex-wrap: wrap;
+            }
+
+            .copyright {
+                padding-left: 0;
+                border-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Paper texture -->
+    <div class="grain"></div>
+
+    <!-- =========================================================
+         MOBILE MENU
+    ========================================================== -->
+
+    <div class="mobile-menu" id="mobileMenu">
+
+        <button class="close-menu" id="closeMenu">
+            <i data-lucide="x"></i>
+        </button>
+
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="#journal">Journal</a>
+        <a href="#contact">Contact</a>
+
+    </div>
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <header>
+
+        <div class="container navbar">
+
+            <a href="#" class="logo">
+                <i data-lucide="leaf"></i>
+                Botanica
+            </a>
+
+            <nav class="nav-links">
+
+                <a href="#home" class="active">Home</a>
+                <a href="#about">About</a>
+                <a href="#services">Services</a>
+                <a href="#journal">Journal</a>
+                <a href="#contact">Contact</a>
+
+            </nav>
+
+            <div class="nav-actions">
+
+                <button class="search-btn">
+                    <i data-lucide="search"></i>
+                </button>
+
+                <button class="sign-in">
+                    Sign In
+                </button>
+
+            </div>
+
+            <button class="menu-btn" id="openMenu">
+                <i data-lucide="menu"></i>
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <main>
+
+        <!-- =====================================================
+             HERO
+        ====================================================== -->
+
+        <section class="hero" id="home">
+
+            <div class="container hero-grid">
+
+                <div class="hero-content reveal">
+
+                    <div class="eyebrow hero-eyebrow">
+                        Nature inspires better living
+                    </div>
+
+                    <h1 class="hero-title">
+                        A calmer mind,
+                        <br>
+                        a <em>greener</em> tomorrow
+                    </h1>
+
+                    <p class="hero-description">
+                        We bring the beauty of nature into your everyday
+                        life with thoughtfully crafted products and
+                        experiences that nurture your well-being.
+                    </p>
+
+                    <div class="hero-buttons">
+
+                        <a href="#services" class="btn btn-primary">
+                            Explore our collection
+                            <i data-lucide="arrow-right"></i>
+                        </a>
+
+                        <a href="#about" class="btn btn-secondary">
+                            Learn more
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <div class="hero-visual reveal">
+
+                    <div class="hero-orb"></div>
+
+                    <img
+                        class="hero-image"
+                        src="https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1000&q=85"
+                        alt="Green botanical garden"
+                    >
+
+                    <div class="quote-card">
+
+                        <h3>
+                            Small choices
+                            make a big impact.
+                        </h3>
+
+                        <p>
+                            Sustainable living
+                            for a brighter future
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             VALUES
+        ====================================================== -->
+
+        <section class="section values" id="services">
+
+            <div class="container">
+
+                <div class="values-grid">
+
+                    <div class="values-intro reveal">
+
+                        <div class="eyebrow">
+                            Our values
+                        </div>
+
+                        <h2 class="values-title">
+                            Rooted in
+                            <br>
+                            what matters.
+                        </h2>
+
+                        <p>
+                            We believe in a more mindful way of living —
+                            one that feels good for you and for the planet.
+                        </p>
+
+                        <a href="#about" class="story-link">
+                            Our story
+                            <i data-lucide="arrow-right"></i>
+                        </a>
+
+                    </div>
+
+
+                    <!-- Card 1 -->
+
+                    <article class="value-card reveal">
+
+                        <div>
+
+                            <div class="value-icon">
+                                <i data-lucide="leaf"></i>
+                            </div>
+
+                            <h3>
+                                Natural Ingredients
+                            </h3>
+
+                            <p>
+                                Pure, plant-based ingredients carefully
+                                selected for your well-being.
+                            </p>
+
+                        </div>
+
+                        <div class="value-arrow">
+                            <i data-lucide="arrow-right"></i>
+                        </div>
+
+                    </article>
+
+
+                    <!-- Card 2 -->
+
+                    <article class="value-card reveal">
+
+                        <div>
+
+                            <div class="value-icon">
+                                <i data-lucide="sprout"></i>
+                            </div>
+
+                            <h3>
+                                Sustainable Practices
+                            </h3>
+
+                            <p>
+                                Thoughtful choices for a healthier planet
+                                and future generations.
+                            </p>
+
+                        </div>
+
+                        <div class="value-arrow">
+                            <i data-lucide="arrow-right"></i>
+                        </div>
+
+                    </article>
+
+
+                    <!-- Card 3 -->
+
+                    <article class="value-card reveal">
+
+                        <div>
+
+                            <div class="value-icon">
+                                <i data-lucide="heart"></i>
+                            </div>
+
+                            <h3>
+                                Holistic Wellness
+                            </h3>
+
+                            <p>
+                                More than products — it's a lifestyle
+                                of balance, beauty and care.
+                            </p>
+
+                        </div>
+
+                        <div class="value-arrow">
+                            <i data-lucide="arrow-right"></i>
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             STATS
+        ====================================================== -->
+
+        <section class="stats">
+
+            <div class="container stats-grid">
+
+                <div class="stat reveal">
+
+                    <div class="stat-number">
+                        10K+
+                    </div>
+
+                    <div class="stat-label">
+                        Happy Customers
+                    </div>
+
+                </div>
+
+
+                <div class="stat reveal">
+
+                    <div class="stat-number">
+                        5+
+                    </div>
+
+                    <div class="stat-label">
+                        Years of Experience
+                    </div>
+
+                </div>
+
+
+                <div class="stat reveal">
+
+                    <div class="stat-number">
+                        98%
+                    </div>
+
+                    <div class="stat-label">
+                        Natural Ingredients
+                    </div>
+
+                </div>
+
+
+                <div class="stat reveal">
+
+                    <div class="stat-number">
+                        50+
+                    </div>
+
+                    <div class="stat-label">
+                        Products & Collections
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             STORY
+        ====================================================== -->
+
+        <section class="section story-section" id="about">
+
+            <div class="container story-grid">
+
+                <div class="story-images reveal">
+
+                    <img
+                        class="story-main-image"
+                        src="https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=900&q=85"
+                        alt="Woman surrounded by nature"
+                    >
+
+                    <div class="handwriting">
+                        Nature
+                        <br>
+                        in every
+                        <br>
+                        detail
+                    </div>
+
+                    <img
+                        class="story-small-image"
+                        src="https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=500&q=85"
+                        alt="Botanical leaves"
+                    >
+
+                </div>
+
+
+                <div class="story-content reveal">
+
+                    <div class="eyebrow">
+                        Our story
+                    </div>
+
+                    <h2>
+                        Inspired by nature,
+                        <br>
+                        crafted <em>for you.</em>
+                    </h2>
+
+                    <p>
+                        Botanica was born from a simple belief:
+                        that nature has the power to heal, restore
+                        and inspire. We create natural products and
+                        experiences that bring a little more beauty,
+                        balance and intention to your daily life.
+                    </p>
+
+                    <a href="#" class="btn btn-primary">
+                        Discover more
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             JOURNAL
+        ====================================================== -->
+
+        <section class="section" id="journal">
+
+            <div class="container">
+
+                <div class="journal-header reveal">
+
+                    <div>
+
+                        <div class="eyebrow">
+                            Journal
+                        </div>
+
+                        <h2 class="journal-title">
+                            Stories, tips &
+                            <br>
+                            beautiful moments.
+                        </h2>
+
+                    </div>
+
+                    <a href="#" class="view-all">
+                        View all posts
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+
+                </div>
+
+
+                <div class="journal-grid">
+
+
+                    <!-- Article 1 -->
+
+                    <article class="article reveal">
+
+                        <div class="article-image-wrapper">
+
+                            <img
+                                class="article-image"
+                                src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=800&q=85"
+                                alt="Healthy lifestyle"
+                            >
+
+                        </div>
+
+                        <div class="article-body">
+
+                            <div class="article-category">
+                                Wellness
+                            </div>
+
+                            <h3>
+                                5 Simple Rituals for a Calmer Mind
+                            </h3>
+
+                            <p>
+                                Small daily habits can bring big changes
+                                to your mental and emotional health.
+                            </p>
+
+                            <div class="article-footer">
+
+                                <span>
+                                    APR 12, 2025
+                                </span>
+
+                                <i
+                                    class="article-arrow"
+                                    data-lucide="arrow-right"
+                                ></i>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Article 2 -->
+
+                    <article class="article reveal">
+
+                        <div class="article-image-wrapper">
+
+                            <img
+                                class="article-image"
+                                src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=85"
+                                alt="Plants indoors"
+                            >
+
+                        </div>
+
+                        <div class="article-body">
+
+                            <div class="article-category">
+                                Lifestyle
+                            </div>
+
+                            <h3>
+                                Bringing Nature Indoors
+                            </h3>
+
+                            <p>
+                                How plants can transform your space
+                                and your mood.
+                            </p>
+
+                            <div class="article-footer">
+
+                                <span>
+                                    APR 08, 2025
+                                </span>
+
+                                <i
+                                    class="article-arrow"
+                                    data-lucide="arrow-right"
+                                ></i>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Article 3 -->
+
+                    <article class="article reveal">
+
+                        <div class="article-image-wrapper">
+
+                            <img
+                                class="article-image"
+                                src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=85"
+                                alt="Nature travel"
+                            >
+
+                        </div>
+
+                        <div class="article-body">
+
+                            <div class="article-category">
+                                Travel
+                            </div>
+
+                            <h3>
+                                The Beauty of Slow Travel
+                            </h3>
+
+                            <p>
+                                Discover the joy of exploring with
+                                more presence and less rush.
+                            </p>
+
+                            <div class="article-footer">
+
+                                <span>
+                                    APR 03, 2025
+                                </span>
+
+                                <i
+                                    class="article-arrow"
+                                    data-lucide="arrow-right"
+                                ></i>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             CTA
+        ====================================================== -->
+
+        <section class="cta-section" id="contact">
+
+            <div class="container">
+
+                <div class="cta reveal">
+
+                    <div class="cta-content">
+
+                        <div class="eyebrow">
+                            Let's stay connected
+                        </div>
+
+                        <h2 class="cta-title">
+                            Join our garden
+                            <br>
+                            <em>of good things.</em>
+                        </h2>
+
+                    </div>
+
+
+                    <form class="cta-form" id="newsletter">
+
+                        <input
+                            type="email"
+                            placeholder="Your email address"
+                            required
+                        >
+
+                        <button type="submit">
+                            <i data-lucide="arrow-right"></i>
+                        </button>
+
+                    </form>
+
+
+                    <div class="cta-flower"></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================== -->
+
+    <footer>
+
+        <div class="container footer-inner">
+
+            <a href="#" class="logo">
+                <i data-lucide="leaf"></i>
+                Botanica
+            </a>
+
+            <nav class="footer-nav">
+                <a href="#home">Home</a>
+                <a href="#about">About</a>
+                <a href="#services">Services</a>
+                <a href="#journal">Journal</a>
+                <a href="#contact">Contact</a>
+            </nav>
+
+            <div class="socials">
+
+                <a href="#">
+                    <i data-lucide="instagram"></i>
+                </a>
+
+                <a href="#">
+                    <i data-lucide="facebook"></i>
+                </a>
+
+                <a href="#">
+                    <i data-lucide="youtube"></i>
+                </a>
+
+            </div>
+
+            <div class="copyright">
+                © 2025 Botanica. All rights reserved.
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================== -->
+
+    <script>
+
+        /* -------------------------------------------------------
+           Lucide Icons
+        ------------------------------------------------------- */
+
+        lucide.createIcons();
+
+
+        /* -------------------------------------------------------
+           Mobile Menu
+        ------------------------------------------------------- */
+
+        const openMenu = document.getElementById("openMenu");
+        const closeMenu = document.getElementById("closeMenu");
+        const mobileMenu = document.getElementById("mobileMenu");
+
+        openMenu.addEventListener("click", () => {
+            mobileMenu.classList.add("open");
+        });
+
+        closeMenu.addEventListener("click", () => {
+            mobileMenu.classList.remove("open");
+        });
+
+        document.querySelectorAll(".mobile-menu a").forEach(link => {
+
+            link.addEventListener("click", () => {
+                mobileMenu.classList.remove("open");
+            });
+
+        });
+
+
+        /* -------------------------------------------------------
+           Scroll Reveal
+        ------------------------------------------------------- */
+
+        const observer = new IntersectionObserver(
+            entries => {
+
+                entries.forEach(entry => {
+
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("show");
+                    }
+
+                });
+
+            },
+            {
+                threshold: 0.12
+            }
+        );
+
+        document.querySelectorAll(".reveal").forEach(element => {
+            observer.observe(element);
+        });
+
+
+        /* -------------------------------------------------------
+           Newsletter
+        ------------------------------------------------------- */
+
+        const newsletter =
+            document.getElementById("newsletter");
+
+        newsletter.addEventListener("submit", event => {
+
+            event.preventDefault();
+
+            const email =
+                newsletter.querySelector("input").value;
+
+            if (email) {
+
+                alert(
+                    "Thank you for joining the Botanica garden."
+                );
+
+                newsletter.reset();
+
+            }
+
+        });
+
+
+        /* -------------------------------------------------------
+           Active Navigation
+        ------------------------------------------------------- */
+
+        const sections =
+            document.querySelectorAll("section[id]");
+
+        const navItems =
+            document.querySelectorAll(".nav-links a");
+
+        window.addEventListener("scroll", () => {
+
+            let current = "";
+
+            sections.forEach(section => {
+
+                const sectionTop =
+                    section.offsetTop - 150;
+
+                if (window.scrollY >= sectionTop) {
+                    current = section.getAttribute("id");
+                }
+
+            });
+
+            navItems.forEach(link => {
+
+                link.classList.remove("active");
+
+                if (
+                    link.getAttribute("href") ===
+                    `#${current}`
+                ) {
+                    link.classList.add("active");
+                }
+
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>

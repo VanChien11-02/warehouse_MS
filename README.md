@@ -1,0 +1,114 @@
+# Hệ thống quản lý kho hàng
+
+Đồ án cuối kỳ môn Hệ quản trị cơ sở dữ liệu (DBMS330284). Hệ thống quản lý danh mục hàng hóa, nhập kho, xuất kho, tồn theo lô và vị trí, chuyển kho, kiểm kê, trả hàng, báo cáo và nhật ký thao tác.
+
+## Trạng thái hiện tại
+
+- Frontend baseline đã có dashboard, CRUD sản phẩm bằng dữ liệu mẫu, lập phiếu xuất và khung báo cáo.
+- ERD và danh sách nghiệp vụ đã được chuẩn hóa ở mức thiết kế.
+- Backend Spring Boot và bộ script SQL Server chưa được khởi tạo.
+- Thư mục `references/` chỉ dùng tham khảo cách tổ chức; không phải nguồn yêu cầu của dự án này.
+
+## Công nghệ thống nhất
+
+| Thành phần | Công nghệ |
+| --- | --- |
+| Frontend hiện tại | HTML5, CSS3, Vanilla JavaScript, Fetch API |
+| Frontend mục tiêu | Giữ baseline hiện tại; chỉ chuyển Vue 3 + TypeScript + Vite qua backlog riêng nếu nhóm chấp nhận |
+| Backend | Java 21 LTS, Spring Boot 3.x, Spring Web, Spring Security, Spring JDBC/JPA |
+| Database | Microsoft SQL Server 2022, T-SQL |
+| Công cụ | Git, PowerShell 7, Node.js 22 LTS, SSMS hoặc Azure Data Studio |
+
+Spring Boot và SQL Server là quyết định cố định. Logic ghi sổ tồn kho quan trọng phải được bảo vệ bằng transaction ở database/backend; frontend không tự tính và ghi tồn kho như nguồn sự thật.
+
+## Bắt đầu nhanh
+
+### 1. Chuẩn bị môi trường
+
+Cài đặt:
+
+- Git 2.40 trở lên.
+- PowerShell 7.
+- Node.js 22 LTS hoặc mới hơn; CI tương lai sẽ chốt Node.js 22.
+- JDK 21 hoặc mới hơn; mã nguồn backend nhắm Java 21.
+- SQL Server 2022 Developer/Express và công cụ quản trị SQL.
+
+### 2. Clone và tạo nhánh
+
+```powershell
+git clone <repository-url>
+cd <repository-folder>
+git switch main
+git pull
+git switch -c feature/<issue>-<ket-qua>
+```
+
+Không commit trực tiếp lên `main`.
+
+### 3. Thiết lập và chạy
+
+```powershell
+pwsh -File scripts/setup.ps1
+pwsh -File scripts/dev.ps1 -Target web
+```
+
+Mở `http://127.0.0.1:5174`.
+
+Khi backend đã được khởi tạo, chạy ở terminal khác:
+
+```powershell
+pwsh -File scripts/dev.ps1 -Target api
+```
+
+### 4. Kiểm tra trước khi bàn giao
+
+```powershell
+pwsh -File scripts/verify.ps1
+```
+
+## Cấu trúc repository
+
+```text
+apps/
+  web/                       Frontend quản lý kho
+services/
+  api/                       Spring Boot API theo module nghiệp vụ
+database/                    Schema, procedure, function, trigger, view, index, seed và test SQL Server
+contracts/                   Hợp đồng API/DTO liên frontend-backend
+docs/
+  architecture/              ERD, quyết định kiến trúc và thiết kế database
+  project/governance/        Backlog, phân công và quy trình nhóm
+  reference/                 PDF đề bài và tài liệu nguồn
+  testing/                   Kế hoạch, traceability và kết quả test
+scripts/                     Lệnh setup, chạy local và kiểm tra
+.github/                     Issue/PR template và CI
+references/                  Project khác dùng tham khảo, không sửa theo nghiệp vụ kho
+```
+
+## Tài liệu cần đọc trước khi sửa code
+
+1. [`AGENTS.md`](AGENTS.md).
+2. [`docs/README.md`](docs/README.md).
+3. Backlog item liên quan trong [`docs/project/governance/BACKLOG.md`](docs/project/governance/BACKLOG.md).
+4. `AGENTS.md` gần nhất trong module sẽ sửa, nếu có.
+5. ERD và quy tắc nghiệp vụ tại [`docs/architecture/database/ERD_VA_NGHIEP_VU.md`](docs/architecture/database/ERD_VA_NGHIEP_VU.md).
+
+## Nguồn sự thật
+
+Khi tài liệu mâu thuẫn, ưu tiên theo thứ tự:
+
+1. Quyết định hiện tại của nhóm/Project Owner.
+2. `AGENTS.md` gần file đang sửa.
+3. Backlog và quyết định kiến trúc hiện hành.
+4. ERD, yêu cầu và API contract đã được review.
+5. Code và test đã tích hợp.
+6. Tài liệu tham khảo hoặc lịch sử.
+
+## Liên kết chính
+
+- [Bản đồ tài liệu](docs/README.md)
+- [Hướng dẫn đóng góp](CONTRIBUTING.md)
+- [Backlog](docs/project/governance/BACKLOG.md)
+- [Phân công nhóm](docs/project/governance/TEAM.md)
+- [ERD và nghiệp vụ](docs/architecture/database/ERD_VA_NGHIEP_VU.md)
+- [Changelog](CHANGELOG.md)
