@@ -33,12 +33,15 @@ Một task chỉ vào `Ready` khi có:
 ## Nhánh và Pull Request
 
 - `main`: luôn chạy được.
+- `workstream/<pham-vi>`: vùng làm việc được gán cho một owner theo [`WORKSTREAMS.md`](WORKSTREAMS.md); không dùng để gom một PR khổng lồ.
 - `feature/<issue>-<ket-qua>`: chức năng mới.
 - `fix/<issue>-<van-de>`: sửa lỗi.
 - `docs/<issue>-<noi-dung>`: tài liệu.
 - `test/<issue>-<pham-vi>`: kiểm thử.
 
 Không trộn refactor không liên quan vào PR chức năng. Thay đổi schema/API phải có reviewer của frontend/backend/database liên quan.
+
+Khi nhóm dùng bốn branch workstream, cả bốn phải được tạo từ cùng commit contract baseline. Mỗi module nhỏ vẫn nên được merge bằng PR có acceptance criteria và kiểm tra riêng. Không merge branch workstream của thành viên này vào branch workstream của thành viên khác; đồng bộ từ nhánh tích hợp mà nhóm đã chốt.
 
 ## Mẫu cập nhật Issue
 

@@ -13,6 +13,7 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 
 - [`project/governance/BACKLOG.md`](project/governance/BACKLOG.md): phạm vi, ưu tiên và phụ thuộc.
 - [`project/governance/TEAM.md`](project/governance/TEAM.md): phân công hiện tại theo rubric và module.
+- [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md): đề xuất chia bốn workstream, branch, ranh giới file và baseline để phát triển song song.
 - [`project/governance/SCRUM.md`](project/governance/SCRUM.md): Ready, Done, nhánh và Pull Request.
 
 GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Markdown chỉ giữ phạm vi, ưu tiên và quan hệ phụ thuộc để không phải cập nhật trạng thái ở hai nơi.
@@ -23,8 +24,8 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 
 ## Tài liệu nguồn
 
-- [`reference/HỆ THỐNG QUẢN LÝ KHO HÀNG.docx.pdf`](reference/HỆ%20THỐNG%20QUẢN%20LÝ%20KHO%20HÀNG.docx.pdf): thiết kế bảng ban đầu.
-- [`reference/HuongDan_Project_Rubric_DBMS330284.docx (1).pdf`](reference/HuongDan_Project_Rubric_DBMS330284.docx%20%281%29.pdf): yêu cầu và rubric môn học.
+- [`reference/README.md`](reference/README.md): quy tắc lưu và sử dụng tài liệu nguồn.
+- Hai PDF thiết kế ban đầu/rubric được mô tả trong lịch sử dự án nhưng hiện không có trong checkout. Khi nhóm bổ sung lại, cần dùng tên ổn định, không sửa trực tiếp PDF và cập nhật liên kết tại đây.
 
 ## Khi tài liệu mâu thuẫn
 

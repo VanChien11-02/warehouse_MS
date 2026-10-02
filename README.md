@@ -45,6 +45,8 @@ git switch -c feature/<issue>-<ket-qua>
 
 Không commit trực tiếp lên `main`.
 
+Khi nhóm chấp nhận mô hình bốn workstream, owner tạo `workstream/<pham-vi>` từ cùng commit contract baseline thay cho branch feature ban đầu. Xem [kế hoạch phát triển song song](docs/project/governance/WORKSTREAMS.md).
+
 ### 3. Thiết lập và chạy
 
 ```powershell
@@ -110,5 +112,7 @@ Khi tài liệu mâu thuẫn, ưu tiên theo thứ tự:
 - [Hướng dẫn đóng góp](CONTRIBUTING.md)
 - [Backlog](docs/project/governance/BACKLOG.md)
 - [Phân công nhóm](docs/project/governance/TEAM.md)
+- [Kế hoạch bốn workstream phát triển song song](docs/project/governance/WORKSTREAMS.md)
+- [Draft contract baseline liên module](contracts/BASELINE.md)
 - [ERD và nghiệp vụ](docs/architecture/database/ERD_VA_NGHIEP_VU.md)
 - [Changelog](CHANGELOG.md)

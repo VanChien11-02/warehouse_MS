@@ -12,8 +12,10 @@ Mục tiêu: có cấu trúc thống nhất, tài liệu nguồn rõ ràng và f
 | --- | --- | ---: | --- | --- | --- |
 | GOV-01 | Chuẩn hóa repository, README, AGENTS và scripts | P0 | Cần chốt | - | Đã có baseline local; chờ nhóm review |
 | REQ-01 | Chốt phạm vi, actor và nghiệp vụ kho | P0 | Cần chốt | GOV-01 | ERD/nghiệp vụ đã có; chờ review |
+| GOV-02 | Chốt bốn workstream và contract baseline liên module | P0 | Cần chốt | GOV-01, REQ-01 | `WORKSTREAMS.md` và `contracts/BASELINE.md` chuyển từ Draft sang Accepted; owner/reviewer/branch được xác nhận |
+| GOV-03 | Tách frontend baseline theo core/feature | P0 | Cần chốt | GOV-02 | Giữ nguyên hành vi hiện tại; mỗi workstream có thư mục JS/CSS riêng và không phải cùng sửa `app.js`/`styles.css` lớn |
 | FE-01 | Dashboard và khung module frontend | P0 | Cần chốt | REQ-01 | Baseline Vanilla JS chạy local |
-| QA-00 | Kiểm tra baseline trên máy thành viên khác | P1 | Cần chốt | FE-01 | Chưa có bằng chứng |
+| QA-00 | Kiểm tra baseline trên máy thành viên khác | P1 | Cần chốt | FE-01, GOV-03 | Chưa có bằng chứng |
 
 ## Sprint 1 - CSDL và backend nền tảng
 
@@ -21,7 +23,7 @@ Mục tiêu: dựng SQL Server và Spring Boot, đăng nhập thật và CRUD da
 
 | ID | Backlog item | Ưu tiên | Owner | Phụ thuộc | Tiêu chí chấp nhận |
 | --- | --- | ---: | --- | --- | --- |
-| DB-01 | Chốt physical schema và data dictionary | P0 | Cần chốt | REQ-01 | PK/FK/type/null/check/default/unique rõ; script tạo từ database sạch |
+| DB-01 | Chốt physical schema và data dictionary | P0 | Cần chốt | GOV-02 | PK/FK/type/null/check/default/unique rõ; mapping SQL ↔ Java/JSON rõ; script tạo từ database sạch |
 | BE-01 | Khởi tạo Spring Boot API | P0 | Cần chốt | DB-01 | Java 21, Maven Wrapper, SQL Server config mẫu, health check và test chạy |
 | SEC-01 | Đăng nhập và bốn role | P0 | TV4 Phát | BE-01 | Mật khẩu hash; Admin/QuanLyKho/NhanVienKho/KeToan bị giới hạn đúng quyền |
 | CAT-01 | API và UI danh mục sản phẩm | P0 | Cần chốt | BE-01 | CRUD, tìm kiếm, lỗi mã trùng/validation có cấu trúc |

@@ -21,24 +21,24 @@ Mỗi chủ phần việc phải:
 - Nhờ một thành viên khác review trước khi merge.
 - Cập nhật tài liệu và bằng chứng cho báo cáo/vấn đáp.
 
-## Phân công module cần chốt
+## Đề xuất phân công module dọc
 
-Phân chia theo loại object SQL giúp đạt rubric nhưng chưa đủ để phát triển ứng dụng. Nhóm cần gán thêm owner/reviewer cho các module dọc:
+> Trạng thái: **Draft để nhóm xác nhận**. Trách nhiệm rubric ở trên vẫn giữ nguyên; bảng này bổ sung ownership module để bốn thành viên có thể phát triển song song.
 
-| Module | Owner | Reviewer | Ghi chú |
-| --- | --- | --- | --- |
-| Repository, tích hợp và tài liệu | Cần chốt | Cần chốt | Điều phối merge, changelog và báo cáo |
-| Frontend và trải nghiệm | Cần chốt | Cần chốt | Dashboard, danh mục, phiếu và báo cáo |
-| Backend nền tảng và auth | Cần chốt | Cần chốt | Spring Boot, security, exception, contract |
-| Danh mục và cấu trúc kho | Cần chốt | Cần chốt | Sản phẩm, đối tác, kho/khu vực/vị trí |
-| Nhập kho và lô | Cần chốt | Cần chốt | Phiếu nhập, tạo lô, put-away |
-| Xuất kho và FEFO | Cần chốt | Cần chốt | Chọn lô/vị trí, chống xuất vượt tồn |
-| Chuyển kho, kiểm kê, trả hàng | Cần chốt | Cần chốt | Transaction và chứng từ điều chỉnh |
-| QA và traceability | Cần chốt | Cần chốt | Test plan, E2E, concurrency, evidence |
+| Workstream | Owner đề xuất | Reviewer cần chốt | Branch | Module nhỏ |
+| --- | --- | --- | --- | --- |
+| Nền tảng và bảo mật | TV4 Phát | Cần chốt | `workstream/platform-security` | Nhân viên, tài khoản, auth, role, audit, Spring Security, app shell |
+| Danh mục và cấu trúc kho | TV1 Chiến | Cần chốt | `workstream/master-data-warehouse` | Sản phẩm, đơn vị tính, nhà cung cấp, đối tác, kho/khu vực/vị trí |
+| Nhập kho và tồn | TV2 Thi | Cần chốt | `workstream/inbound-inventory` | Phiếu nhập, lô, put-away, tồn theo lô/vị trí, báo cáo tồn |
+| Xuất và kiểm soát tồn | TV3 Trung | Cần chốt | `workstream/outbound-stock-control` | Xuất FEFO, chuyển kho, kiểm kê, trả hàng, concurrency |
+
+Chi tiết ranh giới file, dependency và baseline trước khi tách branch nằm trong [`WORKSTREAMS.md`](WORKSTREAMS.md).
 
 ## Nguyên tắc chia việc
 
 - Owner module chịu trách nhiệm xuyên suốt yêu cầu → contract → code → test → tài liệu.
 - Người làm stored procedure/transaction phối hợp cùng owner backend, không tạo hai bản logic tồn kho khác nhau.
+- Trách nhiệm rubric là vai trò chuyên môn/review; không thay thế ownership module và không cho phép tự sửa file của workstream khác.
+- Chỉ public interface/DTO/contract được dùng giữa module; không import repository hoặc JPA entity của module khác.
 - Mỗi người phải hiểu và demo được phần mình phụ trách.
 - Không tự ghi đóng góp cho thành viên khi người đó chưa review và nhận trách nhiệm.

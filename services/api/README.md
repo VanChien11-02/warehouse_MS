@@ -27,6 +27,10 @@ reporting/
 audit/
 ```
 
+Các package được gom ownership theo bốn workstream trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md). Package khác chỉ được import public DTO/interface của feature; không import controller, repository, JPA entity hoặc implementation nội bộ.
+
+Các interface liên module và quy ước HTTP đang được thảo luận tại [`../../contracts/BASELINE.md`](../../contracts/BASELINE.md). Ví dụ trong contract chỉ trở thành bắt buộc sau khi tài liệu chuyển sang `Accepted` và chữ ký thật đã compile trong project.
+
 Controller chỉ xử lý HTTP/DTO và gọi application service. Application service điều phối transaction/use case. Domain giữ quy tắc thuần. Infrastructure chứa JDBC/JPA/security adapter.
 
 ## Chạy dự kiến

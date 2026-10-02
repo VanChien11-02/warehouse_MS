@@ -27,6 +27,8 @@ Mở `http://127.0.0.1:5174`.
 - `styles.css`: design tokens, trạng thái và bố cục responsive.
 - `app.js`: điều hướng theo vai trò, dữ liệu demo, bảng/phân trang và tương tác biểu mẫu.
 
+Ba file hiện tại là baseline chạy được nhưng chưa phải ranh giới phù hợp để bốn người sửa song song. Backlog `GOV-03` sẽ tách dần JavaScript/CSS theo `core` và bốn feature trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md), đồng thời giữ nguyên hành vi và không đổi framework.
+
 ## Ngôn ngữ giao diện
 
 Giao diện dùng phong cách editorial tiết chế lấy cảm hứng từ trang tham khảo trong `web_tham_khao/`: nền kem, xanh rừng, xanh sage và màu đất nung. Mật độ và hệ thống phân cấp được điều chỉnh cho một công cụ vận hành dữ liệu lớn. Font dùng font hệ thống có hỗ trợ đầy đủ tiếng Việt, không tải font hoặc thư viện từ CDN.
@@ -50,6 +52,8 @@ Endpoint đã chuẩn bị:
 - `GET /api/baocao/tonkho`
 
 Backend cần cấu hình CORS đúng origin frontend. Khi có API contract chính thức, tên field và lỗi phải theo `contracts/`, không tự suy đoán ở UI.
+
+Các URL trên phản ánh adapter baseline hiện tại. URL chính thức chỉ được đổi sau khi nhóm chốt [`../../contracts/BASELINE.md`](../../contracts/BASELINE.md) và cập nhật adapter, backend, test cùng tài liệu trong một thay đổi thống nhất.
 
 ## Quy tắc khi phát triển tiếp
 

@@ -12,6 +12,7 @@
 1. Mỗi thay đổi phải có Issue/backlog item với kết quả cần tạo, owner, reviewer, phụ thuộc và tiêu chí chấp nhận.
 2. Mỗi người chỉ giữ tối đa một việc `In Progress`.
 3. Dùng tên nhánh:
+   - `workstream/<pham-vi>` cho bốn vùng làm việc đã được nhóm gán owner trong [`docs/project/governance/WORKSTREAMS.md`](docs/project/governance/WORKSTREAMS.md)
    - `feature/<issue>-<ket-qua>`
    - `fix/<issue>-<van-de>`
    - `docs/<issue>-<noi-dung>`
@@ -19,6 +20,8 @@
 4. Mở Draft PR sớm khi cần thống nhất contract hoặc schema.
 5. Thay đổi API/database phải có reviewer của cả phía cung cấp và phía sử dụng.
 6. Chỉ merge khi kiểm tra đạt, reviewer chấp thuận và tài liệu liên quan đã cập nhật.
+
+Nếu dùng branch workstream, cả bốn branch phải bắt đầu từ cùng commit contract baseline. Branch workstream vẫn bàn giao bằng các PR nhỏ theo module; không chờ đến cuối dự án mới mở một PR lớn.
 
 Khuyến nghị Conventional Commits: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:` và `ci:`.
 

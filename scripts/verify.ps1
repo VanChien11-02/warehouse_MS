@@ -15,6 +15,8 @@ $requiredFiles = @(
     'apps/web/app.js',
     'docs/README.md',
     'docs/project/governance/BACKLOG.md',
+    'docs/project/governance/WORKSTREAMS.md',
+    'contracts/BASELINE.md',
     'docs/architecture/database/ERD_VA_NGHIEP_VU.md'
 )
 foreach ($relativePath in $requiredFiles) {
