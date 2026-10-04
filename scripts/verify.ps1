@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param()
+param(
+    [switch] $WithDatabase,
+    [string] $SqlServer = 'localhost'
+)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -88,6 +91,13 @@ if (Test-Path -LiteralPath $apiWrapper) {
 }
 else {
     Write-Host 'Backend chưa được khởi tạo; bỏ qua Maven test.'
+}
+
+if ($WithDatabase) {
+    Write-Host 'Kiểm tra ràng buộc database...'
+    $sqlcmd = (Get-Command sqlcmd -ErrorAction Stop).Source
+    & $sqlcmd -S $SqlServer -E -C -b -d WarehouseMS -i (Join-Path $root 'database\tests\001_catalog_warehouse_constraints.sql')
+    if ($LASTEXITCODE -ne 0) { throw 'Database test thất bại.' }
 }
 
 Write-Host 'Baseline verification passed.'
