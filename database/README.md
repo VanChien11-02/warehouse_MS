@@ -15,6 +15,8 @@ pwsh -File scripts/verify.ps1 -WithDatabase
 
 `init.sql` tạo database `BlueStock` và dừng nếu tên này đã tồn tại; script không xóa hoặc ghi đè database cũ. Khi dùng SQL Server ở máy khác, thay `localhost` bằng tên instance tương ứng.
 
+Sau khi dựng schema, có thể chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/seed/catalog_demo.sql` để tạo loại và đơn vị tính mẫu trước khi thử API sản phẩm. Seed không tạo sản phẩm hoặc tài khoản, và có thể chạy lại.
+
 ## Cấu trúc mục tiêu
 
 ```text

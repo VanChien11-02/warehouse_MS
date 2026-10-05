@@ -39,6 +39,7 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 - [`../contracts/BASELINE.md`](../contracts/BASELINE.md): quy ước contract chung đang ở trạng thái Draft.
 - [`../contracts/API_CATALOG.md`](../contracts/API_CATALOG.md): inventory endpoint dự kiến và thứ tự viết contract chi tiết.
 - [`../contracts/session-rbac.md`](../contracts/session-rbac.md): session, CSRF, payload đăng nhập và mã role cho nhánh BE.
+- [`../contracts/san-pham.md`](../contracts/san-pham.md): CRUD, tìm kiếm, phân trang và quyền của sản phẩm.
 - [`../database/SCHEMA_PLAN.md`](../database/SCHEMA_PLAN.md): kế hoạch physical schema, object SQL và test database.
 
 ## Tài liệu nguồn
