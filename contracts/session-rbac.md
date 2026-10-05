@@ -32,3 +32,5 @@ Response của đăng nhập và `/me`:
 Response lỗi dùng envelope trong `BASELINE.md`. `401 INVALID_CREDENTIALS` cho thông tin đăng nhập sai hoặc tài khoản không dùng được; `401 UNAUTHORIZED` khi chưa có session; `403 FORBIDDEN` cho thiếu quyền hoặc CSRF; `400 MALFORMED_JSON` cho JSON sai; `422 VALIDATION_FAILED` cho trường bắt buộc rỗng.
 
 Tạo tài khoản, đổi mật khẩu và chi tiết quyền từng endpoint nghiệp vụ sẽ được bổ sung vào contract khi triển khai. Backend từ chối mọi route chưa khai báo quyền.
+
+Khởi tạo lần đầu dùng `scripts/bootstrap-admin.ps1` sau khi `BlueStock` được tạo và kết nối JDBC hoạt động. Lệnh yêu cầu mật khẩu qua terminal, tạo `NHAN_VIEN.NV0001` và `TAI_KHOAN.TK0001` với role `ADMIN` và BCrypt hash trong một transaction. Lệnh từ chối khi đã có tài khoản; không có mật khẩu mặc định trong repository.

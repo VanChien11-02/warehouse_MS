@@ -55,6 +55,8 @@ Mẫu biến môi trường nằm tại [`../../services/api/.env.example`](../.
 
 JDBC cần SQL Server bật TCP/IP và lắng nghe cổng trong `SPRING_DATASOURCE_URL` (mẫu dùng 1433). Bật TCP/IP bằng SQL Server Configuration Manager, khởi động lại instance rồi kiểm tra `Test-NetConnection 127.0.0.1 -Port 1433`. `sqlcmd -E` trên cùng máy có thể dùng shared memory dù TCP/IP đang tắt, nên kết quả test SQL không thay thế kiểm tra kết nối JDBC. Tạo SQL login cục bộ với quyền trên `BlueStock`, đặt username/password qua biến môi trường; không ghi chúng vào repository.
 
+Sau khi dựng database, chạy `pwsh -File scripts/bootstrap-admin.ps1` đúng một lần khi bảng tài khoản còn trống. Lệnh yêu cầu mật khẩu tại terminal, lưu BCrypt hash và khởi động API. Dừng tiến trình bootstrap rồi chạy `pwsh -File scripts/dev.ps1 -Target api` với cấu hình JDBC thông thường.
+
 Database `BlueStock`/`dbo`, session cookie và runner `sqlcmd` đã được quyết định tại ADR 0003. CORS cho frontend và migration tool sau baseline sẽ được quyết định khi triển khai phần tương ứng.
 
 ## 4. Thứ tự kỹ thuật tối thiểu

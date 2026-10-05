@@ -61,4 +61,6 @@ services\api\mvnw.cmd test
 
 API session hiện có `GET /api/auth/csrf`, `POST /api/auth/dang-nhap`, `GET /api/auth/me` và `POST /api/auth/dang-xuat` theo [`contracts/session-rbac.md`](../../contracts/session-rbac.md). `init.sql` chỉ seed bốn role; cần tạo nhân viên và tài khoản với BCrypt hash qua quy trình quản trị trước khi đăng nhập. Origin frontend mặc định là `http://127.0.0.1:5174`, có thể đổi bằng `APP_WEB_ORIGIN`.
 
+Khi database chưa có tài khoản, từ root chạy `pwsh -File scripts/bootstrap-admin.ps1` sau khi đặt biến kết nối JDBC. Lệnh hỏi mật khẩu admin (ít nhất 12 ký tự), tạo tài khoản `admin` với mã `NV0001`/`TK0001` và khởi động API. Dừng tiến trình sau khi tạo xong, rồi chạy `scripts/dev.ps1 -Target api` bình thường. Có thể đổi tên đăng nhập bằng `-Username`; lệnh từ chối chạy lại nếu đã có tài khoản. Mật khẩu không được ghi vào file.
+
 Không commit connection string thật hoặc mật khẩu SQL Server.

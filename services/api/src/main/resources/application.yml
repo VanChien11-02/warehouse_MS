@@ -22,3 +22,5 @@ server:
         http-only: true
 app:
   web-origin: ${APP_WEB_ORIGIN:http://127.0.0.1:5174}
+  bootstrap-admin:
+    enabled: ${APP_BOOTSTRAP_ADMIN_ENABLED:false}

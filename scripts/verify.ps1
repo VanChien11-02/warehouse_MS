@@ -27,7 +27,9 @@ $requiredFiles = @(
     'docs/project/governance/OPEN_DECISIONS.md',
     'contracts/BASELINE.md',
     'contracts/API_CATALOG.md',
+    'contracts/session-rbac.md',
     'database/SCHEMA_PLAN.md',
+    'scripts/bootstrap-admin.ps1',
     'docs/architecture/database/ERD_VA_NGHIEP_VU.md'
 )
 foreach ($relativePath in $requiredFiles) {
