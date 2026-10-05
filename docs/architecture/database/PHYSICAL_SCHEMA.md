@@ -2,6 +2,8 @@
 
 Trạng thái: phần đầu của DB-01. Tài liệu này mô tả sáu bảng đã có trong `database/schema/`; các bảng nghiệp vụ còn lại chưa được triển khai.
 
+Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
+
 | Bảng | Khóa chính | Khóa ngoại | Ràng buộc chính |
 | --- | --- | --- | --- |
 | `LOAI_SAN_PHAM` | `MaLoai CHAR(6)` | — | `TenLoai` bắt buộc; `YeuCauBaoQuan` thuộc Khô/Mát/Đông lạnh hoặc `NULL` |

@@ -19,7 +19,7 @@ Bốn vai trò dự kiến:
 | --- | --- | --- |
 | Frontend | Baseline HTML/CSS/Vanilla JavaScript chạy bằng static server, đang dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
 | Backend | Chưa khởi tạo Spring Boot/Maven Wrapper | [`../services/api/README.md`](../services/api/README.md) |
-| Database | Có ERD và kế hoạch, chưa có `init.sql`/schema thực thi | [`../database/README.md`](../database/README.md) |
+| Database | Có `init.sql` dựng sáu bảng danh mục/cấu trúc kho; chứng từ và tồn kho chưa có | [`../database/README.md`](../database/README.md) |
 | API contract | Có baseline Draft, endpoint chi tiết chưa Accepted | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
 | Phân công | Có đề xuất bốn workstream, còn chờ nhóm xác nhận | [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md) |
 
@@ -116,4 +116,4 @@ pwsh -File scripts/dev.ps1 -Target web
 pwsh -File scripts/verify.ps1
 ```
 
-Backend chỉ chạy được sau backlog `BE-01`; database chỉ dựng được sau `DB-01` và khi có `database/init.sql`.
+Backend chỉ chạy được sau backlog `BE-01`; database hiện mới dựng được phần danh mục/cấu trúc kho bằng `database/init.sql`.

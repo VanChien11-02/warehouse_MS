@@ -1,11 +1,11 @@
 :ON ERROR EXIT
-IF DB_ID(N'WarehouseMS') IS NOT NULL
-    THROW 51000, N'Database WarehouseMS already exists.', 1;
+IF DB_ID(N'BlueStock') IS NOT NULL
+    THROW 51000, N'Database BlueStock already exists.', 1;
 GO
 
-CREATE DATABASE WarehouseMS;
+CREATE DATABASE BlueStock;
 GO
-USE WarehouseMS;
+USE BlueStock;
 GO
 
 SET XACT_ABORT ON;
