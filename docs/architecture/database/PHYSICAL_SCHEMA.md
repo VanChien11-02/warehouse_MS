@@ -22,4 +22,6 @@ Precision tiền theo `DEC-008` trong ADR 0003: `DECIMAL(19,4)`.
 
 API sẽ dùng tên JSON trong `contracts/BASELINE.md`, chẳng hạn `MaSP` ↔ `maSanPham`, `MaViTri` ↔ `maViTri`. Các cột mã là chuỗi, không phải số tự tăng.
 
+Identity map `TAI_KHOAN.MaTK` ↔ `maTaiKhoan`, `NHAN_VIEN.MaNV` ↔ `maNhanVien`, `TAI_KHOAN.TenTK` ↔ `tenTaiKhoan`, `ROLE.MaRole` ↔ `role` theo `contracts/session-rbac.md`. `MatKhauHash` không có trường response công khai.
+
 `SucChua` là số đơn vị tính gốc theo ADR 0004. Vị trí đang có tồn dương chỉ nhận lô cùng `MaDVT`; không cộng số lượng khác đơn vị để kết luận vị trí còn chỗ.

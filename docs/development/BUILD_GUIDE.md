@@ -37,7 +37,7 @@ Cổng kiểm tra root:
 pwsh -File scripts/verify.ps1
 ```
 
-Backend đã có Maven Wrapper, health endpoint và test nhưng chưa có API nghiệp vụ. Database đã có `init.sql` dựng chín bảng identity/danh mục/cấu trúc kho; các bảng và object nghiệp vụ còn lại thuộc `DB-01` chưa hoàn tất.
+Backend đã có Maven Wrapper, health/session endpoint và test nhưng chưa có API nghiệp vụ. Database đã có `init.sql` dựng chín bảng identity/danh mục/cấu trúc kho; các bảng và object nghiệp vụ còn lại thuộc `DB-01` chưa hoàn tất.
 
 ## 3. Cấu hình local
 
@@ -52,6 +52,8 @@ SPRING_DATASOURCE_PASSWORD
 Repository chỉ được chứa `.env.example` hoặc `application-*.example.*` với giá trị giả. Không commit password, token hoặc connection string thật.
 
 Mẫu biến môi trường nằm tại [`../../services/api/.env.example`](../../services/api/.env.example); Spring Boot không tự nạp file này. Gán các biến trong terminal trước khi chạy API. `GET /api/health` kiểm tra tiến trình, còn `GET /actuator/health` phản ánh cả kết nối DB.
+
+JDBC cần SQL Server bật TCP/IP và lắng nghe cổng trong `SPRING_DATASOURCE_URL` (mẫu dùng 1433). Bật TCP/IP bằng SQL Server Configuration Manager, khởi động lại instance rồi kiểm tra `Test-NetConnection 127.0.0.1 -Port 1433`. `sqlcmd -E` trên cùng máy có thể dùng shared memory dù TCP/IP đang tắt, nên kết quả test SQL không thay thế kiểm tra kết nối JDBC. Tạo SQL login cục bộ với quyền trên `BlueStock`, đặt username/password qua biến môi trường; không ghi chúng vào repository.
 
 Database `BlueStock`/`dbo`, session cookie và runner `sqlcmd` đã được quyết định tại ADR 0003. CORS cho frontend và migration tool sau baseline sẽ được quyết định khi triển khai phần tương ứng.
 

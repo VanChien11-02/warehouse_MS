@@ -17,6 +17,7 @@
 | --- | --- | --- | --- | --- |
 | `GET` | `/api/health` | Liveness của tiến trình; response `{"status":"UP"}` | Public | BE-01 |
 | `GET` | `/actuator/health` | Readiness gồm kết nối database khi cấu hình | Public | BE-01 |
+| `GET` | `/api/auth/csrf` | Cấp token CSRF cho session hiện tại | Public | SEC-01 |
 | `POST` | `/api/auth/dang-nhap` | Xác thực và tạo session | Public | SEC-01 |
 | `POST` | `/api/auth/dang-xuat` | Kết thúc phiên | Authenticated | SEC-01 |
 | `GET` | `/api/auth/me` | Thông tin user/role hiện tại | Authenticated | SEC-01 |
@@ -26,6 +27,8 @@
 | `GET` | `/api/audit` | Tra cứu nhật ký | Admin/QuanLyKho giới hạn | AUD-01 |
 
 Không thiết kế endpoint trả password hash hoặc dữ liệu xác thực nội bộ.
+
+Payload và role của các endpoint session đã triển khai nằm trong [`session-rbac.md`](session-rbac.md).
 
 ## Danh mục và cấu trúc kho
 

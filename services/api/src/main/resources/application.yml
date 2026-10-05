@@ -16,3 +16,9 @@ management:
         include: health
 server:
   port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      cookie:
+        http-only: true
+app:
+  web-origin: ${APP_WEB_ORIGIN:http://127.0.0.1:5174}

@@ -38,6 +38,7 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 - [`requirements/BUSINESS_RULES.md`](requirements/BUSINESS_RULES.md): quy tắc nghiệp vụ có mã `BR-*` để liên kết với contract/code/test.
 - [`../contracts/BASELINE.md`](../contracts/BASELINE.md): quy ước contract chung đang ở trạng thái Draft.
 - [`../contracts/API_CATALOG.md`](../contracts/API_CATALOG.md): inventory endpoint dự kiến và thứ tự viết contract chi tiết.
+- [`../contracts/session-rbac.md`](../contracts/session-rbac.md): session, CSRF, payload đăng nhập và mã role cho nhánh BE.
 - [`../database/SCHEMA_PLAN.md`](../database/SCHEMA_PLAN.md): kế hoạch physical schema, object SQL và test database.
 
 ## Tài liệu nguồn

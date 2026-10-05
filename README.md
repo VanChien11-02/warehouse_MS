@@ -6,7 +6,7 @@
 
 - Frontend baseline đã có dashboard, CRUD sản phẩm bằng dữ liệu mẫu, lập phiếu xuất và khung báo cáo.
 - ERD và danh sách nghiệp vụ đã được chuẩn hóa ở mức thiết kế.
-- Backend đã có bộ khung Spring Boot, Maven Wrapper và health endpoint; API nghiệp vụ chưa triển khai. SQL Server hiện có `init.sql` cho chín bảng identity, danh mục và cấu trúc kho, chưa phải schema đầy đủ.
+- Backend đã có Spring Boot, Maven Wrapper, health và session API; API nghiệp vụ chưa triển khai. SQL Server hiện có `init.sql` cho chín bảng identity, danh mục và cấu trúc kho, chưa phải schema đầy đủ.
 - Thư mục `references/` chỉ dùng tham khảo cách tổ chức; không phải nguồn yêu cầu của dự án này.
 
 ## Công nghệ thống nhất
