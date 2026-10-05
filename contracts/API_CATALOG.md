@@ -4,8 +4,8 @@
 
 ## Quy ước chung
 
-- Base URL local dự kiến: `http://localhost:8080/api`.
-- URL trong bảng dùng kebab-case theo đề xuất `DEC-001`.
+- Base URL local: `http://127.0.0.1:8080/api`.
+- URL trong bảng dùng kebab-case theo ADR 0003.
 - JSON dùng `camelCase`; enum và mã lỗi dùng `UPPER_SNAKE_CASE`.
 - Mọi danh sách lớn hỗ trợ phân trang/lọc phù hợp.
 - Mọi endpoint ghi dữ liệu yêu cầu role và validation phía server.
@@ -15,8 +15,9 @@
 
 | Method | Route dự kiến | Mục đích | Quyền dự kiến | Backlog |
 | --- | --- | --- | --- | --- |
-| `GET` | `/actuator/health` hoặc `/api/health` | Health check; chọn một cách khi tạo backend | Public/local policy cần chốt | BE-01 |
-| `POST` | `/api/auth/dang-nhap` | Xác thực và trả session/token | Public | SEC-01 |
+| `GET` | `/api/health` | Liveness của tiến trình; response `{"status":"UP"}` | Public | BE-01 |
+| `GET` | `/actuator/health` | Readiness gồm kết nối database khi cấu hình | Public | BE-01 |
+| `POST` | `/api/auth/dang-nhap` | Xác thực và tạo session | Public | SEC-01 |
 | `POST` | `/api/auth/dang-xuat` | Kết thúc phiên | Authenticated | SEC-01 |
 | `GET` | `/api/auth/me` | Thông tin user/role hiện tại | Authenticated | SEC-01 |
 | `PUT` | `/api/auth/doi-mat-khau` | Đổi mật khẩu của user hiện tại | Authenticated | SEC-01 |

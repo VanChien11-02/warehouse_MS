@@ -9,7 +9,7 @@ Tài liệu này mô tả hiện trạng chạy được và thứ tự kỹ thu
 | Git | 2.40 trở lên |
 | PowerShell | 7 trở lên |
 | Node.js | 22 trở lên (`.nvmrc`) |
-| JDK | 21 trở lên |
+| JDK | 21 trở lên; `JAVA_HOME` trỏ tới JDK |
 | SQL Server | 2022 Developer hoặc Express |
 | SQL client | SSMS hoặc Azure Data Studio |
 
@@ -37,28 +37,23 @@ Cổng kiểm tra root:
 pwsh -File scripts/verify.ps1
 ```
 
-Hiện tại backend chưa có Maven Wrapper. Database đã có `init.sql` dựng sáu bảng danh mục/cấu trúc kho; các bảng và object nghiệp vụ còn lại thuộc `DB-01` chưa hoàn tất.
+Backend đã có Maven Wrapper, health endpoint và test nhưng chưa có API nghiệp vụ. Database đã có `init.sql` dựng sáu bảng danh mục/cấu trúc kho; các bảng và object nghiệp vụ còn lại thuộc `DB-01` chưa hoàn tất.
 
-## 3. Cấu hình local dự kiến
+## 3. Cấu hình local
 
-Khi backend được khởi tạo, dùng biến môi trường hoặc profile local không commit secret. Tên chuẩn đề xuất theo Spring Boot:
+Dùng biến môi trường cho kết nối SQL Server; không commit secret:
 
 ```text
 SPRING_DATASOURCE_URL
 SPRING_DATASOURCE_USERNAME
 SPRING_DATASOURCE_PASSWORD
-SPRING_PROFILES_ACTIVE=local
 ```
 
 Repository chỉ được chứa `.env.example` hoặc `application-*.example.*` với giá trị giả. Không commit password, token hoặc connection string thật.
 
-Các điểm cần nhóm chốt trước khi viết cấu hình thật:
+Mẫu biến môi trường nằm tại [`../../services/api/.env.example`](../../services/api/.env.example); Spring Boot không tự nạp file này. Gán các biến trong terminal trước khi chạy API. `GET /api/health` kiểm tra tiến trình, còn `GET /actuator/health` phản ánh cả kết nối DB.
 
-- tên database và schema mặc định;
-- cơ chế xác thực ứng dụng;
-- origin CORS ngoài `http://127.0.0.1:5174`;
-- chiến lược chạy SQL script: `sqlcmd`, SSMS SQLCMD mode hoặc runner khác;
-- có dùng migration tool sau baseline hay không.
+Database `BlueStock`/`dbo`, session cookie và runner `sqlcmd` đã được quyết định tại ADR 0003. CORS cho frontend và migration tool sau baseline sẽ được quyết định khi triển khai phần tương ứng.
 
 ## 4. Thứ tự kỹ thuật tối thiểu
 

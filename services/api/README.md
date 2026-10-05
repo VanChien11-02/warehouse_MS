@@ -1,6 +1,6 @@
 # Spring Boot API
 
-Module backend mục tiêu của hệ thống kho.
+Module backend của hệ thống kho. Bộ khung hiện có Spring Boot 3.5.16, Maven Wrapper, cấu hình SQL Server và health endpoint; các module nghiệp vụ chưa được triển khai.
 
 ## Công nghệ cố định
 
@@ -38,13 +38,23 @@ Trước khi khởi tạo package hoặc endpoint, đọc thêm [`../../docs/arc
 
 Controller chỉ xử lý HTTP/DTO và gọi application service. Application service điều phối transaction/use case. Domain giữ quy tắc thuần. Infrastructure chứa JDBC/JPA/security adapter.
 
-## Chạy dự kiến
+## Chạy và kiểm tra
 
-Sau backlog `BE-01`, module phải có Maven Wrapper:
+JDK 21 trở lên phải được gán vào `JAVA_HOME`. Từ root repository, đặt biến môi trường kết nối SQL Server theo [`.env.example`](.env.example). File ví dụ không được tự động nạp; dùng SQL login cục bộ có quyền trên database `BlueStock` hoặc URL tích hợp Windows phù hợp với máy chạy.
 
 ```powershell
-services\api\mvnw.cmd spring-boot:run
+$env:SPRING_DATASOURCE_URL = 'jdbc:sqlserver://127.0.0.1:1433;databaseName=BlueStock;encrypt=true;trustServerCertificate=true'
+$env:SPRING_DATASOURCE_USERNAME = '<sql-login>'
+$env:SPRING_DATASOURCE_PASSWORD = '<local-password>'
+pwsh -File scripts/dev.ps1 -Target api
+```
+
+Kiểm thử không cần kết nối database cho health/security slice hiện tại:
+
+```powershell
 services\api\mvnw.cmd test
 ```
 
-Không commit connection string hoặc mật khẩu SQL Server. Cung cấp `.env.example` hoặc cấu hình mẫu không chứa secret.
+`GET /api/health` kiểm tra tiến trình; `GET /actuator/health` còn phản ánh tình trạng kết nối DB. Các endpoint khác mặc định bị từ chối cho đến khi module xác thực và quyền được triển khai.
+
+Không commit connection string thật hoặc mật khẩu SQL Server.
