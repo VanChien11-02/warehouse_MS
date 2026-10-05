@@ -37,7 +37,7 @@ Không bắt buộc tên vật lý SQL giống hệt Java/JSON. Mapping phải x
 
 - Ngày dùng chuỗi ISO `yyyy-MM-dd`.
 - Thời điểm dùng ISO-8601 có offset; cách lưu UTC/local trong SQL: **Cần chốt**.
-- Tiền và số lượng thập phân truyền dưới dạng JSON number; Java dùng `BigDecimal`, SQL dùng `DECIMAL`, không dùng `double/FLOAT`.
+- Tiền và số lượng thập phân truyền dưới dạng JSON number; Java dùng `BigDecimal`, SQL dùng `DECIMAL`, không dùng `double/FLOAT`. Schema nền tảng hiện dùng `DECIMAL(19,4)` cho giá mặc định; `DEC-008` vẫn chờ nhóm xác nhận.
 - Mã nghiệp vụ là string, không để frontend suy ra từ khóa tăng tự động.
 - Giá trị không có dữ liệu dùng `null` khi contract cho phép; không thay bằng chuỗi rỗng.
 

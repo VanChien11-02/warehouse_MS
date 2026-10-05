@@ -16,6 +16,16 @@ BEGIN TRY
     IF (SELECT GiaNhapMacDinh FROM dbo.SAN_PHAM WHERE MaSP = 'TST001') <> 0
         THROW 51001, N'Giá nhập mặc định không đúng.', 1;
 
+    IF (SELECT COUNT(*) FROM sys.columns
+        WHERE object_id = OBJECT_ID(N'dbo.SAN_PHAM')
+          AND name IN (N'GiaNhapMacDinh', N'GiaBanMacDinh')
+          AND precision = 19 AND scale = 4) <> 2
+        THROW 51005, N'Precision tiền không đúng.', 1;
+
+    UPDATE dbo.SAN_PHAM SET GiaNhapMacDinh = 1.2345 WHERE MaSP = 'TST001';
+    IF (SELECT GiaNhapMacDinh FROM dbo.SAN_PHAM WHERE MaSP = 'TST001') <> 1.2345
+        THROW 51006, N'Giá bốn chữ số thập phân không được giữ nguyên.', 1;
+
     BEGIN TRY
         INSERT INTO dbo.SAN_PHAM (MaSP, TenSP, MaLoai, MaDVT, GiaNhapMacDinh)
             VALUES ('TST002', N'Giá âm', 'TST001', 'TST001', -1);
