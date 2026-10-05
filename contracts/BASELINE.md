@@ -5,6 +5,7 @@
 > Reviewer frontend/backend/database: Cần chốt
 
 Quy ước nền tảng `DEC-001` đến `DEC-010` đã được chốt cho nhánh BE tại [ADR 0003](../docs/architecture/adr/0003-be-platform-contract.md). Tài liệu này vẫn là Draft vì request/response chi tiết và reviewer chưa hoàn tất.
+Quy tắc ghi sổ, FEFO, sức chứa và định giá tồn dùng [ADR 0004](../docs/architecture/adr/0004-stock-policies.md).
 
 Tài liệu này khóa những điểm mà nhiều workstream cùng sử dụng. Nó không thay thế contract chi tiết của từng endpoint. Mọi mục ghi `Cần chốt` phải được giải quyết trước khi đổi trạng thái sang `Accepted`.
 

@@ -19,8 +19,8 @@ Các mã trong tài liệu này dùng để liên kết requirement → contract
 | BR-CAT-001 | Mã sản phẩm, kho, khu vực, vị trí và đối tác phải duy nhất theo schema đã chốt | Tạo mã trùng trả lỗi có cấu trúc |
 | BR-CAT-002 | Giá mặc định không âm; tiền dùng `DECIMAL`/`BigDecimal` | Giá âm bị từ chối, số thập phân không dùng FLOAT |
 | BR-WHS-001 | Khu vực phải thuộc một kho; vị trí phải thuộc một khu vực | FK sai bị từ chối |
-| BR-WHS-002 | Sức chứa vị trí không âm và có đơn vị đo thống nhất | Giá trị âm bị từ chối; đơn vị sức chứa **Cần chốt** |
-| BR-WHS-003 | Loại bảo quản sản phẩm/vị trí phải tương thích nếu nhóm bật quy tắc này | Cách đánh giá tương thích **Cần chốt** |
+| BR-WHS-002 | Sức chứa là số đơn vị tính gốc; tồn dương tại một vị trí chỉ dùng một `MaDVT` | Từ chối trộn đơn vị tính hoặc vượt `SucChua` |
+| BR-WHS-003 | `YeuCauBaoQuan` của loại sản phẩm phải trùng loại khu vực nếu có giá trị | Nhập/chuyển/trả vào khu vực sai loại bị từ chối |
 
 ## Nhập kho và lô
 
@@ -32,7 +32,7 @@ Các mã trong tài liệu này dùng để liên kết requirement → contract
 | BR-INB-004 | Tổng lượng lô tạo từ một dòng không vượt số lượng dòng nhập | Tạo lô vượt lượng bị rollback |
 | BR-INB-005 | Hoàn tất nhập tạo lô/put-away/tăng tồn trong một transaction | Lỗi giữa chừng không để lô/tồn dở dang |
 | BR-INB-006 | Một phiếu nhập chỉ được ghi sổ một lần | Gọi hoàn tất lần hai không đổi tồn |
-| BR-INB-007 | Nhà cung cấp chỉ cung cấp sản phẩm đã liên kết nếu quy tắc hợp đồng được bật | Trạng thái áp dụng **Cần chốt** |
+| BR-INB-007 | Nhà cung cấp phải liên kết với mọi sản phẩm trước khi hoàn tất nhập | Thiếu mapping làm toàn phiếu thất bại và tồn không đổi |
 
 ## Tồn kho
 
@@ -53,7 +53,8 @@ Các mã trong tài liệu này dùng để liên kết requirement → contract
 | BR-OUT-003 | Hệ thống ưu tiên lô có hạn gần nhất theo FEFO | Dữ liệu nhiều lô chọn đúng thứ tự |
 | BR-OUT-004 | Chi tiết xuất phải chỉ rõ `MaLo` và `MaViTri` | Payload thiếu nguồn tồn bị từ chối |
 | BR-OUT-005 | Hoàn tất xuất và trừ tồn là nguyên tử, chống hoàn tất lặp | Lỗi/nhấn hai lần không trừ hai lần |
-| BR-OUT-006 | Đối tác chỉ nhận sản phẩm đã liên kết nếu quy tắc hợp đồng được bật | Trạng thái áp dụng **Cần chốt** |
+| BR-OUT-006 | Đối tác phải liên kết với mọi sản phẩm trước khi hoàn tất xuất | Thiếu mapping làm toàn phiếu thất bại và tồn không đổi |
+| BR-OUT-007 | Lô không có hạn dùng đứng sau lô còn hạn; lô hết hạn không được xuất | Gợi ý và hoàn tất xử lý đúng cả ba trường hợp |
 
 ## Chuyển kho
 
@@ -70,7 +71,7 @@ Các mã trong tài liệu này dùng để liên kết requirement → contract
 | Mã | Quy tắc | Test tối thiểu |
 | --- | --- | --- |
 | BR-CNT-001 | Phiếu lưu số lượng hệ thống tại thời điểm snapshot và số thực tế | Dữ liệu snapshot không bị UI tính lại |
-| BR-CNT-002 | Chênh lệch phải có lý do theo chính sách nhóm | Ngưỡng bắt buộc lý do **Cần chốt** |
+| BR-CNT-002 | Mọi chênh lệch khác 0 phải có lý do | Hoàn tất thiếu lý do bị từ chối và rollback |
 | BR-CNT-003 | Điều chỉnh tồn chỉ xảy ra khi hoàn tất/duyệt và chỉ một lần | Nháp không đổi tồn; hoàn tất lặp không đổi tồn |
 | BR-CNT-004 | Điều chỉnh không được tạo tồn âm | Số thực tế/logic sai bị từ chối |
 
@@ -81,7 +82,7 @@ Các mã trong tài liệu này dùng để liên kết requirement → contract
 | BR-RET-001 | Phiếu trả tham chiếu phiếu xuất gốc | `MaPX` không hợp lệ bị từ chối |
 | BR-RET-002 | Lượng trả cộng dồn theo phiếu xuất/lô không vượt lượng đã xuất | Trả vượt bị rollback |
 | BR-RET-003 | Dòng trả phân loại `Tốt` hoặc `Hư hỏng` theo enum đã chốt | Giá trị ngoài enum bị từ chối |
-| BR-RET-004 | Hàng tốt/hư hỏng được đưa về vị trí phù hợp | Chính sách vị trí hàng hỏng **Cần chốt** |
+| BR-RET-004 | Hàng hư hỏng chỉ vào vị trí `Hư hỏng` và không còn khả dụng để xuất | Trả sai vị trí bị từ chối; FEFO bỏ qua tồn hư hỏng |
 | BR-RET-005 | Hoàn tất trả và tăng tồn phù hợp là nguyên tử, chỉ một lần | Lỗi/hoàn tất lặp không tăng hai lần |
 
 ## Chứng từ và audit dùng chung
@@ -99,7 +100,7 @@ Các mã trong tài liệu này dùng để liên kết requirement → contract
 | Mã | Quy tắc | Test tối thiểu |
 | --- | --- | --- |
 | BR-REP-001 | Báo cáo tồn phản ánh transaction đã commit, không tính phiếu nháp | So sánh trước/sau hoàn tất |
-| BR-REP-002 | Giá trị tồn dùng decimal và nguồn giá được định nghĩa rõ | Nguồn giá tính tồn **Cần chốt** |
+| BR-REP-002 | Giá trị tồn dùng đơn giá nhập thực tế theo lô và `DECIMAL` | Đổi giá mặc định sản phẩm không làm đổi giá trị tồn đã ghi sổ |
 | BR-REP-003 | Báo cáo nhập-xuất lọc thời gian có boundary thống nhất | Test đầu/cuối ngày theo timezone đã chốt |
 | BR-REP-004 | Báo cáo là read model, không sửa dữ liệu nghiệp vụ | Endpoint báo cáo chỉ đọc |
 
