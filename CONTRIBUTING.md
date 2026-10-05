@@ -5,7 +5,7 @@
 1. Cài Git, PowerShell 7, Node.js 22 LTS, JDK 21 và SQL Server 2022.
 2. Clone repository và tạo nhánh từ `main`.
 3. Chạy `pwsh -File scripts/setup.ps1`.
-4. Đọc [`README.md`](README.md), [`docs/README.md`](docs/README.md), backlog item và `AGENTS.md` gần phần mã sẽ sửa.
+4. Đọc [`README.md`](README.md), [`docs/README.md`](docs/README.md), [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md), backlog item và `AGENTS.md` gần phần mã sẽ sửa.
 
 ## Quy trình
 

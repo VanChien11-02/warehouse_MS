@@ -14,9 +14,17 @@ $requiredFiles = @(
     'apps/web/styles.css',
     'apps/web/app.js',
     'docs/README.md',
+    'docs/PROJECT_CONTEXT.md',
+    'docs/development/BUILD_GUIDE.md',
+    'docs/architecture/SYSTEM_ARCHITECTURE.md',
+    'docs/architecture/MODULE_CATALOG.md',
+    'docs/requirements/BUSINESS_RULES.md',
     'docs/project/governance/BACKLOG.md',
     'docs/project/governance/WORKSTREAMS.md',
+    'docs/project/governance/OPEN_DECISIONS.md',
     'contracts/BASELINE.md',
+    'contracts/API_CATALOG.md',
+    'database/SCHEMA_PLAN.md',
     'docs/architecture/database/ERD_VA_NGHIEP_VU.md'
 )
 foreach ($relativePath in $requiredFiles) {

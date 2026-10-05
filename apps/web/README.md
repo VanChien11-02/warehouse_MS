@@ -55,6 +55,8 @@ Backend cần cấu hình CORS đúng origin frontend. Khi có API contract chí
 
 Các URL trên phản ánh adapter baseline hiện tại. URL chính thức chỉ được đổi sau khi nhóm chốt [`../../contracts/BASELINE.md`](../../contracts/BASELINE.md) và cập nhật adapter, backend, test cùng tài liệu trong một thay đổi thống nhất.
 
+Danh sách resource/endpoint dự kiến nằm trong [`../../contracts/API_CATALOG.md`](../../contracts/API_CATALOG.md). Frontend không tự thêm field hoặc route chưa có contract được review.
+
 ## Quy tắc khi phát triển tiếp
 
 - Không đưa quy tắc trừ/tăng tồn làm nguồn sự thật vào frontend.

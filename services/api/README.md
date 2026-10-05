@@ -18,9 +18,12 @@ Tổ chức package-by-feature dưới package gốc của nhóm:
 ```text
 auth/
 catalog/
+partner/
 warehouse/
 inbound/
+inventory/
 outbound/
+transfer/
 inventorycount/
 returning/
 reporting/
@@ -30,6 +33,8 @@ audit/
 Các package được gom ownership theo bốn workstream trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md). Package khác chỉ được import public DTO/interface của feature; không import controller, repository, JPA entity hoặc implementation nội bộ.
 
 Các interface liên module và quy ước HTTP đang được thảo luận tại [`../../contracts/BASELINE.md`](../../contracts/BASELINE.md). Ví dụ trong contract chỉ trở thành bắt buộc sau khi tài liệu chuyển sang `Accepted` và chữ ký thật đã compile trong project.
+
+Trước khi khởi tạo package hoặc endpoint, đọc thêm [`../../docs/architecture/MODULE_CATALOG.md`](../../docs/architecture/MODULE_CATALOG.md), [`../../contracts/API_CATALOG.md`](../../contracts/API_CATALOG.md) và [`../../docs/requirements/BUSINESS_RULES.md`](../../docs/requirements/BUSINESS_RULES.md).
 
 Controller chỉ xử lý HTTP/DTO và gọi application service. Application service điều phối transaction/use case. Domain giữ quy tắc thuần. Infrastructure chứa JDBC/JPA/security adapter.
 

@@ -25,9 +25,12 @@ Backend tổ chức modular monolith theo package nghiệp vụ:
 ```text
 auth/
 catalog/
+partner/
 warehouse/
 inbound/
+inventory/
 outbound/
+transfer/
 inventorycount/
 returning/
 reporting/

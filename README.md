@@ -91,9 +91,10 @@ references/                  Project khác dùng tham khảo, không sửa theo 
 
 1. [`AGENTS.md`](AGENTS.md).
 2. [`docs/README.md`](docs/README.md).
-3. Backlog item liên quan trong [`docs/project/governance/BACKLOG.md`](docs/project/governance/BACKLOG.md).
-4. `AGENTS.md` gần nhất trong module sẽ sửa, nếu có.
-5. ERD và quy tắc nghiệp vụ tại [`docs/architecture/database/ERD_VA_NGHIEP_VU.md`](docs/architecture/database/ERD_VA_NGHIEP_VU.md).
+3. [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md).
+4. Backlog item liên quan trong [`docs/project/governance/BACKLOG.md`](docs/project/governance/BACKLOG.md).
+5. `AGENTS.md` gần nhất trong module sẽ sửa, nếu có.
+6. ERD, business rules và contract liên quan.
 
 ## Nguồn sự thật
 
@@ -109,10 +110,14 @@ Khi tài liệu mâu thuẫn, ưu tiên theo thứ tự:
 ## Liên kết chính
 
 - [Bản đồ tài liệu](docs/README.md)
+- [Project context](docs/PROJECT_CONTEXT.md)
+- [Hướng dẫn build](docs/development/BUILD_GUIDE.md)
 - [Hướng dẫn đóng góp](CONTRIBUTING.md)
 - [Backlog](docs/project/governance/BACKLOG.md)
 - [Phân công nhóm](docs/project/governance/TEAM.md)
 - [Kế hoạch bốn workstream phát triển song song](docs/project/governance/WORKSTREAMS.md)
 - [Draft contract baseline liên module](contracts/BASELINE.md)
+- [Danh mục API dự kiến](contracts/API_CATALOG.md)
+- [Các quyết định còn mở](docs/project/governance/OPEN_DECISIONS.md)
 - [ERD và nghiệp vụ](docs/architecture/database/ERD_VA_NGHIEP_VU.md)
 - [Changelog](CHANGELOG.md)

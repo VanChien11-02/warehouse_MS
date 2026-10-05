@@ -2,10 +2,18 @@
 
 Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho. Nội dung trong `references/` chỉ dùng tham khảo cách tổ chức và không được tự động xem là yêu cầu nghiệp vụ.
 
+## Bắt đầu build
+
+- [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md): briefing ngắn về mục tiêu, hiện trạng, invariant, nguồn sự thật và đường đọc theo công việc.
+- [`development/BUILD_GUIDE.md`](development/BUILD_GUIDE.md): môi trường, lệnh đang chạy được, thứ tự kỹ thuật và checklist build sạch.
+- [`project/governance/OPEN_DECISIONS.md`](project/governance/OPEN_DECISIONS.md): các điểm chưa được phép tự suy đoán trên từng branch.
+
 ## Kiến trúc và dữ liệu
 
 - [`architecture/database/ERD_VA_NGHIEP_VU.md`](architecture/database/ERD_VA_NGHIEP_VU.md): ERD, quy tắc dữ liệu và danh sách nghiệp vụ.
 - [`architecture/database/mermaid-diagram.png`](architecture/database/mermaid-diagram.png): ảnh ERD tham khảo hiện tại.
+- [`architecture/SYSTEM_ARCHITECTURE.md`](architecture/SYSTEM_ARCHITECTURE.md): luồng frontend/API/database, transaction và nguồn sự thật.
+- [`architecture/MODULE_CATALOG.md`](architecture/MODULE_CATALOG.md): ownership kỹ thuật, dependency và public surface của từng module.
 - [`architecture/adr/0001-repository-layout.md`](architecture/adr/0001-repository-layout.md): quyết định cấu trúc repository.
 - [`architecture/adr/0002-technology-stack.md`](architecture/adr/0002-technology-stack.md): quyết định công nghệ frontend/backend/database.
 
@@ -21,6 +29,13 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 ## Kiểm thử
 
 - [`testing/README.md`](testing/README.md): chiến lược test và bằng chứng cần lưu.
+
+## Yêu cầu và hợp đồng
+
+- [`requirements/BUSINESS_RULES.md`](requirements/BUSINESS_RULES.md): quy tắc nghiệp vụ có mã `BR-*` để liên kết với contract/code/test.
+- [`../contracts/BASELINE.md`](../contracts/BASELINE.md): quy ước contract chung đang ở trạng thái Draft.
+- [`../contracts/API_CATALOG.md`](../contracts/API_CATALOG.md): inventory endpoint dự kiến và thứ tự viết contract chi tiết.
+- [`../database/SCHEMA_PLAN.md`](../database/SCHEMA_PLAN.md): kế hoạch physical schema, object SQL và test database.
 
 ## Tài liệu nguồn
 

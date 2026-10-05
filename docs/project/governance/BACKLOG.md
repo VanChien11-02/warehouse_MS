@@ -14,6 +14,7 @@ Mục tiêu: có cấu trúc thống nhất, tài liệu nguồn rõ ràng và f
 | REQ-01 | Chốt phạm vi, actor và nghiệp vụ kho | P0 | Cần chốt | GOV-01 | ERD/nghiệp vụ đã có; chờ review |
 | GOV-02 | Chốt bốn workstream và contract baseline liên module | P0 | Cần chốt | GOV-01, REQ-01 | `WORKSTREAMS.md` và `contracts/BASELINE.md` chuyển từ Draft sang Accepted; owner/reviewer/branch được xác nhận |
 | GOV-03 | Tách frontend baseline theo core/feature | P0 | Cần chốt | GOV-02 | Giữ nguyên hành vi hiện tại; mỗi workstream có thư mục JS/CSS riêng và không phải cùng sửa `app.js`/`styles.css` lớn |
+| GOV-04 | Review bộ context dùng để build | P0 | Cần chốt | GOV-02 | Project context, architecture, module, business rules, API catalog, schema plan, build guide và open decisions được nhóm review; nội dung Draft không bị hiểu là Accepted |
 | FE-01 | Dashboard và khung module frontend | P0 | Cần chốt | REQ-01 | Baseline Vanilla JS chạy local |
 | QA-00 | Kiểm tra baseline trên máy thành viên khác | P1 | Cần chốt | FE-01, GOV-03 | Chưa có bằng chứng |
 

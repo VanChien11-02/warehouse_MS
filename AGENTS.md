@@ -4,7 +4,7 @@
 
 Xây dựng hệ thống quản lý kho kết nối Spring Boot và SQL Server, có thể demo trực tiếp, đáp ứng rubric môn DBMS330284 và cho phép bốn thành viên phát triển song song.
 
-Trước khi thay đổi file, phải đọc `docs/README.md`, backlog item liên quan và `AGENTS.md` gần nhất trong phạm vi module.
+Trước khi thay đổi file, phải đọc `docs/README.md`, `docs/PROJECT_CONTEXT.md`, backlog item liên quan và `AGENTS.md` gần nhất trong phạm vi module.
 
 ## Nguồn sự thật
 

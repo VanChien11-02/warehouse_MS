@@ -58,8 +58,8 @@ Nội dung draft để chốt nằm tại [`contracts/BASELINE.md`](../../../con
 
 | Phạm vi | Owner chính | Quy tắc |
 | --- | --- | --- |
-| `services/api/.../identity`, cấu hình security và lỗi HTTP chung | TV4 | Module khác chỉ dùng public interface/DTO |
-| `services/api/.../masterdata`, `warehouse` | TV1 | Không truy cập repository từ module khác |
+| `services/api/.../auth`, cấu hình security và lỗi HTTP chung | TV4 | Module khác chỉ dùng public interface/DTO |
+| `services/api/.../catalog`, `partner`, `warehouse` | TV1 | Không truy cập repository từ module khác |
 | `services/api/.../inbound`, `inventory`, `reporting` | TV2 | Tồn cuối cùng do database/backend xác nhận |
 | `services/api/.../outbound`, `transfer`, `inventorycount`, `returning` | TV3 | Mọi ghi sổ dùng transaction và chống xử lý lặp |
 | `contracts/` | Trưởng nhóm + hai phía dùng contract | Thay đổi public contract phải được duyệt trước khi code phụ thuộc |
@@ -82,7 +82,7 @@ apps/web/
 │  │  ├─ session.js
 │  │  └─ errors.js
 │  └─ features/
-│     ├─ identity/
+│     ├─ auth/
 │     ├─ master-data/
 │     ├─ inbound-inventory/
 │     └─ outbound-control/

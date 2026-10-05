@@ -28,3 +28,5 @@ database/
 - Mọi object phải có mục đích nghiệp vụ, không tạo chỉ để đủ số lượng rubric.
 
 Thiết kế hiện hành: [`../docs/architecture/database/ERD_VA_NGHIEP_VU.md`](../docs/architecture/database/ERD_VA_NGHIEP_VU.md).
+
+Kế hoạch physical schema, thứ tự object, ownership và checklist DB-01: [`SCHEMA_PLAN.md`](SCHEMA_PLAN.md).

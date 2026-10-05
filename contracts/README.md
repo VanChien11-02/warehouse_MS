@@ -4,6 +4,8 @@ Thư mục này là biên thống nhất giữa `apps/web` và `services/api`.
 
 Baseline quy ước tên, trạng thái, lỗi, interface và stored procedure đang ở trạng thái Draft tại [`BASELINE.md`](BASELINE.md). Nhóm phải giải quyết các mục `Cần chốt` trước khi đổi tài liệu đó sang `Accepted` và tạo bốn branch workstream.
 
+Inventory endpoint dự kiến và thứ tự tách contract chi tiết nằm tại [`API_CATALOG.md`](API_CATALOG.md). Danh mục này không tự động biến endpoint thành `Accepted`.
+
 Mỗi contract cần ghi:
 
 - Trạng thái `Draft` hoặc `Accepted`.

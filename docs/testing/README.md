@@ -4,6 +4,8 @@
 
 Mỗi yêu cầu phải truy được tới thiết kế, code và bài kiểm thử. Không ghi “đã đạt” nếu chưa chạy trên đúng module và môi trường được mô tả.
 
+Business rule dùng mã ổn định trong [`../requirements/BUSINESS_RULES.md`](../requirements/BUSINESS_RULES.md). Tên test hoặc test evidence nên ghi mã `BR-*` tương ứng để truy vết.
+
 ## Các lớp kiểm thử
 
 - Frontend: kiểm tra cú pháp, responsive, validation, loading/error state và luồng tạo payload.
