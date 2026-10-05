@@ -19,7 +19,7 @@ Bốn vai trò dự kiến:
 | --- | --- | --- |
 | Frontend | Baseline HTML/CSS/Vanilla JavaScript chạy bằng static server, đang dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
 | Backend | Đã có Spring Boot/Maven Wrapper, health endpoint và test; API nghiệp vụ chưa có | [`../services/api/README.md`](../services/api/README.md) |
-| Database | Có `init.sql` dựng sáu bảng danh mục/cấu trúc kho; chứng từ và tồn kho chưa có | [`../database/README.md`](../database/README.md) |
+| Database | Có `init.sql` dựng chín bảng identity/danh mục/cấu trúc kho; chứng từ và tồn kho chưa có | [`../database/README.md`](../database/README.md) |
 | API contract | Có baseline Draft, endpoint chi tiết chưa Accepted | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
 | Phân công | Có đề xuất bốn workstream, còn chờ nhóm xác nhận | [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md) |
 
@@ -116,4 +116,4 @@ pwsh -File scripts/dev.ps1 -Target web
 pwsh -File scripts/verify.ps1
 ```
 
-Backend hiện có thể chạy khi cấu hình kết nối SQL Server theo `services/api/README.md`; database mới dựng được phần danh mục/cấu trúc kho bằng `database/init.sql`.
+Backend hiện có thể chạy khi cấu hình kết nối SQL Server theo `services/api/README.md`; database mới dựng được identity, danh mục và cấu trúc kho bằng `database/init.sql`.

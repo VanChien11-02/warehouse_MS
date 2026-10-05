@@ -2,7 +2,7 @@
 
 Thư mục này chứa toàn bộ script T-SQL có thể dựng lại database từ đầu và các đối tượng phục vụ rubric.
 
-Hiện `init.sql` mới tạo sáu bảng nền tảng cho danh mục sản phẩm và cấu trúc kho. Các bảng chứng từ, tồn kho, bảo mật và dữ liệu mẫu sẽ được bổ sung theo từng module.
+Hiện `init.sql` tạo chín bảng nền tảng cho identity, danh mục sản phẩm và cấu trúc kho. Bốn role ứng dụng được seed; chưa có tài khoản. Các bảng chứng từ, tồn kho và dữ liệu mẫu sẽ được bổ sung theo từng module.
 
 ## Chạy schema nền tảng
 

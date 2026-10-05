@@ -96,8 +96,14 @@ else {
 if ($WithDatabase) {
     Write-Host 'Kiểm tra ràng buộc database...'
     $sqlcmd = (Get-Command sqlcmd -ErrorAction Stop).Source
-    & $sqlcmd -S $SqlServer -E -C -b -d BlueStock -i (Join-Path $root 'database\tests\001_catalog_warehouse_constraints.sql')
-    if ($LASTEXITCODE -ne 0) { throw 'Database test thất bại.' }
+    $databaseTests = @(
+        'database\tests\001_catalog_warehouse_constraints.sql',
+        'database\tests\002_auth_constraints.sql'
+    )
+    foreach ($testFile in $databaseTests) {
+        & $sqlcmd -S $SqlServer -E -C -b -d BlueStock -i (Join-Path $root $testFile)
+        if ($LASTEXITCODE -ne 0) { throw "Database test thất bại: $testFile" }
+    }
 }
 
 Write-Host 'Baseline verification passed.'
