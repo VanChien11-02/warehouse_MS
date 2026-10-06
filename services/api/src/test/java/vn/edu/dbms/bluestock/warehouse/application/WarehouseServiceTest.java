@@ -48,4 +48,25 @@ class WarehouseServiceTest {
             () -> service.deleteArea("KV0001"));
         assertEquals("AREA_IN_USE", error.code());
     }
+
+    @Test
+    void positionRequiresExistingArea() {
+        var service = new WarehouseService(mock(WarehouseJdbcRepository.class));
+        var error = assertThrows(WarehouseException.class,
+            () -> service.createPosition("VT0001", "KV9999", "Kệ 1", 100, "Lưu trữ"));
+        assertEquals("INVALID_AREA", error.code());
+    }
+
+    @Test
+    void duplicatePositionNameReturnsConflict() {
+        var repository = mock(WarehouseJdbcRepository.class);
+        var service = new WarehouseService(repository);
+        when(repository.area("KV0001"))
+            .thenReturn(Optional.of(new AreaView("KV0001", "KHO001", "Kho chính", "Khu khô", "Khô")));
+        doThrow(new DuplicateKeyException("duplicate"))
+            .when(repository).insertPosition("VT0002", "KV0001", "Kệ 1", 100, "Lưu trữ");
+        var error = assertThrows(WarehouseException.class,
+            () -> service.createPosition("VT0002", "KV0001", "Kệ 1", 100, "Lưu trữ"));
+        assertEquals("POSITION_NAME_EXISTS", error.code());
+    }
 }

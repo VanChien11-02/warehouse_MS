@@ -41,7 +41,7 @@ Payload và role của các endpoint session đã triển khai nằm trong [`ses
 | Đối tác nhận hàng | `/api/doi-tac-nhan-hang` | CRUD và mapping sản phẩm | TV1 |
 | Kho | `/api/kho` | CRUD theo [`warehouse-location.md`](warehouse-location.md) | TV1 |
 | Khu vực | `/api/khu-vuc` | CRUD, lọc theo kho theo [`warehouse-location.md`](warehouse-location.md) | TV1 |
-| Vị trí | `/api/vi-tri` | CRUD, lọc khu vực/loại/sức chứa | TV1 |
+| Vị trí | `/api/vi-tri` | CRUD, lọc kho/khu vực theo [`warehouse-location.md`](warehouse-location.md) | TV1 |
 
 CRUD không cho phép xóa dữ liệu đã được chứng từ tham chiếu. Sản phẩm chỉ xóa khi chưa được tham chiếu theo contract; chính sách ngừng dùng cho các resource khác sẽ được chốt khi triển khai.
 

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseException.Kind;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.AreaView;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.Page;
+import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.PositionView;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.WarehouseView;
 import vn.edu.dbms.bluestock.warehouse.infrastructure.WarehouseJdbcRepository;
 
@@ -31,6 +32,15 @@ public class WarehouseService {
     }
 
     @Transactional(readOnly = true)
+    public Page<PositionView> positions(int page, int size, String warehouseCode,
+        String areaCode, String query) {
+        String normalizedWarehouseCode = warehouseCode == null ? null : normalizeCode(warehouseCode);
+        String normalizedAreaCode = areaCode == null ? null : normalizeCode(areaCode);
+        return repository.positions(page, size, normalizedWarehouseCode, normalizedAreaCode,
+            normalizedQuery(page, size, query));
+    }
+
+    @Transactional(readOnly = true)
     public WarehouseView warehouse(String code) {
         return repository.warehouse(normalizeCode(code)).orElseThrow(() ->
             new WarehouseException(Kind.NOT_FOUND, "WAREHOUSE_NOT_FOUND", "Không tìm thấy kho"));
@@ -40,6 +50,12 @@ public class WarehouseService {
     public AreaView area(String code) {
         return repository.area(normalizeCode(code)).orElseThrow(() ->
             new WarehouseException(Kind.NOT_FOUND, "AREA_NOT_FOUND", "Không tìm thấy khu vực"));
+    }
+
+    @Transactional(readOnly = true)
+    public PositionView position(String code) {
+        return repository.position(normalizeCode(code)).orElseThrow(() ->
+            new WarehouseException(Kind.NOT_FOUND, "POSITION_NOT_FOUND", "Không tìm thấy vị trí"));
     }
 
     @Transactional
@@ -124,6 +140,53 @@ public class WarehouseService {
             }
         } catch (DataIntegrityViolationException exception) {
             throw new WarehouseException(Kind.CONFLICT, "AREA_IN_USE", "Khu vực đã được vị trí tham chiếu");
+        }
+    }
+
+    @Transactional
+    public PositionView createPosition(String code, String areaCode, String name, int capacity, String type) {
+        String normalizedCode = normalizeCode(code);
+        String normalizedAreaCode = normalizeCode(areaCode);
+        if (repository.area(normalizedAreaCode).isEmpty()) {
+            throw new WarehouseException(Kind.VALIDATION, "INVALID_AREA", "Khu vực không tồn tại");
+        }
+        try {
+            repository.insertPosition(normalizedCode, normalizedAreaCode, name.trim(), capacity, type);
+        } catch (DuplicateKeyException exception) {
+            if (repository.position(normalizedCode).isPresent()) {
+                throw new WarehouseException(Kind.CONFLICT, "POSITION_CODE_EXISTS", "Mã vị trí đã tồn tại");
+            }
+            throw new WarehouseException(Kind.CONFLICT, "POSITION_NAME_EXISTS",
+                "Tên vị trí đã tồn tại trong khu vực");
+        } catch (DataIntegrityViolationException exception) {
+            throw new WarehouseException(Kind.VALIDATION, "INVALID_AREA", "Khu vực không tồn tại");
+        }
+        return position(normalizedCode);
+    }
+
+    @Transactional
+    public PositionView updatePosition(String code, String name) {
+        String normalizedCode = normalizeCode(code);
+        try {
+            if (repository.updatePosition(normalizedCode, name.trim()) == 0) {
+                throw new WarehouseException(Kind.NOT_FOUND, "POSITION_NOT_FOUND", "Không tìm thấy vị trí");
+            }
+        } catch (DuplicateKeyException exception) {
+            throw new WarehouseException(Kind.CONFLICT, "POSITION_NAME_EXISTS",
+                "Tên vị trí đã tồn tại trong khu vực");
+        }
+        return position(normalizedCode);
+    }
+
+    @Transactional
+    public void deletePosition(String code) {
+        String normalizedCode = normalizeCode(code);
+        try {
+            if (repository.deletePosition(normalizedCode) == 0) {
+                throw new WarehouseException(Kind.NOT_FOUND, "POSITION_NOT_FOUND", "Không tìm thấy vị trí");
+            }
+        } catch (DataIntegrityViolationException exception) {
+            throw new WarehouseException(Kind.CONFLICT, "POSITION_IN_USE", "Vị trí đã được tồn hoặc chứng từ tham chiếu");
         }
     }
 

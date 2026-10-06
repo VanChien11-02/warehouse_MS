@@ -15,6 +15,7 @@ import vn.edu.dbms.bluestock.platform.api.ApiExceptionHandler;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseException;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.AreaView;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.Page;
+import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.PositionView;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.WarehouseView;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseService;
 
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest({WarehouseController.class, AreaController.class})
+@WebMvcTest({WarehouseController.class, AreaController.class, PositionController.class})
 @Import({SecurityConfig.class, WarehouseExceptionHandler.class, ApiExceptionHandler.class})
 class WarehouseControllerTest {
     @Autowired
@@ -98,7 +99,43 @@ class WarehouseControllerTest {
             .andExpect(jsonPath("$.code").value("INVALID_WAREHOUSE"));
     }
 
+    @Test
+    @WithMockUser(authorities = "ROLE_QLKHO")
+    void managerCanCreatePosition() throws Exception {
+        when(service.createPosition("VT0001", "KV0001", "Kệ 1", 100, "Lưu trữ"))
+            .thenReturn(new PositionView("VT0001", "KV0001", "Khu khô", "KHO001",
+                "Kho chính", "Kệ 1", 100, "Lưu trữ", "Khô"));
+        mvc.perform(post("/api/vi-tri").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validPosition()))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.sucChua").value(100));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_NVKHO")
+    void warehouseStaffCannotCreatePosition() throws Exception {
+        mvc.perform(post("/api/vi-tri").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validPosition()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_ADMIN")
+    void negativePositionCapacityIsRejected() throws Exception {
+        mvc.perform(post("/api/vi-tri").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validPosition().replace("100", "-1")))
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(jsonPath("$.fieldErrors[0].field").value("sucChua"));
+    }
+
     private static String validArea() {
         return "{\"maKhuVuc\":\"KV0001\",\"maKho\":\"KHO001\",\"tenKhuVuc\":\"Khu khô\",\"loaiKhuVuc\":\"Khô\"}";
+    }
+
+    private static String validPosition() {
+        return "{\"maViTri\":\"VT0001\",\"maKhuVuc\":\"KV0001\",\"tenViTri\":\"Kệ 1\",\"sucChua\":100,\"loaiViTri\":\"Lưu trữ\"}";
     }
 }

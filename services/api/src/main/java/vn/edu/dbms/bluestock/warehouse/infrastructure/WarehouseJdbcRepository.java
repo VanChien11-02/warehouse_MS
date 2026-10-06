@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.AreaView;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.Page;
+import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.PositionView;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.WarehouseView;
 
 @Repository
@@ -22,6 +23,18 @@ public class WarehouseJdbcRepository {
         SELECT kv.MaKhuVuc, kv.MaKho, kho.TenKho, kv.TenKhuVuc, kv.LoaiKhuVuc
         FROM dbo.KHU_VUC kv JOIN dbo.KHO kho ON kho.MaKho = kv.MaKho
         """;
+    private static final String POSITION_SELECT = """
+        SELECT vt.MaViTri, vt.MaKhuVuc, kv.TenKhuVuc, kv.MaKho, kho.TenKho,
+               vt.TenViTri, vt.SucChua, vt.LoaiViTri, kv.LoaiKhuVuc
+        FROM dbo.VI_TRI_KHO vt
+        JOIN dbo.KHU_VUC kv ON kv.MaKhuVuc = vt.MaKhuVuc
+        JOIN dbo.KHO kho ON kho.MaKho = kv.MaKho
+        """;
+    private static final RowMapper<PositionView> POSITION_MAPPER = (row, index) ->
+        new PositionView(row.getString("MaViTri").trim(), row.getString("MaKhuVuc").trim(),
+            row.getString("TenKhuVuc"), row.getString("MaKho").trim(),
+            row.getString("TenKho"), row.getString("TenViTri"), row.getInt("SucChua"),
+            row.getString("LoaiViTri"), row.getString("LoaiKhuVuc"));
 
     private final JdbcTemplate jdbc;
 
@@ -65,6 +78,36 @@ public class WarehouseJdbcRepository {
         return new Page<>(items, page, size, count, (count + size - 1) / size);
     }
 
+    public Page<PositionView> positions(int page, int size, String warehouseCode,
+        String areaCode, String query) {
+        var clauses = new ArrayList<String>();
+        var args = new ArrayList<Object>();
+        if (warehouseCode != null) {
+            clauses.add("kv.MaKho = ?");
+            args.add(warehouseCode);
+        }
+        if (areaCode != null) {
+            clauses.add("vt.MaKhuVuc = ?");
+            args.add(areaCode);
+        }
+        if (query != null) {
+            clauses.add("(CHARINDEX(?, vt.MaViTri) > 0 OR CHARINDEX(?, vt.TenViTri) > 0)");
+            args.add(query);
+            args.add(query);
+        }
+        String where = clauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", clauses) + " ";
+        long count = count("""
+            SELECT COUNT(*) FROM dbo.VI_TRI_KHO vt
+            JOIN dbo.KHU_VUC kv ON kv.MaKhuVuc = vt.MaKhuVuc
+            """ + where, args);
+        args.add(page * size);
+        args.add(size);
+        List<PositionView> items = jdbc.query(POSITION_SELECT + where +
+            "ORDER BY vt.MaViTri OFFSET ? ROWS FETCH NEXT ? ROWS ONLY",
+            POSITION_MAPPER, args.toArray());
+        return new Page<>(items, page, size, count, (count + size - 1) / size);
+    }
+
     public Optional<WarehouseView> warehouse(String code) {
         return jdbc.query("SELECT MaKho, TenKho, DiaChi FROM dbo.KHO WHERE MaKho = ?",
             WAREHOUSE_MAPPER, code).stream().findFirst();
@@ -72,6 +115,11 @@ public class WarehouseJdbcRepository {
 
     public Optional<AreaView> area(String code) {
         return jdbc.query(AREA_SELECT + "WHERE kv.MaKhuVuc = ?", AREA_MAPPER, code)
+            .stream().findFirst();
+    }
+
+    public Optional<PositionView> position(String code) {
+        return jdbc.query(POSITION_SELECT + "WHERE vt.MaViTri = ?", POSITION_MAPPER, code)
             .stream().findFirst();
     }
 
@@ -103,6 +151,21 @@ public class WarehouseJdbcRepository {
 
     public int deleteArea(String code) {
         return jdbc.update("DELETE FROM dbo.KHU_VUC WHERE MaKhuVuc = ?", code);
+    }
+
+    public void insertPosition(String code, String areaCode, String name, int capacity, String type) {
+        jdbc.update("""
+            INSERT INTO dbo.VI_TRI_KHO (MaViTri, MaKhuVuc, TenViTri, SucChua, LoaiViTri)
+            VALUES (?, ?, ?, ?, ?)
+            """, code, areaCode, name, capacity, type);
+    }
+
+    public int updatePosition(String code, String name) {
+        return jdbc.update("UPDATE dbo.VI_TRI_KHO SET TenViTri = ? WHERE MaViTri = ?", name, code);
+    }
+
+    public int deletePosition(String code) {
+        return jdbc.update("DELETE FROM dbo.VI_TRI_KHO WHERE MaViTri = ?", code);
     }
 
     private static ArrayList<Object> searchArgs(String query) {

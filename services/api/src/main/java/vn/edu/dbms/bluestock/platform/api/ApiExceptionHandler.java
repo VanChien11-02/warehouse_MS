@@ -46,6 +46,7 @@ public class ApiExceptionHandler {
         return switch (validationCode) {
             case "NotBlank", "NotNull" -> "REQUIRED";
             case "DecimalMin" -> "NON_NEGATIVE_REQUIRED";
+            case "Min" -> "NON_NEGATIVE_REQUIRED";
             case "Digits" -> "INVALID_PRECISION";
             case "Size" -> "INVALID_LENGTH";
             default -> "INVALID_VALUE";
