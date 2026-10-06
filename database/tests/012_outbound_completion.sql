@@ -93,6 +93,29 @@ BEGIN TRY
     IF (SELECT SUM(SoLuongThayDoi) FROM dbo.BIEN_DONG_TON_KHO
         WHERE MaChungTu = 'TST121' AND LoaiNghiepVu = N'XUAT') <> -6
         THROW 51949, N'Xuất chưa ghi đúng biến động tồn.', 1;
+    IF (SELECT SUM(GiaTriThayDoi) FROM dbo.vw_BienDongTonKhoChiTiet
+        WHERE MaKho = 'TST121' AND MaSP = 'TST121') <> 40.4936
+        THROW 51951, N'View báo cáo không dùng đúng giá nhập thực tế.', 1;
+    IF EXISTS (SELECT 1 FROM dbo.vw_BienDongTonKhoChiTiet
+        WHERE MaKho = 'TST121' AND MaSP = 'TST121'
+          AND (NgayGhiSo IS NULL OR DonGiaNhap <> 10.1234))
+        THROW 51952, N'View báo cáo thiếu thời điểm hoặc đơn giá.', 1;
+    DECLARE @TuNgayUtc DATETIME2(3) =
+        (SELECT NgayHoanTat FROM dbo.PHIEU_NHAP WHERE MaPN = 'TST121');
+    DECLARE @DenNgayUtc DATETIME2(3) = DATEADD(MILLISECOND, 1,
+        (SELECT NgayHoanTat FROM dbo.PHIEU_XUAT WHERE MaPX = 'TST121'));
+    DECLARE @DauKy BIGINT, @Nhap BIGINT, @Xuat BIGINT, @CuoiKy BIGINT;
+    SELECT @DauKy = SUM(CASE WHEN NgayGhiSo < @TuNgayUtc
+                   THEN CONVERT(BIGINT, SoLuongThayDoi) ELSE CONVERT(BIGINT, 0) END),
+           @Nhap = SUM(CASE WHEN NgayGhiSo >= @TuNgayUtc AND LoaiNghiepVu = N'NHAP'
+                   THEN CONVERT(BIGINT, SoLuongThayDoi) ELSE CONVERT(BIGINT, 0) END),
+           @Xuat = -SUM(CASE WHEN NgayGhiSo >= @TuNgayUtc AND LoaiNghiepVu = N'XUAT'
+                   THEN CONVERT(BIGINT, SoLuongThayDoi) ELSE CONVERT(BIGINT, 0) END),
+           @CuoiKy = SUM(CONVERT(BIGINT, SoLuongThayDoi))
+    FROM dbo.vw_BienDongTonKhoChiTiet
+    WHERE NgayGhiSo < @DenNgayUtc AND MaKho = 'TST121' AND MaSP = 'TST121';
+    IF @DauKy <> 0 OR @Nhap <> 10 OR @Xuat <> 6 OR @CuoiKy <> 4
+        THROW 51953, N'Báo cáo nhập-xuất-tồn sai số lượng hoặc boundary.', 1;
 
     BEGIN TRY
         EXEC dbo.sp_HoanTatPhieuXuat @MaPX = 'TST121', @NgayNghiepVu = '2026-10-07';

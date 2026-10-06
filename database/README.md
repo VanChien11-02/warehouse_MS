@@ -31,6 +31,8 @@ Sau migration 005, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database
 
 Sau migration 006, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/007_stock_movements.sql` để tạo sổ biến động và đối chiếu/backfill nhập/xuất đã hoàn tất. Migration dừng nếu không suy được một vị trí gốc cho mỗi lô hoặc số tồn không khớp lịch sử chứng từ. Sau đó chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/008_stock_movement_posting.sql` để cập nhật hai procedure ghi sổ; migration 008 có thể chạy lại. Database dựng mới bằng `init.sql` đã có cả sổ và procedure mới.
 
+Sau migration 008, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/009_reporting_view.sql` để tạo/cập nhật `vw_BienDongTonKhoChiTiet` cho báo cáo giá trị theo lô, kho và thời gian. Migration 009 có thể chạy lại; database dựng mới bằng `init.sql` đã có view này.
+
 ## Cấu trúc mục tiêu
 
 ```text

@@ -47,3 +47,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `SEQ_PHIEU_XUAT` cấp mã `PX0001`; `sp_HoanTatPhieuXuat` kiểm tra FEFO, khóa tồn và mapping đối tác theo [`contracts/outbound-fefo-completion.md`](../../../contracts/outbound-fefo-completion.md).
 
 `BIEN_DONG_TON_KHO` là sổ biến động ghi cùng transaction hoàn tất nhập/xuất. Mỗi dòng giữ loại nghiệp vụ, mã chứng từ, vị trí, lô, lượng tăng/giảm và thời điểm ghi sổ UTC. Unique key ngăn lặp cùng nghiệp vụ/chứng từ/vị trí/lô; index `IX_BIEN_DONG_TON_KHO_NGAY` phục vụ lọc khoảng ngày báo cáo. Migration 007 chỉ dựng sổ từ dữ liệu lịch sử khi mỗi lô còn đúng một vị trí và tổng biến động khớp tồn hiện có; dữ liệu lệch dừng migration để đối chiếu thủ công. Các nghiệp vụ chuyển/kiểm kê/trả sẽ bổ sung dòng sổ theo contract của chúng.
+
+`vw_BienDongTonKhoChiTiet` nối sổ biến động với kho, sản phẩm và giá nhập thực tế của lô. View là nguồn cho [`contracts/reporting.md`](../../../contracts/reporting.md); test SQL xác nhận giá trị nhập/xuất và số dư sau ghi sổ.

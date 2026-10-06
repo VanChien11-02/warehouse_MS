@@ -104,6 +104,8 @@ public class SecurityConfig {
                     .hasAnyAuthority("ROLE_QLKHO", "ROLE_NVKHO")
                 .requestMatchers(HttpMethod.POST, "/api/phieu-xuat/*/hoan-tat")
                     .hasAuthority("ROLE_QLKHO")
+                .requestMatchers(HttpMethod.GET, "/api/bao-cao/nhap-xuat")
+                    .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO", "ROLE_KETOAN")
                 .anyRequest().denyAll())
             .exceptionHandling(errors -> errors
                 .authenticationEntryPoint((request, response, exception) ->
