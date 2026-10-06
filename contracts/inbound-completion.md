@@ -1,6 +1,6 @@
 # Contract dữ liệu nhập và tồn kho
 
-- Status: Accepted for BE schema implementation; HTTP API/procedure pending
+- Status: Accepted for BE schema and procedure implementation; HTTP API pending
 - Date: 2026-10-07
 - Scope: INB-01, INV-01, BR-INB-001 đến BR-INB-007, BR-INV-001 đến BR-INV-005
 - Owner triển khai: nhánh BE
@@ -14,4 +14,14 @@
 
 `SEQ_PHIEU_NHAP` và `SEQ_LO_HANG` cấp số cho mã `PN0001` và `LO0001` theo ADR 0003. Khoảng trống sau rollback là hợp lệ; procedure phải trả lỗi rõ khi vượt không gian bốn chữ số.
 
-API tạo/sửa/hủy nháp, payload phân bổ lô/vị trí, procedure hoàn tất và endpoint tra cứu tồn sẽ được chốt trong mốc kế tiếp. Chưa có endpoint ghi sổ hay tồn khả dụng trong commit schema này.
+`dbo.sp_HoanTatPhieuNhap(@MaPN CHAR(6), @PhanBoJson NVARCHAR(MAX))` là điểm ghi sổ nhập. JSON là array, mỗi phần tử tạo một lô mới:
+
+```json
+[{"maSanPham":"SP0001","maViTri":"VT0001","soLuong":10,"ngaySanXuat":"2026-01-01","hanSuDung":"2026-12-31"}]
+```
+
+Ngày có thể `null` hoặc bỏ qua. Tổng `soLuong` của các phần tử theo từng `maSanPham` phải **bằng** lượng trên `CT_PHIEU_NHAP` để một phiếu hoàn tất không bỏ sót hàng. Procedure khóa phiếu và vị trí nhận, kiểm tra mapping nhà cung cấp/sản phẩm, ngày lô, loại bảo quản, một đơn vị tính cho mỗi vị trí có tồn dương và sức chứa trước khi tạo lô/tăng tồn. Phiếu phải ở `NHAP`; hoàn tất lặp trả lỗi mà không ghi thêm. Thành công trả result set `maPhieuNhap`, `trangThai`, `ngayHoanTat` UTC.
+
+Mã lỗi SQL ổn định trong dải `51101–51113`: `51101` không thấy phiếu; `51102` trạng thái sai; `51103–51104` JSON/dữ liệu phân bổ sai; `51105` thiếu dòng; `51106` thiếu mapping; `51107–51108` sản phẩm/số lượng không khớp; `51109` vị trí không tồn tại; `51110` bảo quản hoặc loại vị trí sai; `51111` trộn đơn vị; `51112` vượt sức chứa; `51113` hết mã lô. JDBC adapter sẽ ánh xạ các số này sang mã HTTP contract, không trả message SQL thô.
+
+API tạo/sửa/hủy nháp, endpoint gọi procedure và tra cứu tồn sẽ được chốt trong mốc tiếp theo. Hiện chưa có HTTP endpoint nhập hay tồn.

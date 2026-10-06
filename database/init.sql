@@ -30,3 +30,4 @@ BEGIN TRANSACTION;
 :r database/schema/015_sequences.sql
 COMMIT TRANSACTION;
 GO
+:r database/programmability/procedures/inbound/sp_HoanTatPhieuNhap.sql

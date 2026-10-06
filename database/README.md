@@ -21,6 +21,8 @@ Nếu database local đã được dựng từ commit trước khi có đối t�
 
 Sau migration đối tác, database local cũ cần chạy tiếp một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/002_inbound_inventory.sql`. Migration này thêm phiếu nhập, dòng nhập, lô, tồn và hai sequence; chưa có procedure ghi sổ. Database dựng mới bằng `init.sql` đã có các object này.
 
+Sau migration 002, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/003_inbound_completion.sql` để tạo/cập nhật procedure hoàn tất nhập. Migration 003 có thể chạy lại khi procedure đổi. Database dựng mới bằng `init.sql` đã có procedure này.
+
 ## Cấu trúc mục tiêu
 
 ```text
