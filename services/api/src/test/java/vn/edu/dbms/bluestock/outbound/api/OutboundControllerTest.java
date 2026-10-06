@@ -27,6 +27,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,6 +50,24 @@ class OutboundControllerTest {
         mvc.perform(get("/api/phieu-xuat/PX0001"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.maPhieuXuat").value("PX0001"));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_KETOAN")
+    void accountantCannotCancelDraft() throws Exception {
+        mvc.perform(post("/api/phieu-xuat/PX0001/huy").with(csrf()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_NVKHO")
+    void warehouseStaffCanUpdateDraft() throws Exception {
+        when(service.update(eq("PX0001"), eq("DT0001"), eq(null), any()))
+            .thenReturn(outbound());
+        mvc.perform(put("/api/phieu-xuat/PX0001").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content(createBody()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.trangThai").value("NHAP"));
     }
 
     @Test

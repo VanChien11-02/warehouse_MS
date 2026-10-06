@@ -18,6 +18,13 @@ public final class OutboundModels {
         String trangThai, String ghiChu, OffsetDateTime ngayHoanTat,
         List<LineView> chiTiet) {}
 
+    public record OutboundSummary(String maPhieuXuat, OffsetDateTime ngayXuat,
+        String maDoiTacNhanHang, String tenDoiTac, String maNhanVien,
+        String trangThai, String ghiChu, OffsetDateTime ngayHoanTat) {}
+
+    public record OutboundPage(List<OutboundSummary> items, int page, int size,
+        long totalElements, long totalPages) {}
+
     public record CompletionView(String maPhieuXuat, String trangThai,
         OffsetDateTime ngayHoanTat) {}
 

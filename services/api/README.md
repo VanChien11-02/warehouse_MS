@@ -73,7 +73,7 @@ API `/api/phieu-nhap` đã có danh sách, tạo/sửa/hủy nháp, xem chi ti�
 
 API `GET /api/ton-kho` đọc `vw_TonKhoChiTiet`, hỗ trợ lọc/phân trang và chỉ lấy tồn khả dụng theo [`contracts/inventory-query.md`](../../contracts/inventory-query.md). Chưa có API ghi tồn trực tiếp; xuất kho vẫn phải kiểm tra lại trong transaction.
 
-API `/api/phieu-xuat` đã có tạo nháp, xem chi tiết và hoàn tất theo [`contracts/outbound-fefo-completion.md`](../../contracts/outbound-fefo-completion.md). Procedure kiểm tra FEFO và trừ tồn trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần tạo đối tác nhận và mapping sản phẩm trước khi hoàn tất; danh sách/sửa/hủy nháp chưa có.
+API `/api/phieu-xuat` đã có danh sách, tạo/sửa/hủy nháp, xem chi tiết và hoàn tất theo [`contracts/outbound-fefo-completion.md`](../../contracts/outbound-fefo-completion.md). Procedure kiểm tra FEFO và trừ tồn trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần tạo đối tác nhận và mapping sản phẩm trước khi hoàn tất.
 
 `GET /api/phieu-xuat/{maPhieuXuat}/goi-y-fefo` đề xuất lô/vị trí cho một sản phẩm và số lượng, trả phần thiếu nếu tồn không đủ. Gợi ý không giữ chỗ; lúc hoàn tất procedure kiểm tra FEFO và tồn lần nữa.
 
