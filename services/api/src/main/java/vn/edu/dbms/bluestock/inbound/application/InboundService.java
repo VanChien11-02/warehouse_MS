@@ -1,0 +1,139 @@
+package vn.edu.dbms.bluestock.inbound.application;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import vn.edu.dbms.bluestock.inbound.application.InboundException.Kind;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.AllocationData;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundView;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineData;
+import vn.edu.dbms.bluestock.inbound.infrastructure.InboundJdbcRepository;
+
+@Service
+public class InboundService {
+    private final InboundJdbcRepository repository;
+    private final ObjectMapper objectMapper;
+
+    public InboundService(InboundJdbcRepository repository, ObjectMapper objectMapper) {
+        this.repository = repository;
+        this.objectMapper = objectMapper;
+    }
+
+    @Transactional(readOnly = true)
+    public InboundView get(String code) {
+        return repository.findByCode(normalizeCode(code)).orElseThrow(() ->
+            new InboundException(Kind.NOT_FOUND, "INBOUND_NOT_FOUND", "Không tìm thấy phiếu nhập"));
+    }
+
+    @Transactional
+    public InboundView create(String supplierCode, String employeeCode, String note, List<LineData> lines) {
+        String normalizedSupplier = normalizeCode(supplierCode);
+        String normalizedEmployee = normalizeCode(employeeCode);
+        if (lines == null || lines.isEmpty()) {
+            throw new InboundException(Kind.VALIDATION, "LINES_REQUIRED", "Phiếu nhập cần ít nhất một dòng");
+        }
+        var normalizedLines = new java.util.ArrayList<LineData>();
+        var productCodes = new HashSet<String>();
+        for (LineData line : lines) {
+            String productCode = normalizeCode(line.maSanPham());
+            if (!productCodes.add(productCode)) {
+                throw new InboundException(Kind.VALIDATION, "DUPLICATE_PRODUCT",
+                    "Một sản phẩm chỉ có một dòng trên phiếu nhập");
+            }
+            normalizedLines.add(new LineData(productCode, line.soLuong(), line.donGiaNhap()));
+        }
+        int number = repository.nextCodeNumber();
+        if (number > 9999) {
+            throw new InboundException(Kind.CONFLICT, "INBOUND_CODE_EXHAUSTED",
+                "Đã hết mã phiếu nhập sáu ký tự");
+        }
+        String code = "PN%04d".formatted(number);
+        try {
+            repository.insertHeader(code, normalizedSupplier, normalizedEmployee, optionalText(note));
+            for (LineData line : normalizedLines) repository.insertLine(code, line);
+        } catch (DataIntegrityViolationException exception) {
+            throw new InboundException(Kind.VALIDATION, "INVALID_REFERENCE",
+                "Nhà cung cấp, nhân viên hoặc sản phẩm không tồn tại");
+        }
+        return get(code);
+    }
+
+    public CompletionView complete(String code, List<AllocationData> allocations) {
+        String normalizedCode = normalizeCode(code);
+        if (allocations == null || allocations.isEmpty()) {
+            throw new InboundException(Kind.VALIDATION, "ALLOCATIONS_REQUIRED",
+                "Cần phân bổ lô vào vị trí");
+        }
+        var normalized = allocations.stream()
+            .map(item -> new AllocationWire(normalizeCode(item.maSanPham()),
+                normalizeCode(item.maViTri()), item.soLuong(), dateText(item.ngaySanXuat()),
+                dateText(item.hanSuDung())))
+            .toList();
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(normalized);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("Không tạo được dữ liệu phân bổ", exception);
+        }
+        try {
+            return repository.complete(normalizedCode, json);
+        } catch (DataAccessException exception) {
+            throw mapProcedureError(InboundJdbcRepository.sqlErrorNumber(exception));
+        }
+    }
+
+    private static InboundException mapProcedureError(int number) {
+        return switch (number) {
+            case 51101 -> new InboundException(Kind.NOT_FOUND, "INBOUND_NOT_FOUND",
+                "Không tìm thấy phiếu nhập");
+            case 51102 -> new InboundException(Kind.CONFLICT, "INBOUND_NOT_DRAFT",
+                "Phiếu nhập không còn ở trạng thái nháp");
+            case 51103, 51104, 51107, 51108 -> new InboundException(Kind.VALIDATION,
+                "INVALID_ALLOCATION", "Phân bổ lô không hợp lệ");
+            case 51105 -> new InboundException(Kind.VALIDATION, "LINES_REQUIRED",
+                "Phiếu nhập chưa có dòng sản phẩm");
+            case 51106 -> new InboundException(Kind.VALIDATION, "SUPPLIER_PRODUCT_NOT_LINKED",
+                "Nhà cung cấp chưa liên kết với mọi sản phẩm");
+            case 51109 -> new InboundException(Kind.VALIDATION, "INVALID_POSITION",
+                "Vị trí nhận hàng không tồn tại");
+            case 51110 -> new InboundException(Kind.VALIDATION, "INCOMPATIBLE_STORAGE",
+                "Vị trí không phù hợp loại bảo quản hoặc hàng nhập");
+            case 51111 -> new InboundException(Kind.CONFLICT, "UNIT_MISMATCH",
+                "Vị trí đang chứa đơn vị tính khác");
+            case 51112 -> new InboundException(Kind.CONFLICT, "CAPACITY_EXCEEDED",
+                "Sức chứa vị trí không đủ");
+            case 51113 -> new InboundException(Kind.CONFLICT, "LOT_CODE_EXHAUSTED",
+                "Đã hết mã lô sáu ký tự");
+            default -> new InboundException(Kind.INTERNAL, "INBOUND_POSTING_FAILED",
+                "Không thể hoàn tất phiếu nhập");
+        };
+    }
+
+    private static String normalizeCode(String code) {
+        String normalized = code == null ? "" : code.trim().toUpperCase(Locale.ROOT);
+        if (!normalized.matches("[A-Z0-9]{1,6}")) {
+            throw new InboundException(Kind.VALIDATION, "INVALID_CODE",
+                "Mã phải gồm 1–6 ký tự chữ hoặc số");
+        }
+        return normalized;
+    }
+
+    private static String optionalText(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private static String dateText(LocalDate value) {
+        return value == null ? null : value.toString();
+    }
+
+    private record AllocationWire(String maSanPham, String maViTri, int soLuong,
+        String ngaySanXuat, String hanSuDung) {}
+}

@@ -1,6 +1,6 @@
 # Contract dữ liệu nhập và tồn kho
 
-- Status: Accepted for BE schema and procedure implementation; HTTP API pending
+- Status: Accepted for BE implementation (tạo nháp, xem chi tiết, hoàn tất); các route khác pending
 - Date: 2026-10-07
 - Scope: INB-01, INV-01, BR-INB-001 đến BR-INB-007, BR-INV-001 đến BR-INV-005
 - Owner triển khai: nhánh BE
@@ -24,4 +24,28 @@ Ngày có thể `null` hoặc bỏ qua. Tổng `soLuong` của các phần tử 
 
 Mã lỗi SQL ổn định trong dải `51101–51113`: `51101` không thấy phiếu; `51102` trạng thái sai; `51103–51104` JSON/dữ liệu phân bổ sai; `51105` thiếu dòng; `51106` thiếu mapping; `51107–51108` sản phẩm/số lượng không khớp; `51109` vị trí không tồn tại; `51110` bảo quản hoặc loại vị trí sai; `51111` trộn đơn vị; `51112` vượt sức chứa; `51113` hết mã lô. JDBC adapter sẽ ánh xạ các số này sang mã HTTP contract, không trả message SQL thô.
 
-API tạo/sửa/hủy nháp, endpoint gọi procedure và tra cứu tồn sẽ được chốt trong mốc tiếp theo. Hiện chưa có HTTP endpoint nhập hay tồn.
+HTTP API hiện có:
+
+| Method | Route | Quyền | Kết quả |
+| --- | --- | --- | --- |
+| `GET` | `/api/phieu-nhap/{maPhieuNhap}` | Bốn role đã đăng nhập | `200` chi tiết phiếu và dòng |
+| `POST` | `/api/phieu-nhap` | `QuanLyKho`, `NhanVienKho` + CSRF | `201` phiếu `NHAP`, `Location` |
+| `POST` | `/api/phieu-nhap/{maPhieuNhap}/hoan-tat` | Chỉ `QuanLyKho` + CSRF | `200` mã, trạng thái và thời điểm hoàn tất |
+
+Request tạo nháp:
+
+```json
+{"maNhaCungCap":"NCC001","ghiChu":null,"chiTiet":[{"maSanPham":"SP0001","soLuong":10,"donGiaNhap":12.3400}]}
+```
+
+Nhân viên lập lấy từ session, client không được gửi `maNhanVien`. Mỗi sản phẩm chỉ có một dòng; số lượng nguyên dương, đơn giá không âm với tối đa bốn chữ số thập phân. Nhà cung cấp/sản phẩm phải tồn tại, nhưng mapping được kiểm tra lại lúc hoàn tất. Mã phiếu do server cấp. Response chi tiết thêm `ngayNhap`, `tenNhaCungCap`, `maNhanVien`, `trangThai`, `ngayHoanTat` và `chiTiet` có `tenSanPham`. Thời điểm trả ISO-8601 UTC với `Z`.
+
+Request hoàn tất:
+
+```json
+{"phanBo":[{"maSanPham":"SP0001","maViTri":"VT0001","soLuong":10,"ngaySanXuat":"2026-01-01","hanSuDung":"2026-12-31"}]}
+```
+
+Lỗi HTTP dùng envelope chung: `404 INBOUND_NOT_FOUND`; `409 INBOUND_NOT_DRAFT`, `CAPACITY_EXCEEDED`, `UNIT_MISMATCH`, `LOT_CODE_EXHAUSTED`, `INBOUND_CODE_EXHAUSTED`; `422 LINES_REQUIRED`, `DUPLICATE_PRODUCT`, `ALLOCATIONS_REQUIRED`, `INVALID_ALLOCATION`, `SUPPLIER_PRODUCT_NOT_LINKED`, `INVALID_POSITION`, `INCOMPATIBLE_STORAGE`, `INVALID_REFERENCE`, `INVALID_CODE`, `VALIDATION_FAILED`; `401` chưa đăng nhập, `403` thiếu quyền/CSRF. Lỗi SQL ngoài danh sách trả `500 INBOUND_POSTING_FAILED` mà không lộ message SQL.
+
+Danh sách/lọc phiếu, sửa/hủy nháp và endpoint tra cứu tồn sẽ được thêm trong mốc tiếp theo.
