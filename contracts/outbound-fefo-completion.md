@@ -21,6 +21,7 @@ HTTP API hiện có:
 | `GET` | `/api/phieu-xuat/{maPhieuXuat}` | Bốn role đã đăng nhập | `200` chi tiết phiếu và dòng |
 | `POST` | `/api/phieu-xuat` | `QuanLyKho`, `NhanVienKho` + CSRF | `201` phiếu `NHAP`, `Location` |
 | `POST` | `/api/phieu-xuat/{maPhieuXuat}/hoan-tat` | Chỉ `QuanLyKho` + CSRF | `200` mã, trạng thái và thời điểm hoàn tất |
+| `GET` | `/api/phieu-xuat/{maPhieuXuat}/goi-y-fefo?maSanPham=SP0001&soLuong=5` | `QuanLyKho`, `NhanVienKho` | `200` phân bổ đề xuất |
 
 Request tạo nháp:
 
@@ -32,4 +33,6 @@ Nhân viên lập lấy từ session, client không được gửi `maNhanVien`.
 
 Request hoàn tất không có body. Backend tính ngày nghiệp vụ `Asia/Bangkok` tại thời điểm gọi rồi truyền vào procedure; client không được chọn ngày để bỏ qua hạn dùng. Lỗi HTTP dùng envelope chung: `404 OUTBOUND_NOT_FOUND`; `409 OUTBOUND_NOT_DRAFT`, `INSUFFICIENT_STOCK`, `FEFO_VIOLATION`, `OUTBOUND_CODE_EXHAUSTED`; `422 LINES_REQUIRED`, `DUPLICATE_STOCK_SOURCE`, `INVALID_REFERENCE`, `INVALID_POSITION`, `STOCK_NOT_AVAILABLE`, `RECIPIENT_PRODUCT_NOT_LINKED`, `INVALID_CODE`, `VALIDATION_FAILED`; `401` chưa đăng nhập, `403` thiếu quyền/CSRF. Lỗi SQL không nhận diện trả `500 OUTBOUND_POSTING_FAILED` mà không lộ message SQL.
 
-Danh sách/lọc phiếu, sửa/hủy nháp và gợi ý FEFO qua API sẽ được thêm trong mốc tiếp theo.
+Gợi ý FEFO chỉ dùng được khi phiếu còn `NHAP`; `maSanPham` bắt buộc, `soLuong` nguyên dương, `maKho` tùy chọn để giới hạn nguồn. Response có `maPhieuXuat`, `maSanPham`, `soLuongYeuCau`, `soLuongThieu` và `phanBo` gồm `maLo`, `maViTri`, `soLuong`, `hanSuDung`. Khi tồn không đủ, API trả phần có thể phân bổ và số lượng còn thiếu; không giữ chỗ. Lô hết hạn và vị trí `Hư hỏng` không xuất hiện; lô không hạn đứng sau lô có hạn. `422 INVALID_QUANTITY` cho số lượng không dương.
+
+Danh sách/lọc phiếu và sửa/hủy nháp sẽ được thêm trong mốc tiếp theo.

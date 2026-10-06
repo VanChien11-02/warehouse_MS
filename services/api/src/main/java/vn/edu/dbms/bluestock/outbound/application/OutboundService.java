@@ -3,6 +3,7 @@ package vn.edu.dbms.bluestock.outbound.application;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.dao.DataAccessException;
@@ -11,18 +12,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.dbms.bluestock.outbound.application.OutboundException.Kind;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.CompletionView;
+import vn.edu.dbms.bluestock.outbound.application.OutboundModels.FefoAllocation;
+import vn.edu.dbms.bluestock.outbound.application.OutboundModels.FefoSuggestion;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.LineData;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.OutboundView;
 import vn.edu.dbms.bluestock.outbound.infrastructure.OutboundJdbcRepository;
+import vn.edu.dbms.bluestock.inventory.application.AvailableStockQuery;
 import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
 
 @Service
 public class OutboundService {
     private static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Bangkok");
     private final OutboundJdbcRepository repository;
+    private final AvailableStockQuery availableStock;
 
-    public OutboundService(OutboundJdbcRepository repository) {
+    public OutboundService(OutboundJdbcRepository repository, AvailableStockQuery availableStock) {
         this.repository = repository;
+        this.availableStock = availableStock;
     }
 
     @Transactional(readOnly = true)
@@ -73,6 +79,33 @@ public class OutboundService {
         } catch (DataAccessException exception) {
             throw mapProcedureError(SqlErrorNumbers.from(exception));
         }
+    }
+
+    @Transactional(readOnly = true)
+    public FefoSuggestion suggest(String code, String productCode, int quantity, String warehouseCode) {
+        OutboundView document = get(code);
+        if (!"NHAP".equals(document.trangThai())) {
+            throw new OutboundException(Kind.CONFLICT, "OUTBOUND_NOT_DRAFT",
+                "Phiếu xuất không còn ở trạng thái nháp");
+        }
+        if (quantity <= 0) {
+            throw new OutboundException(Kind.VALIDATION, "INVALID_QUANTITY",
+                "Số lượng gợi ý phải lớn hơn 0");
+        }
+        String normalizedProduct = normalizeCode(productCode);
+        String normalizedWarehouse = warehouseCode == null ? null : normalizeCode(warehouseCode);
+        int remaining = quantity;
+        var allocations = new ArrayList<FefoAllocation>();
+        for (var candidate : availableStock.findAvailable(normalizedProduct, normalizedWarehouse,
+            LocalDate.now(BUSINESS_ZONE))) {
+            if (remaining == 0) break;
+            int taken = Math.min(remaining, candidate.soLuongTon());
+            allocations.add(new FefoAllocation(candidate.maLo(), candidate.maViTri(),
+                taken, candidate.hanSuDung()));
+            remaining -= taken;
+        }
+        return new FefoSuggestion(document.maPhieuXuat(), normalizedProduct,
+            quantity, remaining, allocations);
     }
 
     private static OutboundException mapProcedureError(int number) {

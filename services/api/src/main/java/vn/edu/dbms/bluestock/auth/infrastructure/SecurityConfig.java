@@ -80,6 +80,8 @@ public class SecurityConfig {
                     .hasAuthority("ROLE_QLKHO")
                 .requestMatchers(HttpMethod.GET, "/api/ton-kho").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/phieu-xuat/*").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/phieu-xuat/*/goi-y-fefo")
+                    .hasAnyAuthority("ROLE_QLKHO", "ROLE_NVKHO")
                 .requestMatchers(HttpMethod.POST, "/api/phieu-xuat")
                     .hasAnyAuthority("ROLE_QLKHO", "ROLE_NVKHO")
                 .requestMatchers(HttpMethod.POST, "/api/phieu-xuat/*/hoan-tat")

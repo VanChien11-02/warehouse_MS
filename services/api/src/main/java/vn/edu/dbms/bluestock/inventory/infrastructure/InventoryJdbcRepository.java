@@ -9,11 +9,13 @@ import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockFilter;
+import vn.edu.dbms.bluestock.inventory.application.AvailableStockQuery;
+import vn.edu.dbms.bluestock.inventory.application.AvailableStockQuery.StockCandidate;
 import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockPage;
 import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockView;
 
 @Repository
-public class InventoryJdbcRepository {
+public class InventoryJdbcRepository implements AvailableStockQuery {
     private final JdbcTemplate jdbc;
 
     public InventoryJdbcRepository(JdbcTemplate jdbc) {
@@ -69,6 +71,34 @@ public class InventoryJdbcRepository {
                     unitPrice, unitPrice.multiply(BigDecimal.valueOf(quantity)), available);
             }, args.toArray());
         return new StockPage(items, page, size, total, (total + size - 1) / size);
+    }
+
+    @Override
+    public List<StockCandidate> findAvailable(String productCode, String warehouseCode,
+        LocalDate businessDate) {
+        var sql = new StringBuilder("""
+            SELECT MaLo, MaViTri, SoLuongTon, HanSuDung
+            FROM dbo.vw_TonKhoChiTiet
+            WHERE MaSP = ? AND SoLuongTon > 0 AND LoaiViTri <> N'Hư hỏng'
+              AND (HanSuDung IS NULL OR HanSuDung >= ?)
+            """);
+        var args = new ArrayList<Object>();
+        args.add(productCode);
+        args.add(businessDate);
+        if (warehouseCode != null) {
+            sql.append("AND MaKho = ? ");
+            args.add(warehouseCode);
+        }
+        sql.append("""
+            ORDER BY CASE WHEN HanSuDung IS NULL THEN 1 ELSE 0 END,
+                     HanSuDung, MaLo, MaViTri
+            """);
+        return jdbc.query(sql.toString(), (row, index) -> {
+            java.sql.Date expiry = row.getDate("HanSuDung");
+            return new StockCandidate(row.getString("MaLo").trim(),
+                row.getString("MaViTri").trim(), row.getInt("SoLuongTon"),
+                expiry == null ? null : expiry.toLocalDate());
+        }, args.toArray());
     }
 
     private static void addCodeFilter(StringBuilder where, List<Object> args, String column, String code) {

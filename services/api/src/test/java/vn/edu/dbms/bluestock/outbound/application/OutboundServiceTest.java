@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
+import vn.edu.dbms.bluestock.inventory.application.AvailableStockQuery;
+import vn.edu.dbms.bluestock.inventory.application.AvailableStockQuery.StockCandidate;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.LineData;
 import vn.edu.dbms.bluestock.outbound.infrastructure.OutboundJdbcRepository;
 
@@ -20,7 +22,8 @@ import static org.mockito.Mockito.when;
 
 class OutboundServiceTest {
     private final OutboundJdbcRepository repository = mock(OutboundJdbcRepository.class);
-    private final OutboundService service = new OutboundService(repository);
+    private final AvailableStockQuery availableStock = mock(AvailableStockQuery.class);
+    private final OutboundService service = new OutboundService(repository, availableStock);
 
     @Test
     void duplicateLotPositionIsRejectedBeforeWriting() {
@@ -60,5 +63,20 @@ class OutboundServiceTest {
                 new SQLException("missing", "S0001", 51201)));
         var error = assertThrows(OutboundException.class, () -> service.complete("PX9999"));
         assertEquals("OUTBOUND_NOT_FOUND", error.code());
+    }
+
+    @Test
+    void suggestionUsesEarlierExpiryBeforeLaterLot() {
+        when(repository.findByCode("PX0001")).thenReturn(Optional.of(new OutboundModels.OutboundView(
+            "PX0001", null, "DT0001", "Đối tác", "NV0001", "NHAP", null, null,
+            List.of())));
+        when(availableStock.findAvailable(eq("SP0001"), eq(null), any(LocalDate.class)))
+            .thenReturn(List.of(
+                new StockCandidate("LO0001", "VT0001", 3, LocalDate.of(2026, 11, 1)),
+                new StockCandidate("LO0002", "VT0002", 5, LocalDate.of(2026, 12, 1))));
+        var suggestion = service.suggest("PX0001", "sp0001", 5, null);
+        assertEquals(0, suggestion.soLuongThieu());
+        assertEquals(3, suggestion.phanBo().get(0).soLuong());
+        assertEquals(2, suggestion.phanBo().get(1).soLuong());
     }
 }

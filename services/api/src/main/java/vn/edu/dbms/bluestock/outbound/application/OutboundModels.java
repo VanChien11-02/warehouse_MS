@@ -20,4 +20,10 @@ public final class OutboundModels {
 
     public record CompletionView(String maPhieuXuat, String trangThai,
         OffsetDateTime ngayHoanTat) {}
+
+    public record FefoAllocation(String maLo, String maViTri, int soLuong,
+        LocalDate hanSuDung) {}
+
+    public record FefoSuggestion(String maPhieuXuat, String maSanPham,
+        int soLuongYeuCau, int soLuongThieu, List<FefoAllocation> phanBo) {}
 }

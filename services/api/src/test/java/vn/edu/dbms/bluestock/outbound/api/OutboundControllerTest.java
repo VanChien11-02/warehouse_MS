@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.dbms.bluestock.auth.infrastructure.AccountPrincipal;
 import vn.edu.dbms.bluestock.auth.infrastructure.SecurityConfig;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.CompletionView;
+import vn.edu.dbms.bluestock.outbound.application.OutboundModels.FefoSuggestion;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.OutboundView;
 import vn.edu.dbms.bluestock.outbound.application.OutboundService;
 import vn.edu.dbms.bluestock.platform.api.ApiExceptionHandler;
@@ -100,6 +101,25 @@ class OutboundControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createBody().replace("\"soLuong\":2", "\"soLuong\":0")))
             .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_NVKHO")
+    void warehouseStaffCanRequestFefoSuggestion() throws Exception {
+        when(service.suggest("PX0001", "SP0001", 5, null))
+            .thenReturn(new FefoSuggestion("PX0001", "SP0001", 5, 0, List.of()));
+        mvc.perform(get("/api/phieu-xuat/PX0001/goi-y-fefo")
+                .param("maSanPham", "SP0001").param("soLuong", "5"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.soLuongThieu").value(0));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_KETOAN")
+    void accountantCannotRequestFefoSuggestion() throws Exception {
+        mvc.perform(get("/api/phieu-xuat/PX0001/goi-y-fefo")
+                .param("maSanPham", "SP0001").param("soLuong", "5"))
+            .andExpect(status().isForbidden());
     }
 
     private static AccountPrincipal principal(String role) {

@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.dbms.bluestock.auth.infrastructure.AccountPrincipal;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.CompletionView;
+import vn.edu.dbms.bluestock.outbound.application.OutboundModels.FefoSuggestion;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.LineData;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.OutboundView;
 import vn.edu.dbms.bluestock.outbound.application.OutboundService;
@@ -37,6 +39,13 @@ public class OutboundController {
     @GetMapping("/{maPhieuXuat}")
     public OutboundView get(@PathVariable String maPhieuXuat) {
         return service.get(maPhieuXuat);
+    }
+
+    @GetMapping("/{maPhieuXuat}/goi-y-fefo")
+    public FefoSuggestion suggest(@PathVariable String maPhieuXuat,
+        @RequestParam String maSanPham, @RequestParam int soLuong,
+        @RequestParam(required = false) String maKho) {
+        return service.suggest(maPhieuXuat, maSanPham, soLuong, maKho);
     }
 
     @PostMapping

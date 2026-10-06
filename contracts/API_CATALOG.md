@@ -68,7 +68,7 @@ Payload hoàn tất nhập phải chỉ ra cách phân bổ lô vào vị trí n
 | `POST` | `/api/phieu-xuat` | Tạo phiếu nháp | NhanVienKho/QuanLyKho |
 | `GET` | `/api/phieu-xuat/{maPhieuXuat}` | Chi tiết phiếu theo [`outbound-fefo-completion.md`](outbound-fefo-completion.md) | Theo role |
 | `PUT` | `/api/phieu-xuat/{maPhieuXuat}` | Sửa phiếu nháp | NhanVienKho/QuanLyKho |
-| `GET` | `/api/phieu-xuat/{maPhieuXuat}/goi-y-fefo` | Gợi ý lô/vị trí | NhanVienKho/QuanLyKho |
+| `GET` | `/api/phieu-xuat/{maPhieuXuat}/goi-y-fefo` | Gợi ý lô/vị trí theo [`outbound-fefo-completion.md`](outbound-fefo-completion.md) | NhanVienKho/QuanLyKho |
 | `POST` | `/api/phieu-xuat/{maPhieuXuat}/hoan-tat` | Kiểm tra và trừ tồn nguyên tử theo [`outbound-fefo-completion.md`](outbound-fefo-completion.md) | QuanLyKho |
 | `POST` | `/api/phieu-xuat/{maPhieuXuat}/huy` | Hủy phiếu nháp | Quyền cần chốt |
 
