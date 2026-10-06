@@ -41,6 +41,7 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 - [`../contracts/session-rbac.md`](../contracts/session-rbac.md): session, CSRF, payload đăng nhập và mã role cho nhánh BE.
 - [`../contracts/san-pham.md`](../contracts/san-pham.md): CRUD, tìm kiếm, phân trang và quyền của sản phẩm.
 - [`../contracts/loai-don-vi-tinh.md`](../contracts/loai-don-vi-tinh.md): CRUD, tìm kiếm và quyền của loại sản phẩm và đơn vị tính.
+- [`../contracts/warehouse-location.md`](../contracts/warehouse-location.md): CRUD và quyền của cấu trúc kho.
 - [`../database/SCHEMA_PLAN.md`](../database/SCHEMA_PLAN.md): kế hoạch physical schema, object SQL và test database.
 
 ## Tài liệu nguồn

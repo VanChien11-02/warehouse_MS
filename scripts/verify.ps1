@@ -104,7 +104,8 @@ if ($WithDatabase) {
         'database\tests\001_catalog_warehouse_constraints.sql',
         'database\tests\002_auth_constraints.sql',
         'database\tests\003_product_crud.sql',
-        'database\tests\004_catalog_reference_crud.sql'
+        'database\tests\004_catalog_reference_crud.sql',
+        'database\tests\005_warehouse_area_crud.sql'
     )
     foreach ($testFile in $databaseTests) {
         & $sqlcmd -S $SqlServer -E -C -b -d BlueStock -i (Join-Path $root $testFile)
