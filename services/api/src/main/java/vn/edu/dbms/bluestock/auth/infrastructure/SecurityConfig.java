@@ -50,6 +50,14 @@ public class SecurityConfig {
                     .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO")
                 .requestMatchers(HttpMethod.DELETE, "/api/san-pham/*")
                     .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO")
+                .requestMatchers(HttpMethod.GET, "/api/loai-san-pham", "/api/loai-san-pham/*",
+                    "/api/don-vi-tinh", "/api/don-vi-tinh/*").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/loai-san-pham", "/api/don-vi-tinh")
+                    .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO")
+                .requestMatchers(HttpMethod.PUT, "/api/loai-san-pham/*", "/api/don-vi-tinh/*")
+                    .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO")
+                .requestMatchers(HttpMethod.DELETE, "/api/loai-san-pham/*", "/api/don-vi-tinh/*")
+                    .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO")
                 .anyRequest().denyAll())
             .exceptionHandling(errors -> errors
                 .authenticationEntryPoint((request, response, exception) ->

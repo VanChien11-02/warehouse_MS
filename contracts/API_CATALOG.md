@@ -34,8 +34,8 @@ Payload và role của các endpoint session đã triển khai nằm trong [`ses
 
 | Resource | Route dự kiến | Hành vi | Owner |
 | --- | --- | --- | --- |
-| Loại sản phẩm | `/api/loai-san-pham` | CRUD, tìm kiếm, trạng thái nếu có | TV1 |
-| Đơn vị tính | `/api/don-vi-tinh` | CRUD | TV1 |
+| Loại sản phẩm | `/api/loai-san-pham` | CRUD, tìm kiếm, phân trang theo [`loai-don-vi-tinh.md`](loai-don-vi-tinh.md) | TV1 |
+| Đơn vị tính | `/api/don-vi-tinh` | CRUD, tìm kiếm, phân trang theo [`loai-don-vi-tinh.md`](loai-don-vi-tinh.md) | TV1 |
 | Sản phẩm | `/api/san-pham` | CRUD, tìm kiếm, phân trang theo [`san-pham.md`](san-pham.md) | TV1 |
 | Nhà cung cấp | `/api/nha-cung-cap` | CRUD và mapping sản phẩm | TV1 |
 | Đối tác nhận hàng | `/api/doi-tac-nhan-hang` | CRUD và mapping sản phẩm | TV1 |
