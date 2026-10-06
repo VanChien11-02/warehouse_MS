@@ -2,7 +2,7 @@
 
 Thư mục này chứa toàn bộ script T-SQL có thể dựng lại database từ đầu và các đối tượng phục vụ rubric.
 
-Hiện `init.sql` tạo 19 bảng đến phiếu xuất. Bốn role ứng dụng được seed; chưa có tài khoản. Procedure nhập và view tồn đã có; procedure xuất và các bảng kiểm soát kho sẽ được bổ sung theo từng module.
+Hiện `init.sql` tạo 20 bảng gồm sổ biến động tồn. Bốn role ứng dụng được seed; chưa có tài khoản. Procedure nhập/xuất và view tồn đã có; các bảng kiểm soát kho sẽ được bổ sung theo từng module.
 
 ## Chạy schema nền tảng
 
@@ -28,6 +28,8 @@ Sau migration 003, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database
 Sau migration 004, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/005_outbound.sql` để thêm phiếu xuất, dòng xuất và sequence. Database dựng mới bằng `init.sql` đã có các object này.
 
 Sau migration 005, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/006_outbound_completion.sql` để tạo/cập nhật procedure hoàn tất xuất. Test `database/tests/012_outbound_completion.sql` chứng minh FEFO, trừ tồn, thiếu mapping, thiếu tồn và chống hoàn tất lặp; migration 006 có thể chạy lại.
+
+Sau migration 006, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/007_stock_movements.sql` để tạo sổ biến động và đối chiếu/backfill nhập/xuất đã hoàn tất. Migration dừng nếu không suy được một vị trí gốc cho mỗi lô hoặc số tồn không khớp lịch sử chứng từ. Sau đó chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/008_stock_movement_posting.sql` để cập nhật hai procedure ghi sổ; migration 008 có thể chạy lại. Database dựng mới bằng `init.sql` đã có cả sổ và procedure mới.
 
 ## Cấu trúc mục tiêu
 

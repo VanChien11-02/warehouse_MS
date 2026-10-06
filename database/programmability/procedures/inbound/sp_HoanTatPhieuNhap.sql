@@ -143,6 +143,7 @@ BEGIN
         DECLARE @HanSuDung DATE;
         DECLARE @SoTiepTheo INT;
         DECLARE @MaLo CHAR(6);
+        DECLARE @NgayHoanTat DATETIME2(3) = SYSUTCDATETIME();
 
         WHILE EXISTS (SELECT 1 FROM @PhanBo WHERE ThuTu > @ThuTu)
         BEGIN
@@ -162,9 +163,11 @@ BEGIN
             VALUES (@MaLo, @MaPN, @MaSP, @NgaySanXuat, @HanSuDung, @SoLuong);
             INSERT INTO dbo.TON_KHO (MaViTri, MaLo, SoLuongTon)
             VALUES (@MaViTri, @MaLo, @SoLuong);
+            INSERT INTO dbo.BIEN_DONG_TON_KHO
+                (LoaiNghiepVu, MaChungTu, MaViTri, MaLo, SoLuongThayDoi, NgayGhiSo)
+            VALUES (N'NHAP', @MaPN, @MaViTri, @MaLo, @SoLuong, @NgayHoanTat);
         END;
 
-        DECLARE @NgayHoanTat DATETIME2(3) = SYSUTCDATETIME();
         UPDATE dbo.PHIEU_NHAP
         SET TrangThai = N'DA_HOAN_THANH', NgayHoanTat = @NgayHoanTat
         WHERE MaPN = @MaPN;

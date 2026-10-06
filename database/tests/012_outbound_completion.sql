@@ -2,6 +2,7 @@ SET NOCOUNT ON;
 SET XACT_ABORT OFF;
 
 DECLARE @CleanupSql NVARCHAR(MAX) = N'
+    DELETE FROM dbo.BIEN_DONG_TON_KHO WHERE MaChungTu = ''TST121'';
     DELETE FROM dbo.CT_PHIEU_XUAT WHERE MaPX IN (''TST121'', ''TST122'', ''TST123'');
     DELETE FROM dbo.PHIEU_XUAT WHERE MaPX IN (''TST121'', ''TST122'', ''TST123'');
     DELETE ton FROM dbo.TON_KHO ton JOIN dbo.LO_HANG lo ON lo.MaLo = ton.MaLo
@@ -89,6 +90,9 @@ BEGIN TRY
         THROW 51943, N'Lô sớm không được trừ hết.', 1;
     IF (SELECT SoLuongTon FROM dbo.TON_KHO WHERE MaViTri = 'TST121' AND MaLo = @LoMuon) <> 4
         THROW 51944, N'Lô muộn không được trừ đúng.', 1;
+    IF (SELECT SUM(SoLuongThayDoi) FROM dbo.BIEN_DONG_TON_KHO
+        WHERE MaChungTu = 'TST121' AND LoaiNghiepVu = N'XUAT') <> -6
+        THROW 51949, N'Xuất chưa ghi đúng biến động tồn.', 1;
 
     BEGIN TRY
         EXEC dbo.sp_HoanTatPhieuXuat @MaPX = 'TST121', @NgayNghiepVu = '2026-10-07';
@@ -117,6 +121,9 @@ BEGIN TRY
     END CATCH;
     IF (SELECT SoLuongTon FROM dbo.TON_KHO WHERE MaViTri = 'TST121' AND MaLo = @LoMuon) <> 4
         THROW 51948, N'Phiếu thất bại đã thay đổi tồn.', 1;
+    IF EXISTS (SELECT 1 FROM dbo.BIEN_DONG_TON_KHO
+        WHERE MaChungTu IN ('TST122', 'TST123') AND LoaiNghiepVu = N'XUAT')
+        THROW 51950, N'Phiếu xuất thất bại đã ghi biến động.', 1;
 
     EXEC sp_executesql @CleanupSql;
     PRINT N'Outbound completion and FEFO passed.';

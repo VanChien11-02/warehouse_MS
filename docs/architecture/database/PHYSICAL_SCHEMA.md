@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 19 bảng đã có trong `database/schema/`; procedure nhập/xuất đã có, các bảng kiểm soát kho còn lại chưa được triển khai.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 20 bảng đã có trong `database/schema/`; procedure nhập/xuất đã có, các bảng kiểm soát kho còn lại chưa được triển khai.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
@@ -25,6 +25,7 @@ Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 | `TON_KHO` | `(MaViTri, MaLo)` | `MaViTri`, `MaLo` | Số lượng tồn không âm, theo đúng cặp vị trí/lô |
 | `PHIEU_XUAT` | `MaPX CHAR(6)` | `MaDTNH`, `MaNV` | Trạng thái nháp/hoàn tất/hủy; `NgayHoanTat` chỉ có khi hoàn tất; thời điểm UTC |
 | `CT_PHIEU_XUAT` | `(MaPX, MaLo, MaViTri)` | `MaPX`, `MaLo`, `MaViTri` | Dòng chỉ rõ nguồn tồn, số lượng dương, `DonGiaXuat DECIMAL(19,4)` không âm |
+| `BIEN_DONG_TON_KHO` | `MaBienDong BIGINT IDENTITY` | `MaViTri`, `MaLo` | Mỗi cặp nghiệp vụ/chứng từ/vị trí/lô xuất hiện một lần; delta khác 0; thời điểm UTC |
 
 Tên và mô tả dùng `NVARCHAR` để lưu tiếng Việt; mã dùng `CHAR(6)` theo tài liệu nguồn. `MoTa` dùng `NVARCHAR(1000)` thay cho kiểu `TEXT` cũ. Giá mặc định bằng 0 khi không cung cấp, nhưng giá nhập/xuất thực tế nằm trên dòng chứng từ.
 
@@ -44,3 +45,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `vw_TonKhoChiTiet` nối tồn với vị trí, sản phẩm, phiếu nhập, lô và giá nhập thực tế; chỉ lấy phiếu `DA_HOAN_THANH`. View phục vụ [`contracts/inventory-query.md`](../../../contracts/inventory-query.md) và báo cáo sau này.
 
 `SEQ_PHIEU_XUAT` cấp mã `PX0001`; `sp_HoanTatPhieuXuat` kiểm tra FEFO, khóa tồn và mapping đối tác theo [`contracts/outbound-fefo-completion.md`](../../../contracts/outbound-fefo-completion.md).
+
+`BIEN_DONG_TON_KHO` là sổ biến động ghi cùng transaction hoàn tất nhập/xuất. Mỗi dòng giữ loại nghiệp vụ, mã chứng từ, vị trí, lô, lượng tăng/giảm và thời điểm ghi sổ UTC. Unique key ngăn lặp cùng nghiệp vụ/chứng từ/vị trí/lô; index `IX_BIEN_DONG_TON_KHO_NGAY` phục vụ lọc khoảng ngày báo cáo. Migration 007 chỉ dựng sổ từ dữ liệu lịch sử khi mỗi lô còn đúng một vị trí và tổng biến động khớp tồn hiện có; dữ liệu lệch dừng migration để đối chiếu thủ công. Các nghiệp vụ chuyển/kiểm kê/trả sẽ bổ sung dòng sổ theo contract của chúng.
