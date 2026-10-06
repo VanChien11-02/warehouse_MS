@@ -43,4 +43,4 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `sp_HoanTatPhieuNhap` đã có `TRY...CATCH`, transaction, khóa phiếu/vị trí, kiểm tra mapping và số lượng phân bổ, tạo lô/tồn rồi chuyển trạng thái một lần. API tạo/xem/hoàn tất nhập và tra cứu tồn đã có; danh sách/sửa/hủy nháp chưa có.
 `vw_TonKhoChiTiet` nối tồn với vị trí, sản phẩm, phiếu nhập, lô và giá nhập thực tế; chỉ lấy phiếu `DA_HOAN_THANH`. View phục vụ [`contracts/inventory-query.md`](../../../contracts/inventory-query.md) và báo cáo sau này.
 
-`SEQ_PHIEU_XUAT` cấp mã `PX0001`; quy tắc xuất FEFO, khóa tồn và mapping đối tác sẽ được procedure kiểm tra theo [`contracts/outbound-fefo-completion.md`](../../../contracts/outbound-fefo-completion.md).
+`SEQ_PHIEU_XUAT` cấp mã `PX0001`; `sp_HoanTatPhieuXuat` kiểm tra FEFO, khóa tồn và mapping đối tác theo [`contracts/outbound-fefo-completion.md`](../../../contracts/outbound-fefo-completion.md).

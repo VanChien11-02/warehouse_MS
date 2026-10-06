@@ -35,3 +35,4 @@ COMMIT TRANSACTION;
 GO
 :r database/programmability/procedures/inbound/sp_HoanTatPhieuNhap.sql
 :r database/programmability/views/vw_TonKhoChiTiet.sql
+:r database/programmability/procedures/outbound/sp_HoanTatPhieuXuat.sql
