@@ -32,6 +32,9 @@ BEGIN TRANSACTION;
 :r database/schema/017_ct_phieu_xuat.sql
 :r database/schema/018_outbound_sequence.sql
 :r database/schema/019_bien_dong_ton_kho.sql
+:r database/schema/020_phieu_chuyen_kho.sql
+:r database/schema/021_ct_phieu_chuyen_kho.sql
+:r database/schema/022_transfer_sequence.sql
 COMMIT TRANSACTION;
 GO
 :r database/programmability/procedures/inbound/sp_HoanTatPhieuNhap.sql
