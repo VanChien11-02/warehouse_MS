@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class InboundServiceTest {
@@ -78,5 +79,26 @@ class InboundServiceTest {
         verify(repository).complete(eq("PN0001"), json.capture());
         assertTrue(json.getValue().contains("\"ngaySanXuat\":\"2026-01-01\""));
         assertTrue(json.getValue().contains("\"hanSuDung\":\"2026-12-31\""));
+    }
+
+    @Test
+    void completedInboundCannotBeEdited() {
+        when(repository.lockedStatus("PN0001")).thenReturn(Optional.of("DA_HOAN_THANH"));
+        var error = assertThrows(InboundException.class,
+            () -> service.update("PN0001", "NCC001", null,
+                List.of(new LineData("SP0001", 1, BigDecimal.ONE))));
+        assertEquals("INBOUND_NOT_DRAFT", error.code());
+        verify(repository).lockedStatus("PN0001");
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void cancelDraftPreservesDocumentAndChangesStatus() {
+        when(repository.lockedStatus("PN0001")).thenReturn(Optional.of("NHAP"));
+        when(repository.findByCode("PN0001")).thenReturn(Optional.of(new InboundModels.InboundView(
+            "PN0001", null, "NCC001", "Nhà cung cấp", "NV0001", "DA_HUY",
+            null, null, List.of())));
+        assertEquals("DA_HUY", service.cancel("pn0001").trangThai());
+        verify(repository).cancel("PN0001");
     }
 }

@@ -69,7 +69,7 @@ API `/api/kho`, `/api/khu-vuc` và `/api/vi-tri` hỗ trợ CRUD, phân trang/t�
 
 API `/api/nha-cung-cap` và `/api/doi-tac-nhan-hang` hỗ trợ CRUD, danh sách sản phẩm liên kết và gán/bỏ liên kết theo [`contracts/partner.md`](../../contracts/partner.md). Các liên kết được kiểm tra lại tại thời điểm hoàn tất phiếu.
 
-API `/api/phieu-nhap` đã có tạo nháp, xem chi tiết và hoàn tất theo [`contracts/inbound-completion.md`](../../contracts/inbound-completion.md). Java tạo nháp trong transaction; hoàn tất gọi `sp_HoanTatPhieuNhap` để procedure tự khóa/ghi sổ trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần tạo nhà cung cấp và mapping sản phẩm trước khi hoàn tất; danh sách/sửa/hủy nháp chưa có.
+API `/api/phieu-nhap` đã có danh sách, tạo/sửa/hủy nháp, xem chi tiết và hoàn tất theo [`contracts/inbound-completion.md`](../../contracts/inbound-completion.md). Java tạo/sửa/hủy nháp trong transaction; hoàn tất gọi `sp_HoanTatPhieuNhap` để procedure tự khóa/ghi sổ trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần tạo nhà cung cấp và mapping sản phẩm trước khi hoàn tất.
 
 API `GET /api/ton-kho` đọc `vw_TonKhoChiTiet`, hỗ trợ lọc/phân trang và chỉ lấy tồn khả dụng theo [`contracts/inventory-query.md`](../../contracts/inventory-query.md). Chưa có API ghi tồn trực tiếp; xuất kho vẫn phải kiểm tra lại trong transaction.
 

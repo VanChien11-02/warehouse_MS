@@ -21,6 +21,13 @@ public final class InboundModels {
         String trangThai, String ghiChu, OffsetDateTime ngayHoanTat,
         List<LineView> chiTiet) {}
 
+    public record InboundSummary(String maPhieuNhap, OffsetDateTime ngayNhap,
+        String maNhaCungCap, String tenNhaCungCap, String maNhanVien,
+        String trangThai, String ghiChu, OffsetDateTime ngayHoanTat) {}
+
+    public record InboundPage(List<InboundSummary> items, int page, int size,
+        long totalElements, long totalPages) {}
+
     public record CompletionView(String maPhieuNhap, String trangThai,
         OffsetDateTime ngayHoanTat) {}
 }

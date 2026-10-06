@@ -31,7 +31,10 @@ HTTP API hiện có:
 | Method | Route | Quyền | Kết quả |
 | --- | --- | --- | --- |
 | `GET` | `/api/phieu-nhap/{maPhieuNhap}` | Bốn role đã đăng nhập | `200` chi tiết phiếu và dòng |
+| `GET` | `/api/phieu-nhap?trangThai=NHAP&maNhaCungCap=NCC001&page=0&size=20` | Bốn role đã đăng nhập | `200` danh sách header phân trang |
 | `POST` | `/api/phieu-nhap` | `QuanLyKho`, `NhanVienKho` + CSRF | `201` phiếu `NHAP`, `Location` |
+| `PUT` | `/api/phieu-nhap/{maPhieuNhap}` | `QuanLyKho`, `NhanVienKho` + CSRF | `200` phiếu nháp sau khi thay toàn bộ header/dòng |
+| `POST` | `/api/phieu-nhap/{maPhieuNhap}/huy` | `QuanLyKho`, `NhanVienKho` + CSRF | `200` phiếu `DA_HUY`, giữ lại chứng từ và dòng |
 | `POST` | `/api/phieu-nhap/{maPhieuNhap}/hoan-tat` | Chỉ `QuanLyKho` + CSRF | `200` mã, trạng thái và thời điểm hoàn tất |
 
 Request tạo nháp:
@@ -42,12 +45,14 @@ Request tạo nháp:
 
 Nhân viên lập lấy từ session, client không được gửi `maNhanVien`. Mỗi sản phẩm chỉ có một dòng; số lượng nguyên dương, đơn giá không âm với tối đa bốn chữ số thập phân. Nhà cung cấp/sản phẩm phải tồn tại, nhưng mapping được kiểm tra lại lúc hoàn tất. Mã phiếu do server cấp. Response chi tiết thêm `ngayNhap`, `tenNhaCungCap`, `maNhanVien`, `trangThai`, `ngayHoanTat` và `chiTiet` có `tenSanPham`. Thời điểm trả ISO-8601 UTC với `Z`.
 
+`PUT` dùng cùng body như `POST` tạo nháp và thay toàn bộ dòng trong một transaction sau khi khóa header `NHAP`. `huy` khóa header và chỉ chuyển `NHAP` → `DA_HUY`, không xóa vật lý. Phiếu hoàn tất/đã hủy trả `409 INBOUND_NOT_DRAFT` cho cả sửa và hủy. Danh sách lọc tùy chọn trạng thái thuộc `NHAP`, `DA_HOAN_THANH`, `DA_HUY` và mã nhà cung cấp; `size` 1–100, `page` bắt đầu 0; response `{items,page,size,totalElements,totalPages}` với item chỉ có header, xếp `ngayNhap` mới nhất trước.
+
 Request hoàn tất:
 
 ```json
 {"phanBo":[{"maSanPham":"SP0001","maViTri":"VT0001","soLuong":10,"ngaySanXuat":"2026-01-01","hanSuDung":"2026-12-31"}]}
 ```
 
-Lỗi HTTP dùng envelope chung: `404 INBOUND_NOT_FOUND`; `409 INBOUND_NOT_DRAFT`, `CAPACITY_EXCEEDED`, `UNIT_MISMATCH`, `LOT_CODE_EXHAUSTED`, `INBOUND_CODE_EXHAUSTED`; `422 LINES_REQUIRED`, `DUPLICATE_PRODUCT`, `ALLOCATIONS_REQUIRED`, `INVALID_ALLOCATION`, `SUPPLIER_PRODUCT_NOT_LINKED`, `INVALID_POSITION`, `INCOMPATIBLE_STORAGE`, `INVALID_REFERENCE`, `INVALID_CODE`, `VALIDATION_FAILED`; `401` chưa đăng nhập, `403` thiếu quyền/CSRF. Lỗi SQL ngoài danh sách trả `500 INBOUND_POSTING_FAILED` mà không lộ message SQL.
+Lỗi HTTP dùng envelope chung: `404 INBOUND_NOT_FOUND`; `409 INBOUND_NOT_DRAFT`, `CAPACITY_EXCEEDED`, `UNIT_MISMATCH`, `LOT_CODE_EXHAUSTED`, `INBOUND_CODE_EXHAUSTED`; `422 LINES_REQUIRED`, `DUPLICATE_PRODUCT`, `ALLOCATIONS_REQUIRED`, `INVALID_ALLOCATION`, `SUPPLIER_PRODUCT_NOT_LINKED`, `INVALID_POSITION`, `INCOMPATIBLE_STORAGE`, `INVALID_REFERENCE`, `INVALID_CODE`, `INVALID_STATUS`, `INVALID_PAGINATION`, `VALIDATION_FAILED`; `401` chưa đăng nhập, `403` thiếu quyền/CSRF. Lỗi SQL ngoài danh sách trả `500 INBOUND_POSTING_FAILED` mà không lộ message SQL.
 
-Danh sách/lọc phiếu, sửa/hủy nháp và endpoint tra cứu tồn sẽ được thêm trong mốc tiếp theo.
+Tra cứu tồn theo lô/vị trí có contract riêng tại [`inventory-query.md`](inventory-query.md).
