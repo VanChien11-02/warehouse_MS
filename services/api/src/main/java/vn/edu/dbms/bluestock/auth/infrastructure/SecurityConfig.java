@@ -79,6 +79,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/phieu-nhap/*/hoan-tat")
                     .hasAuthority("ROLE_QLKHO")
                 .requestMatchers(HttpMethod.GET, "/api/ton-kho").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/phieu-xuat/*").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/phieu-xuat")
+                    .hasAnyAuthority("ROLE_QLKHO", "ROLE_NVKHO")
+                .requestMatchers(HttpMethod.POST, "/api/phieu-xuat/*/hoan-tat")
+                    .hasAuthority("ROLE_QLKHO")
                 .anyRequest().denyAll())
             .exceptionHandling(errors -> errors
                 .authenticationEntryPoint((request, response, exception) ->

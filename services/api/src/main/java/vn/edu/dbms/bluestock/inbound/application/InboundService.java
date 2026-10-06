@@ -16,6 +16,7 @@ import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundView;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineData;
 import vn.edu.dbms.bluestock.inbound.infrastructure.InboundJdbcRepository;
+import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
 
 @Service
 public class InboundService {
@@ -86,7 +87,7 @@ public class InboundService {
         try {
             return repository.complete(normalizedCode, json);
         } catch (DataAccessException exception) {
-            throw mapProcedureError(InboundJdbcRepository.sqlErrorNumber(exception));
+            throw mapProcedureError(SqlErrorNumbers.from(exception));
         }
     }
 

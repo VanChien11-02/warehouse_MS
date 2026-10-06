@@ -1,6 +1,6 @@
 # Contract dữ liệu xuất kho
 
-- Status: Accepted for BE schema/procedure implementation; HTTP API pending
+- Status: Accepted for BE implementation (tạo nháp, xem chi tiết, hoàn tất); các route khác pending
 - Date: 2026-10-07
 - Scope: OUT-01, BR-OUT-001 đến BR-OUT-007
 - Owner triển khai: nhánh BE
@@ -14,4 +14,22 @@
 
 Mã lỗi SQL ổn định: `51201` không thấy phiếu, `51202` trạng thái sai, `51203` thiếu ngày, `51204` thiếu dòng, `51205` vị trí không tồn tại, `51206` lô/vị trí không khả dụng, `51207` đối tác thiếu mapping, `51208` không đủ tồn, `51209` sai FEFO. JDBC adapter sẽ ánh xạ thành lỗi HTTP có cấu trúc, không trả message SQL thô.
 
-Chưa có HTTP endpoint xuất trong commit procedure này.
+HTTP API hiện có:
+
+| Method | Route | Quyền | Kết quả |
+| --- | --- | --- | --- |
+| `GET` | `/api/phieu-xuat/{maPhieuXuat}` | Bốn role đã đăng nhập | `200` chi tiết phiếu và dòng |
+| `POST` | `/api/phieu-xuat` | `QuanLyKho`, `NhanVienKho` + CSRF | `201` phiếu `NHAP`, `Location` |
+| `POST` | `/api/phieu-xuat/{maPhieuXuat}/hoan-tat` | Chỉ `QuanLyKho` + CSRF | `200` mã, trạng thái và thời điểm hoàn tất |
+
+Request tạo nháp:
+
+```json
+{"maDoiTacNhanHang":"DT0001","ghiChu":null,"chiTiet":[{"maLo":"LO0001","maViTri":"VT0001","soLuong":2,"donGiaXuat":20.0000}]}
+```
+
+Nhân viên lập lấy từ session, client không được gửi `maNhanVien`. Một cặp lô/vị trí chỉ có một dòng, số lượng nguyên dương, đơn giá không âm với tối đa bốn chữ số thập phân. Đối tác/lô/vị trí phải tồn tại; tồn đủ, FEFO, hạn dùng và mapping sản phẩm được kiểm tra lại lúc hoàn tất. Mã phiếu do server cấp. Response chi tiết thêm `ngayXuat`, `tenDoiTac`, `maNhanVien`, `trangThai`, `ngayHoanTat` và `chiTiet` có sản phẩm/hạn dùng. Thời điểm trả ISO-8601 UTC với `Z`.
+
+Request hoàn tất không có body. Backend tính ngày nghiệp vụ `Asia/Bangkok` tại thời điểm gọi rồi truyền vào procedure; client không được chọn ngày để bỏ qua hạn dùng. Lỗi HTTP dùng envelope chung: `404 OUTBOUND_NOT_FOUND`; `409 OUTBOUND_NOT_DRAFT`, `INSUFFICIENT_STOCK`, `FEFO_VIOLATION`, `OUTBOUND_CODE_EXHAUSTED`; `422 LINES_REQUIRED`, `DUPLICATE_STOCK_SOURCE`, `INVALID_REFERENCE`, `INVALID_POSITION`, `STOCK_NOT_AVAILABLE`, `RECIPIENT_PRODUCT_NOT_LINKED`, `INVALID_CODE`, `VALIDATION_FAILED`; `401` chưa đăng nhập, `403` thiếu quyền/CSRF. Lỗi SQL không nhận diện trả `500 OUTBOUND_POSTING_FAILED` mà không lộ message SQL.
+
+Danh sách/lọc phiếu, sửa/hủy nháp và gợi ý FEFO qua API sẽ được thêm trong mốc tiếp theo.
