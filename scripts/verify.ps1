@@ -109,7 +109,8 @@ if ($WithDatabase) {
         'database\tests\006_position_crud.sql',
         'database\tests\007_partner_constraints.sql',
         'database\tests\008_inbound_inventory_constraints.sql',
-        'database\tests\009_inbound_completion.sql'
+        'database\tests\009_inbound_completion.sql',
+        'database\tests\010_inventory_view.sql'
     )
     foreach ($testFile in $databaseTests) {
         & $sqlcmd -S $SqlServer -E -C -b -d BlueStock -i (Join-Path $root $testFile)

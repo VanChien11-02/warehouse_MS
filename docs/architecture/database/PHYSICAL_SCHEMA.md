@@ -38,4 +38,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 
 `SEQ_PHIEU_NHAP` và `SEQ_LO_HANG` cấp số mã chứng từ/lô. Quy tắc tổng số lượng lô, sức chứa, đơn vị tính và bảo quản cần procedure hoàn tất kiểm tra trong transaction theo [`contracts/inbound-completion.md`](../../../contracts/inbound-completion.md).
 
-`sp_HoanTatPhieuNhap` đã có `TRY...CATCH`, transaction, khóa phiếu/vị trí, kiểm tra mapping và số lượng phân bổ, tạo lô/tồn rồi chuyển trạng thái một lần. API nhập và tra cứu tồn chưa được triển khai.
+`sp_HoanTatPhieuNhap` đã có `TRY...CATCH`, transaction, khóa phiếu/vị trí, kiểm tra mapping và số lượng phân bổ, tạo lô/tồn rồi chuyển trạng thái một lần. API tạo/xem/hoàn tất nhập và tra cứu tồn đã có; danh sách/sửa/hủy nháp chưa có.
+`vw_TonKhoChiTiet` nối tồn với vị trí, sản phẩm, phiếu nhập, lô và giá nhập thực tế; chỉ lấy phiếu `DA_HOAN_THANH`. View phục vụ [`contracts/inventory-query.md`](../../../contracts/inventory-query.md) và báo cáo sau này.

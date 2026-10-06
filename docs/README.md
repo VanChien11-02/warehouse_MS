@@ -43,7 +43,8 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 - [`../contracts/loai-don-vi-tinh.md`](../contracts/loai-don-vi-tinh.md): CRUD, tìm kiếm và quyền của loại sản phẩm và đơn vị tính.
 - [`../contracts/warehouse-location.md`](../contracts/warehouse-location.md): CRUD và quyền của cấu trúc kho.
 - [`../contracts/partner.md`](../contracts/partner.md): schema nhà cung cấp, đối tác nhận và mapping sản phẩm.
-- [`../contracts/inbound-completion.md`](../contracts/inbound-completion.md): schema phiếu nhập, lô và tồn theo vị trí.
+- [`../contracts/inbound-completion.md`](../contracts/inbound-completion.md): schema, procedure và API tạo/xem/hoàn tất nhập.
+- [`../contracts/inventory-query.md`](../contracts/inventory-query.md): tra cứu tồn khả dụng theo lô/vị trí và nguồn giá nhập.
 - [`../database/SCHEMA_PLAN.md`](../database/SCHEMA_PLAN.md): kế hoạch physical schema, object SQL và test database.
 
 ## Tài liệu nguồn

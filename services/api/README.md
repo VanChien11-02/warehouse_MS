@@ -1,6 +1,6 @@
 # Spring Boot API
 
-Module backend của hệ thống kho. Bộ khung hiện có Spring Boot 3.5.16, Maven Wrapper, cấu hình SQL Server, health/session endpoint, CRUD danh mục sản phẩm/cấu trúc kho và API tạo/xem/hoàn tất phiếu nhập.
+Module backend của hệ thống kho. Bộ khung hiện có Spring Boot 3.5.16, Maven Wrapper, cấu hình SQL Server, health/session endpoint, CRUD danh mục sản phẩm/cấu trúc kho, API nhập và tra cứu tồn.
 
 ## Công nghệ cố định
 
@@ -68,6 +68,8 @@ API `/api/loai-san-pham` và `/api/don-vi-tinh` hỗ trợ CRUD, phân trang/tì
 API `/api/kho`, `/api/khu-vuc` và `/api/vi-tri` hỗ trợ CRUD, phân trang/tìm kiếm và lọc theo kho/khu vực theo [`contracts/warehouse-location.md`](../../contracts/warehouse-location.md). Kiểm tra sức chứa và bảo quản khi ghi sổ tồn thuộc procedure nghiệp vụ; chưa có giao dịch kho.
 
 API `/api/phieu-nhap` đã có tạo nháp, xem chi tiết và hoàn tất theo [`contracts/inbound-completion.md`](../../contracts/inbound-completion.md). Java tạo nháp trong transaction; hoàn tất gọi `sp_HoanTatPhieuNhap` để procedure tự khóa/ghi sổ trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần có nhà cung cấp và mapping sản phẩm trong database trước khi hoàn tất; partner API và các route nhập còn lại chưa có.
+
+API `GET /api/ton-kho` đọc `vw_TonKhoChiTiet`, hỗ trợ lọc/phân trang và chỉ lấy tồn khả dụng theo [`contracts/inventory-query.md`](../../contracts/inventory-query.md). Chưa có API ghi tồn trực tiếp; xuất kho vẫn phải kiểm tra lại trong transaction.
 
 Khi database chưa có tài khoản, từ root chạy `pwsh -File scripts/bootstrap-admin.ps1` sau khi đặt biến kết nối JDBC. Lệnh hỏi mật khẩu admin (ít nhất 12 ký tự), tạo tài khoản `admin` với mã `NV0001`/`TK0001` và khởi động API. Dừng tiến trình sau khi tạo xong, rồi chạy `scripts/dev.ps1 -Target api` bình thường. Có thể đổi tên đăng nhập bằng `-Username`; lệnh từ chối chạy lại nếu đã có tài khoản. Mật khẩu không được ghi vào file.
 

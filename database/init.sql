@@ -31,3 +31,4 @@ BEGIN TRANSACTION;
 COMMIT TRANSACTION;
 GO
 :r database/programmability/procedures/inbound/sp_HoanTatPhieuNhap.sql
+:r database/programmability/views/vw_TonKhoChiTiet.sql

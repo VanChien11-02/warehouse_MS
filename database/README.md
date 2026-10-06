@@ -23,6 +23,8 @@ Sau migration đối tác, database local cũ cần chạy tiếp một lần `s
 
 Sau migration 002, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/003_inbound_completion.sql` để tạo/cập nhật procedure hoàn tất nhập. Migration 003 có thể chạy lại khi procedure đổi. Database dựng mới bằng `init.sql` đã có procedure này.
 
+Sau migration 003, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/004_inventory_view.sql` để tạo/cập nhật `vw_TonKhoChiTiet`. View chỉ hiển thị tồn từ phiếu nhập đã hoàn tất, giữ khóa truy vết vị trí/lô/phiếu và đơn giá nhập thực tế. Database dựng mới bằng `init.sql` đã có view.
+
 ## Cấu trúc mục tiêu
 
 ```text
