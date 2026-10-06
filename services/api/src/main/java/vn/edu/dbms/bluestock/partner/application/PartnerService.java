@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.dbms.bluestock.partner.application.PartnerException.Kind;
 import vn.edu.dbms.bluestock.partner.application.PartnerModels.Page;
+import vn.edu.dbms.bluestock.partner.application.PartnerModels.RecipientView;
 import vn.edu.dbms.bluestock.partner.application.PartnerModels.SupplierView;
 import vn.edu.dbms.bluestock.partner.infrastructure.PartnerJdbcRepository;
 
@@ -99,6 +100,90 @@ public class PartnerService {
         supplier(normalizedSupplier);
         if (repository.removeSupplierProduct(normalizedSupplier, normalizeCode(productCode)) == 0) {
             throw new PartnerException(Kind.NOT_FOUND, "SUPPLIER_PRODUCT_NOT_FOUND",
+                "Không tìm thấy liên kết sản phẩm");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RecipientView> recipients(int page, int size, String query) {
+        return repository.recipients(page, size, normalizedQuery(page, size, query));
+    }
+
+    @Transactional(readOnly = true)
+    public RecipientView recipient(String code) {
+        return repository.recipient(normalizeCode(code)).orElseThrow(() ->
+            new PartnerException(Kind.NOT_FOUND, "RECIPIENT_NOT_FOUND", "Không tìm thấy đối tác nhận hàng"));
+    }
+
+    @Transactional
+    public RecipientView createRecipient(String code, String name, String type,
+        String address, String phone, String email) {
+        String normalizedCode = normalizeCode(code);
+        try {
+            repository.insertRecipient(normalizedCode, name.trim(), type.trim(),
+                optionalText(address), optionalText(phone), optionalText(email));
+        } catch (DuplicateKeyException exception) {
+            throw new PartnerException(Kind.CONFLICT, "RECIPIENT_CODE_EXISTS", "Mã đối tác đã tồn tại");
+        }
+        return recipient(normalizedCode);
+    }
+
+    @Transactional
+    public RecipientView updateRecipient(String code, String name, String type,
+        String address, String phone, String email) {
+        String normalizedCode = normalizeCode(code);
+        if (repository.updateRecipient(normalizedCode, name.trim(), type.trim(),
+            optionalText(address), optionalText(phone), optionalText(email)) == 0) {
+            throw new PartnerException(Kind.NOT_FOUND, "RECIPIENT_NOT_FOUND", "Không tìm thấy đối tác nhận hàng");
+        }
+        return recipient(normalizedCode);
+    }
+
+    @Transactional
+    public void deleteRecipient(String code) {
+        String normalizedCode = normalizeCode(code);
+        try {
+            if (repository.deleteRecipient(normalizedCode) == 0) {
+                throw new PartnerException(Kind.NOT_FOUND, "RECIPIENT_NOT_FOUND", "Không tìm thấy đối tác nhận hàng");
+            }
+        } catch (DataIntegrityViolationException exception) {
+            throw new PartnerException(Kind.CONFLICT, "RECIPIENT_IN_USE",
+                "Đối tác đã được sản phẩm hoặc chứng từ tham chiếu");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> recipientProducts(String code) {
+        String normalizedCode = normalizeCode(code);
+        recipient(normalizedCode);
+        return repository.recipientProducts(normalizedCode);
+    }
+
+    @Transactional
+    public void addRecipientProduct(String recipientCode, String productCode) {
+        String normalizedRecipient = normalizeCode(recipientCode);
+        String normalizedProduct = normalizeCode(productCode);
+        recipient(normalizedRecipient);
+        if (!repository.productExists(normalizedProduct)) {
+            throw new PartnerException(Kind.VALIDATION, "INVALID_PRODUCT", "Sản phẩm không tồn tại");
+        }
+        try {
+            repository.addRecipientProduct(normalizedRecipient, normalizedProduct);
+        } catch (DuplicateKeyException exception) {
+            throw new PartnerException(Kind.CONFLICT, "RECIPIENT_PRODUCT_EXISTS",
+                "Đối tác đã liên kết sản phẩm này");
+        } catch (DataIntegrityViolationException exception) {
+            throw new PartnerException(Kind.VALIDATION, "INVALID_REFERENCE",
+                "Đối tác hoặc sản phẩm không còn tồn tại");
+        }
+    }
+
+    @Transactional
+    public void removeRecipientProduct(String recipientCode, String productCode) {
+        String normalizedRecipient = normalizeCode(recipientCode);
+        recipient(normalizedRecipient);
+        if (repository.removeRecipientProduct(normalizedRecipient, normalizeCode(productCode)) == 0) {
+            throw new PartnerException(Kind.NOT_FOUND, "RECIPIENT_PRODUCT_NOT_FOUND",
                 "Không tìm thấy liên kết sản phẩm");
         }
     }

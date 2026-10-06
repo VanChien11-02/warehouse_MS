@@ -6,6 +6,7 @@ import org.mockito.Mockito;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import vn.edu.dbms.bluestock.partner.application.PartnerModels.SupplierView;
+import vn.edu.dbms.bluestock.partner.application.PartnerModels.RecipientView;
 import vn.edu.dbms.bluestock.partner.infrastructure.PartnerJdbcRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,5 +47,17 @@ class PartnerServiceTest {
             () -> service.deleteSupplier("ncc001"));
         assertEquals("SUPPLIER_IN_USE", error.code());
         verify(repository).deleteSupplier("NCC001");
+    }
+
+    @Test
+    void duplicateRecipientMappingHasStableConflictCode() {
+        when(repository.recipient("DTN001")).thenReturn(Optional.of(
+            new RecipientView("DTN001", "Đại lý", "Đại lý", null, null, null)));
+        when(repository.productExists("SP0001")).thenReturn(true);
+        Mockito.doThrow(new DuplicateKeyException("duplicate"))
+            .when(repository).addRecipientProduct("DTN001", "SP0001");
+        PartnerException error = assertThrows(PartnerException.class,
+            () -> service.addRecipientProduct("dtn001", "sp0001"));
+        assertEquals("RECIPIENT_PRODUCT_EXISTS", error.code());
     }
 }

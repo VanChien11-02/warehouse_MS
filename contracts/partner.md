@@ -1,6 +1,6 @@
 # Contract dữ liệu đối tác
 
-- Status: Accepted for BE schema and supplier API implementation; recipient API pending
+- Status: Accepted for BE schema and partner API implementation
 - Date: 2026-10-07
 - Scope: nền dữ liệu cho INB-01, OUT-01, BR-INB-007, BR-OUT-006
 - Owner triển khai: nhánh BE
@@ -31,4 +31,8 @@ Tạo: `{"maNhaCungCap":"NCC001","tenNhaCungCap":"Nhà cung cấp A","diaChi":nu
 
 Lỗi dùng envelope chuẩn: `422 INVALID_CODE/INVALID_PAGINATION/INVALID_QUERY/INVALID_PRODUCT`, `404 SUPPLIER_NOT_FOUND/SUPPLIER_PRODUCT_NOT_FOUND`, `409 SUPPLIER_CODE_EXISTS/SUPPLIER_PRODUCT_EXISTS/SUPPLIER_IN_USE`. Lỗi validation DTO dùng `422 VALIDATION_FAILED`. Database FK ngăn xóa nhà cung cấp đang được chứng từ hoặc mapping tham chiếu. Khi bỏ mapping, phiếu đã hoàn tất vẫn giữ lịch sử; phiếu nháp sẽ bị kiểm tra lại tại lúc hoàn tất.
 
-API đối tác nhận hàng được bổ sung trong mốc tiếp theo.
+## API đối tác nhận hàng
+
+`/api/doi-tac-nhan-hang` có cùng các method, phân trang, tìm kiếm, quyền và cách gán/bỏ `/{maDoiTacNhanHang}/san-pham/{maSanPham}` như API nhà cung cấp. `POST` và `PUT` dùng các trường `tenDoiTac`, `loaiDoiTac` bắt buộc; trường tùy chọn `diaChi`, `soDienThoai`, `email` có cùng giới hạn. `POST` thêm `maDoiTacNhanHang`, còn `PUT` dùng mã trên URL. Loại đối tác là chuỗi không rỗng tối đa 50 ký tự đến khi nhóm chốt tập giá trị.
+
+Ví dụ tạo: `{"maDoiTacNhanHang":"DTN001","tenDoiTac":"Đơn vị nhận A","loaiDoiTac":"Đại lý","diaChi":null,"soDienThoai":null,"email":null}`. Đọc trả cùng sáu trường. Lỗi riêng: `404 RECIPIENT_NOT_FOUND/RECIPIENT_PRODUCT_NOT_FOUND`, `409 RECIPIENT_CODE_EXISTS/RECIPIENT_PRODUCT_EXISTS/RECIPIENT_IN_USE`; lỗi `422` dùng cùng mã chung như nhà cung cấp. FK ngăn xóa đối tác đã có mapping hoặc chứng từ.

@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 19 bảng đã có trong `database/schema/`; procedure xuất và các bảng kiểm soát kho còn lại chưa được triển khai.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 19 bảng đã có trong `database/schema/`; procedure nhập/xuất đã có, các bảng kiểm soát kho còn lại chưa được triển khai.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
