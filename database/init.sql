@@ -28,6 +28,9 @@ BEGIN TRANSACTION;
 :r database/schema/013_lo_hang.sql
 :r database/schema/014_ton_kho.sql
 :r database/schema/015_sequences.sql
+:r database/schema/016_phieu_xuat.sql
+:r database/schema/017_ct_phieu_xuat.sql
+:r database/schema/018_outbound_sequence.sql
 COMMIT TRANSACTION;
 GO
 :r database/programmability/procedures/inbound/sp_HoanTatPhieuNhap.sql

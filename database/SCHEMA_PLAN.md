@@ -1,6 +1,6 @@
 # Kế hoạch physical schema SQL Server
 
-> Trạng thái: **Draft cho DB-01**. 17 bảng đến phiếu nhập/lô/tồn đã có data dictionary tại `docs/architecture/database/PHYSICAL_SCHEMA.md`; các bảng nghiệp vụ còn lại chưa được triển khai.
+> Trạng thái: **Draft cho DB-01**. 19 bảng đến phiếu xuất đã có data dictionary tại `docs/architecture/database/PHYSICAL_SCHEMA.md`; các bảng kiểm soát kho còn lại chưa được triển khai.
 
 ## Mục tiêu
 
