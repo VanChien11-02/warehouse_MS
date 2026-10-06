@@ -25,6 +25,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -42,6 +43,23 @@ class TransferControllerTest {
         mvc.perform(get("/api/phieu-chuyen/PC0001"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.maPhieuChuyen").value("PC0001"));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_KETOAN")
+    void accountantCannotCancelDraft() throws Exception {
+        mvc.perform(post("/api/phieu-chuyen/PC0001/huy").with(csrf()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_NVKHO")
+    void staffCanUpdateDraft() throws Exception {
+        when(service.update(eq("PC0001"), eq(null), any())).thenReturn(transfer());
+        mvc.perform(put("/api/phieu-chuyen/PC0001").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content(createBody()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.trangThai").value("NHAP"));
     }
 
     @Test

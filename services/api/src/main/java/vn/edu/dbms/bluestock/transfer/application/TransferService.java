@@ -13,6 +13,7 @@ import vn.edu.dbms.bluestock.transfer.application.TransferException.Kind;
 import vn.edu.dbms.bluestock.transfer.application.TransferModels.CompletionView;
 import vn.edu.dbms.bluestock.transfer.application.TransferModels.LineData;
 import vn.edu.dbms.bluestock.transfer.application.TransferModels.TransferView;
+import vn.edu.dbms.bluestock.transfer.application.TransferModels.TransferPage;
 import vn.edu.dbms.bluestock.transfer.infrastructure.TransferJdbcRepository;
 
 @Service
@@ -27,6 +28,19 @@ public class TransferService {
     public TransferView get(String code) {
         return repository.findByCode(normalizeCode(code)).orElseThrow(() ->
             new TransferException(Kind.NOT_FOUND, "TRANSFER_NOT_FOUND", "Không tìm thấy phiếu chuyển"));
+    }
+
+    @Transactional(readOnly = true)
+    public TransferPage list(int page, int size, String status) {
+        if (page < 0 || page > 1_000_000 || size < 1 || size > 100) {
+            throw new TransferException(Kind.VALIDATION, "INVALID_PAGINATION",
+                "page hoặc size không hợp lệ");
+        }
+        String normalizedStatus = status == null ? null : status.trim().toUpperCase(Locale.ROOT);
+        if (normalizedStatus != null && !List.of("NHAP", "DA_HOAN_THANH", "DA_HUY").contains(normalizedStatus)) {
+            throw new TransferException(Kind.VALIDATION, "INVALID_STATUS", "Trạng thái không hợp lệ");
+        }
+        return repository.findPage(page, size, normalizedStatus);
     }
 
     @Transactional
@@ -47,6 +61,38 @@ public class TransferService {
                 "Nhân viên, lô hoặc vị trí không tồn tại");
         }
         return get(code);
+    }
+
+    @Transactional
+    public TransferView update(String code, String note, List<LineData> lines) {
+        String normalizedCode = normalizeCode(code);
+        List<LineData> normalizedLines = normalizeLines(lines);
+        requireDraft(normalizedCode);
+        try {
+            repository.updateNote(normalizedCode, optionalText(note));
+            repository.replaceLines(normalizedCode, normalizedLines);
+        } catch (DataIntegrityViolationException exception) {
+            throw new TransferException(Kind.VALIDATION, "INVALID_REFERENCE",
+                "Lô hoặc vị trí không tồn tại");
+        }
+        return get(normalizedCode);
+    }
+
+    @Transactional
+    public TransferView cancel(String code) {
+        String normalizedCode = normalizeCode(code);
+        requireDraft(normalizedCode);
+        repository.cancel(normalizedCode);
+        return get(normalizedCode);
+    }
+
+    private void requireDraft(String code) {
+        String status = repository.lockedStatus(code).orElseThrow(() ->
+            new TransferException(Kind.NOT_FOUND, "TRANSFER_NOT_FOUND", "Không tìm thấy phiếu chuyển"));
+        if (!"NHAP".equals(status)) {
+            throw new TransferException(Kind.CONFLICT, "TRANSFER_NOT_DRAFT",
+                "Phiếu chuyển không còn ở trạng thái nháp");
+        }
     }
 
     public CompletionView complete(String code) {

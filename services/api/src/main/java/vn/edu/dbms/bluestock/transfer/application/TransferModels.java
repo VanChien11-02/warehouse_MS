@@ -15,6 +15,12 @@ public final class TransferModels {
         String maNhanVien, String trangThai, String ghiChu,
         OffsetDateTime ngayHoanTat, List<LineView> chiTiet) {}
 
+    public record TransferSummary(String maPhieuChuyen, OffsetDateTime ngayChuyen,
+        String maNhanVien, String trangThai, String ghiChu, OffsetDateTime ngayHoanTat) {}
+
+    public record TransferPage(List<TransferSummary> items, int page, int size,
+        long totalElements, long totalPages) {}
+
     public record CompletionView(String maPhieuChuyen, String trangThai,
         OffsetDateTime ngayHoanTat) {}
 }

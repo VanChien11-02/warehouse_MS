@@ -11,6 +11,8 @@ import vn.edu.dbms.bluestock.transfer.application.TransferModels.CompletionView;
 import vn.edu.dbms.bluestock.transfer.application.TransferModels.LineData;
 import vn.edu.dbms.bluestock.transfer.application.TransferModels.LineView;
 import vn.edu.dbms.bluestock.transfer.application.TransferModels.TransferView;
+import vn.edu.dbms.bluestock.transfer.application.TransferModels.TransferSummary;
+import vn.edu.dbms.bluestock.transfer.application.TransferModels.TransferPage;
 
 @Repository
 public class TransferJdbcRepository {
@@ -38,6 +40,47 @@ public class TransferJdbcRepository {
                 (MaPCK, MaLo, MaViTriNguon, MaViTriDich, SoLuong)
             VALUES (?, ?, ?, ?, ?)
             """, code, line.maLo(), line.maViTriNguon(), line.maViTriDich(), line.soLuong());
+    }
+
+    public TransferPage findPage(int page, int size, String status) {
+        String where = status == null ? "" : "WHERE TrangThai = ? ";
+        Object[] countArgs = status == null ? new Object[] {} : new Object[] {status};
+        Long count = jdbc.queryForObject("SELECT COUNT_BIG(*) FROM dbo.PHIEU_CHUYEN_KHO " + where,
+            Long.class, countArgs);
+        Object[] pageArgs = status == null
+            ? new Object[] {page * size, size}
+            : new Object[] {status, page * size, size};
+        List<TransferSummary> items = jdbc.query("""
+            SELECT MaPCK, NgayChuyen, MaNV, TrangThai, GhiChu, NgayHoanTat
+            FROM dbo.PHIEU_CHUYEN_KHO
+            """ + where + "ORDER BY NgayChuyen DESC, MaPCK DESC "
+            + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY", (row, index) ->
+                new TransferSummary(row.getString("MaPCK").trim(),
+                    utc(row.getObject("NgayChuyen", LocalDateTime.class)),
+                    row.getString("MaNV").trim(), row.getString("TrangThai"),
+                    row.getString("GhiChu"), utc(row.getObject("NgayHoanTat", LocalDateTime.class))),
+            pageArgs);
+        long total = count == null ? 0 : count;
+        return new TransferPage(items, page, size, total, (total + size - 1) / size);
+    }
+
+    public Optional<String> lockedStatus(String code) {
+        return jdbc.queryForList("""
+            SELECT TrangThai FROM dbo.PHIEU_CHUYEN_KHO WITH (UPDLOCK, HOLDLOCK) WHERE MaPCK = ?
+            """, String.class, code).stream().findFirst();
+    }
+
+    public void updateNote(String code, String note) {
+        jdbc.update("UPDATE dbo.PHIEU_CHUYEN_KHO SET GhiChu = ? WHERE MaPCK = ?", note, code);
+    }
+
+    public void replaceLines(String code, List<LineData> lines) {
+        jdbc.update("DELETE FROM dbo.CT_PHIEU_CHUYEN_KHO WHERE MaPCK = ?", code);
+        for (LineData line : lines) insertLine(code, line);
+    }
+
+    public void cancel(String code) {
+        jdbc.update("UPDATE dbo.PHIEU_CHUYEN_KHO SET TrangThai = N'DA_HUY' WHERE MaPCK = ?", code);
     }
 
     public Optional<TransferView> findByCode(String code) {
