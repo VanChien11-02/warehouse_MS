@@ -73,6 +73,14 @@ public class SecurityConfig {
                     .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO")
                 .requestMatchers(HttpMethod.DELETE, "/api/vi-tri/*")
                     .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO")
+                .requestMatchers(HttpMethod.GET, "/api/nha-cung-cap", "/api/nha-cung-cap/*",
+                    "/api/nha-cung-cap/*/san-pham").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/nha-cung-cap",
+                    "/api/nha-cung-cap/*/san-pham/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO")
+                .requestMatchers(HttpMethod.PUT, "/api/nha-cung-cap/*")
+                    .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO")
+                .requestMatchers(HttpMethod.DELETE, "/api/nha-cung-cap/*",
+                    "/api/nha-cung-cap/*/san-pham/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO")
                 .requestMatchers(HttpMethod.GET, "/api/phieu-nhap/*").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/phieu-nhap")
                     .hasAnyAuthority("ROLE_QLKHO", "ROLE_NVKHO")
