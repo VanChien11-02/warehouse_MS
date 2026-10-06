@@ -20,6 +20,7 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 - [`architecture/adr/0003-be-platform-contract.md`](architecture/adr/0003-be-platform-contract.md): quy ước nền tảng đã chốt cho nhánh triển khai backend.
 - [`architecture/adr/0004-stock-policies.md`](architecture/adr/0004-stock-policies.md): quy tắc ghi sổ và định giá tồn kho cho nhánh triển khai backend.
 - [`architecture/adr/0005-outbound-fefo-enforcement.md`](architecture/adr/0005-outbound-fefo-enforcement.md): kiểm tra thứ tự FEFO tại transaction hoàn tất xuất.
+- [`architecture/adr/0006-transfer-posting.md`](architecture/adr/0006-transfer-posting.md): khóa và ghi sổ chuyển kho.
 
 ## Quản lý dự án
 

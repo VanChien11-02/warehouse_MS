@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 22 bảng đã có trong `database/schema/`; procedure nhập/xuất đã có, procedure chuyển kho và các bảng kiểm soát khác chưa được triển khai.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 22 bảng đã có trong `database/schema/`; procedure nhập/xuất/chuyển đã có, các bảng kiểm soát khác chưa được triển khai.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
@@ -52,4 +52,4 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 
 `vw_BienDongTonKhoChiTiet` nối sổ biến động với kho, sản phẩm và giá nhập thực tế của lô. View là nguồn cho [`contracts/reporting.md`](../../../contracts/reporting.md); test SQL xác nhận giá trị nhập/xuất và số dư sau ghi sổ.
 
-`SEQ_PHIEU_CHUYEN_KHO` cấp mã `PC0001`; schema chuyển kho và các ràng buộc nền nằm trong [`contracts/transfer.md`](../../../contracts/transfer.md). Procedure hoàn tất và API chưa có ở mốc schema.
+`SEQ_PHIEU_CHUYEN_KHO` cấp mã `PC0001`; `sp_HoanTatChuyenKho` kiểm tra tồn nguồn, sức chứa/đơn vị/bảo quản ở đích và ghi biến động hai phía theo [`contracts/transfer.md`](../../../contracts/transfer.md). API chuyển kho chưa có ở mốc procedure.
