@@ -37,7 +37,7 @@ Cổng kiểm tra root:
 pwsh -File scripts/verify.ps1
 ```
 
-Backend đã có Maven Wrapper, health/session endpoint, CRUD danh mục/cấu trúc kho và test; giao dịch kho chưa có. Database đã có `init.sql` dựng 13 bảng identity/danh mục/cấu trúc kho/đối tác; các bảng và object nghiệp vụ còn lại thuộc `DB-01` chưa hoàn tất.
+Backend đã có Maven Wrapper, health/session endpoint, CRUD danh mục/cấu trúc kho và test; giao dịch kho chưa có. Database đã có `init.sql` dựng 17 bảng đến phiếu nhập/lô/tồn; procedure ghi sổ và các bảng nghiệp vụ còn lại thuộc `DB-01` chưa hoàn tất.
 
 ## 3. Cấu hình local
 
