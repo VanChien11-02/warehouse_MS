@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả chín bảng đã có trong `database/schema/`; các bảng chứng từ và tồn kho còn lại chưa được triển khai.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 13 bảng đã có trong `database/schema/`; các bảng chứng từ và tồn kho còn lại chưa được triển khai.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
@@ -15,6 +15,10 @@ Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 | `KHO` | `MaKho CHAR(6)` | — | `TenKho` bắt buộc và duy nhất |
 | `KHU_VUC` | `MaKhuVuc CHAR(6)` | `MaKho` | Tên duy nhất trong kho; loại Khô/Mát/Đông lạnh |
 | `VI_TRI_KHO` | `MaViTri CHAR(6)` | `MaKhuVuc` | Tên duy nhất trong khu vực; sức chứa `INT` không âm; loại Lưu trữ/Lấy hàng/Hư hỏng |
+| `NHA_CUNG_CAP` | `MaNCC CHAR(6)` | — | Tên bắt buộc; địa chỉ, điện thoại và email tùy chọn |
+| `DOI_TAC_NHAN_HANG` | `MaDTNH CHAR(6)` | — | Tên và loại đối tác bắt buộc; thông tin liên hệ tùy chọn |
+| `NHA_CUNG_CAP_SAN_PHAM` | `(MaNCC, MaSP)` | `MaNCC`, `MaSP` | Một nhà cung cấp chỉ mapping một lần với một sản phẩm |
+| `DOI_TAC_SAN_PHAM` | `(MaDTNH, MaSP)` | `MaDTNH`, `MaSP` | Đối tác nhận hàng tham chiếu đúng `DOI_TAC_NHAN_HANG` |
 
 Tên và mô tả dùng `NVARCHAR` để lưu tiếng Việt; mã dùng `CHAR(6)` theo tài liệu nguồn. `MoTa` dùng `NVARCHAR(1000)` thay cho kiểu `TEXT` cũ. Giá mặc định bằng 0 khi không cung cấp, nhưng giá nhập/xuất thực tế nằm trên dòng chứng từ.
 
@@ -25,3 +29,5 @@ API sẽ dùng tên JSON trong `contracts/BASELINE.md`, chẳng hạn `MaSP` ↔
 Identity map `TAI_KHOAN.MaTK` ↔ `maTaiKhoan`, `NHAN_VIEN.MaNV` ↔ `maNhanVien`, `TAI_KHOAN.TenTK` ↔ `tenTaiKhoan`, `ROLE.MaRole` ↔ `role` theo `contracts/session-rbac.md`. `MatKhauHash` không có trường response công khai.
 
 `SucChua` là số đơn vị tính gốc theo ADR 0004. Vị trí đang có tồn dương chỉ nhận lô cùng `MaDVT`; không cộng số lượng khác đơn vị để kết luận vị trí còn chỗ.
+
+Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/xuất theo [`contracts/partner.md`](../../../contracts/partner.md); tạo nháp không ghi sổ tồn.

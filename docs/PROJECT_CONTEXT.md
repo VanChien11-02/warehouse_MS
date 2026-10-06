@@ -19,7 +19,7 @@ Bốn vai trò dự kiến:
 | --- | --- | --- |
 | Frontend | Baseline HTML/CSS/Vanilla JavaScript chạy bằng static server, đang dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
 | Backend | Có Spring Boot/Maven Wrapper, health/session API, CRUD danh mục sản phẩm và cấu trúc kho; giao dịch kho chưa có | [`../services/api/README.md`](../services/api/README.md) |
-| Database | Có `init.sql` dựng chín bảng identity/danh mục/cấu trúc kho; chứng từ và tồn kho chưa có | [`../database/README.md`](../database/README.md) |
+| Database | Có `init.sql` dựng 13 bảng identity/danh mục/cấu trúc kho/đối tác; chứng từ và tồn kho chưa có | [`../database/README.md`](../database/README.md) |
 | API contract | Baseline Draft; contract session và danh mục sản phẩm đã chốt cho nhánh BE, nghiệp vụ kho còn thiếu | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
 | Phân công | Có đề xuất bốn workstream, còn chờ nhóm xác nhận | [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md) |
 

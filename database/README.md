@@ -2,7 +2,7 @@
 
 Thư mục này chứa toàn bộ script T-SQL có thể dựng lại database từ đầu và các đối tượng phục vụ rubric.
 
-Hiện `init.sql` tạo chín bảng nền tảng cho identity, danh mục sản phẩm và cấu trúc kho. Bốn role ứng dụng được seed; chưa có tài khoản. Các bảng chứng từ, tồn kho và dữ liệu mẫu sẽ được bổ sung theo từng module.
+Hiện `init.sql` tạo 13 bảng nền tảng cho identity, danh mục sản phẩm, cấu trúc kho và đối tác. Bốn role ứng dụng được seed; chưa có tài khoản. Các bảng chứng từ, tồn kho và dữ liệu mẫu sẽ được bổ sung theo từng module.
 
 ## Chạy schema nền tảng
 
@@ -17,11 +17,14 @@ pwsh -File scripts/verify.ps1 -WithDatabase
 
 Sau khi dựng schema, có thể chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/seed/catalog_demo.sql` để tạo loại và đơn vị tính mẫu trước khi thử API sản phẩm. Seed không tạo sản phẩm hoặc tài khoản, và có thể chạy lại.
 
+Nếu database local đã được dựng từ commit trước khi có đối tác, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/001_partner.sql`. Migration này chỉ thêm bốn bảng, dừng nếu đã chạy hoặc có bảng dở dang; không xóa dữ liệu cũ. Database dựng mới bằng `init.sql` đã có bốn bảng này và không chạy migration.
+
 ## Cấu trúc mục tiêu
 
 ```text
 database/
   schema/                 Bảng, PK, FK, CHECK, UNIQUE, DEFAULT
+  migrations/             Bổ sung schema cho database local đã tồn tại
   programmability/
     procedures/           Stored procedure
     functions/            User-defined function

@@ -1,6 +1,6 @@
 # Kế hoạch physical schema SQL Server
 
-> Trạng thái: **Draft cho DB-01**. Chín bảng nền tảng đã có data dictionary tại `docs/architecture/database/PHYSICAL_SCHEMA.md`; các bảng nghiệp vụ còn lại chưa được triển khai.
+> Trạng thái: **Draft cho DB-01**. 13 bảng nền tảng đã có data dictionary tại `docs/architecture/database/PHYSICAL_SCHEMA.md`; các bảng nghiệp vụ còn lại chưa được triển khai.
 
 ## Mục tiêu
 
