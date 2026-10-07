@@ -59,7 +59,7 @@ services\api\mvnw.cmd test
 
 `GET /api/health` kiểm tra tiến trình; `GET /actuator/health` còn phản ánh tình trạng kết nối DB. Các endpoint khác mặc định bị từ chối cho đến khi module xác thực và quyền được triển khai.
 
-API session hiện có `GET /api/auth/csrf`, `POST /api/auth/dang-nhap`, `GET /api/auth/me` và `POST /api/auth/dang-xuat` theo [`contracts/session-rbac.md`](../../contracts/session-rbac.md). `init.sql` chỉ seed bốn role; cần tạo nhân viên và tài khoản với BCrypt hash qua quy trình quản trị trước khi đăng nhập. Origin frontend mặc định là `http://127.0.0.1:5174`, có thể đổi bằng `APP_WEB_ORIGIN`.
+API session hiện có `GET /api/auth/csrf`, `POST /api/auth/dang-nhap`, `GET /api/auth/me`, `POST /api/auth/dang-xuat` và `PUT /api/auth/doi-mat-khau` theo [`contracts/session-rbac.md`](../../contracts/session-rbac.md). `init.sql` chỉ seed bốn role; cần tạo nhân viên và tài khoản với BCrypt hash qua quy trình quản trị trước khi đăng nhập. Origin frontend mặc định là `http://127.0.0.1:5174`, có thể đổi bằng `APP_WEB_ORIGIN`.
 
 API `/api/san-pham` hỗ trợ danh sách phân trang/tìm kiếm, chi tiết, tạo, sửa tên/giá và xóa khi chưa được tham chiếu theo [`contracts/san-pham.md`](../../contracts/san-pham.md). Loại và đơn vị tính mẫu cho thử nghiệm được tạo bằng `database/seed/catalog_demo.sql`; route ghi yêu cầu `ADMIN` hoặc `QLKHO` và CSRF token.
 

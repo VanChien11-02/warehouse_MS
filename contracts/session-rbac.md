@@ -14,6 +14,7 @@
 | `POST` | `/api/auth/dang-nhap` | Public + CSRF | `tenTaiKhoan`, `matKhau` | `200` với thông tin tài khoản và session cookie |
 | `GET` | `/api/auth/me` | Đã đăng nhập | — | `200` với thông tin tài khoản |
 | `POST` | `/api/auth/dang-xuat` | Đã đăng nhập + CSRF | — | `204`, hủy session |
+| `PUT` | `/api/auth/doi-mat-khau` | Đã đăng nhập + CSRF | `matKhauCu`, `matKhauMoi` | `204`, cập nhật BCrypt hash |
 
 Ví dụ request đăng nhập:
 
@@ -31,6 +32,6 @@ Response của đăng nhập và `/me`:
 
 Response lỗi dùng envelope trong `BASELINE.md`. `401 INVALID_CREDENTIALS` cho thông tin đăng nhập sai hoặc tài khoản không dùng được; `401 UNAUTHORIZED` khi chưa có session; `403 FORBIDDEN` cho thiếu quyền hoặc CSRF; `400 MALFORMED_JSON` cho JSON sai; `422 VALIDATION_FAILED` cho trường bắt buộc rỗng.
 
-Tạo tài khoản, đổi mật khẩu và chi tiết quyền từng endpoint nghiệp vụ sẽ được bổ sung vào contract khi triển khai. Backend từ chối mọi route chưa khai báo quyền.
+Đổi mật khẩu kiểm tra mật khẩu cũ với hash mới nhất trong database dưới khóa transaction; mật khẩu mới dài 12–72 ký tự và phải khác mật khẩu cũ. Sai mật khẩu cũ/tài khoản không còn hoạt động trả `401 INVALID_CREDENTIALS`; trùng mật khẩu cũ trả `422 PASSWORD_REUSED`. Request/response không chứa hash. Tạo tài khoản và chi tiết quyền từng endpoint nghiệp vụ được bổ sung khi triển khai. Backend từ chối mọi route chưa khai báo quyền.
 
 Khởi tạo lần đầu dùng `scripts/bootstrap-admin.ps1` sau khi `BlueStock` được tạo và kết nối JDBC hoạt động. Lệnh yêu cầu mật khẩu qua terminal, tạo `NHAN_VIEN.NV0001` và `TAI_KHOAN.TK0001` với role `ADMIN` và BCrypt hash trong một transaction. Lệnh từ chối khi đã có tài khoản; không có mật khẩu mặc định trong repository.
