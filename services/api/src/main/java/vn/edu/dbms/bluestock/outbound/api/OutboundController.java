@@ -77,8 +77,9 @@ public class OutboundController {
     }
 
     @PostMapping("/{maPhieuXuat}/huy")
-    public OutboundView cancel(@PathVariable String maPhieuXuat) {
-        return service.cancel(maPhieuXuat);
+    public OutboundView cancel(@PathVariable String maPhieuXuat,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        return service.cancel(maPhieuXuat, principal.maTaiKhoan());
     }
 
     @PostMapping("/{maPhieuXuat}/hoan-tat")

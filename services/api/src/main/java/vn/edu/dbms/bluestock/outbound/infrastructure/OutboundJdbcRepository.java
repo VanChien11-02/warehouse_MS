@@ -92,8 +92,9 @@ public class OutboundJdbcRepository {
         for (LineData line : lines) insertLine(code, line);
     }
 
-    public void cancel(String code) {
-        jdbc.update("UPDATE dbo.PHIEU_XUAT SET TrangThai = N'DA_HUY' WHERE MaPX = ?", code);
+    public int cancel(String code) {
+        return jdbc.update("UPDATE dbo.PHIEU_XUAT SET TrangThai = N'DA_HUY' "
+            + "WHERE MaPX = ? AND TrangThai = N'NHAP'", code);
     }
 
     public Optional<OutboundView> findByCode(String code) {

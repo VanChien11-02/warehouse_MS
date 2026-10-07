@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 import vn.edu.dbms.bluestock.inventory.application.AvailableStockQuery;
 import vn.edu.dbms.bluestock.inventory.application.AvailableStockQuery.StockCandidate;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.LineData;
@@ -19,12 +20,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class OutboundServiceTest {
     private final OutboundJdbcRepository repository = mock(OutboundJdbcRepository.class);
     private final AvailableStockQuery availableStock = mock(AvailableStockQuery.class);
-    private final OutboundService service = new OutboundService(repository, availableStock);
+    private final AuditTrail audit = mock(AuditTrail.class);
+    private final OutboundService service = new OutboundService(repository, availableStock, audit);
 
     @Test
     void duplicateLotPositionIsRejectedBeforeWriting() {
@@ -95,10 +98,22 @@ class OutboundServiceTest {
     @Test
     void cancelDraftPreservesDocumentAndChangesStatus() {
         when(repository.lockedStatus("PX0001")).thenReturn(Optional.of("NHAP"));
+        when(repository.cancel("PX0001")).thenReturn(1);
         when(repository.findByCode("PX0001")).thenReturn(Optional.of(new OutboundModels.OutboundView(
             "PX0001", null, "DT0001", "Đối tác", "NV0001", "DA_HUY",
             null, null, List.of())));
-        assertEquals("DA_HUY", service.cancel("px0001").trangThai());
+        assertEquals("DA_HUY", service.cancel("px0001", "tk0001").trangThai());
         verify(repository).cancel("PX0001");
+        verify(audit).record("TK0001", "CANCEL", "PHIEU_XUAT", "PX0001",
+            java.util.Map.of("trangThai", "NHAP"), java.util.Map.of("trangThai", "DA_HUY"));
+    }
+
+    @Test
+    void failedCancellationDoesNotWriteAudit() {
+        when(repository.lockedStatus("PX0001")).thenReturn(Optional.of("NHAP"));
+        var error = assertThrows(OutboundException.class,
+            () -> service.cancel("PX0001", "TK0001"));
+        assertEquals("OUTBOUND_NOT_DRAFT", error.code());
+        verifyNoInteractions(audit);
     }
 }

@@ -6,10 +6,12 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 import vn.edu.dbms.bluestock.outbound.application.OutboundException.Kind;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.CompletionView;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.FefoAllocation;
@@ -26,10 +28,13 @@ public class OutboundService {
     private static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Bangkok");
     private final OutboundJdbcRepository repository;
     private final AvailableStockQuery availableStock;
+    private final AuditTrail audit;
 
-    public OutboundService(OutboundJdbcRepository repository, AvailableStockQuery availableStock) {
+    public OutboundService(OutboundJdbcRepository repository, AvailableStockQuery availableStock,
+        AuditTrail audit) {
         this.repository = repository;
         this.availableStock = availableStock;
+        this.audit = audit;
     }
 
     @Transactional(readOnly = true)
@@ -90,10 +95,15 @@ public class OutboundService {
     }
 
     @Transactional
-    public OutboundView cancel(String code) {
+    public OutboundView cancel(String code, String actorAccount) {
         String normalizedCode = normalizeCode(code);
         requireDraft(normalizedCode);
-        repository.cancel(normalizedCode);
+        if (repository.cancel(normalizedCode) != 1) {
+            throw new OutboundException(Kind.CONFLICT, "OUTBOUND_NOT_DRAFT",
+                "Phiếu xuất không còn ở trạng thái nháp");
+        }
+        audit.record(normalizeCode(actorAccount), "CANCEL", "PHIEU_XUAT", normalizedCode,
+            Map.of("trangThai", "NHAP"), Map.of("trangThai", "DA_HUY"));
         return get(normalizedCode);
     }
 
