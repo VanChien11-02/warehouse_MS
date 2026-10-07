@@ -42,6 +42,7 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 - [`../contracts/API_CATALOG.md`](../contracts/API_CATALOG.md): inventory endpoint dự kiến và thứ tự viết contract chi tiết.
 - [`../contracts/session-rbac.md`](../contracts/session-rbac.md): session, CSRF, payload đăng nhập và mã role cho nhánh BE.
 - [`../contracts/identity-admin.md`](../contracts/identity-admin.md): quản trị nhân viên, tài khoản, role và reset mật khẩu.
+- [`../contracts/audit.md`](../contracts/audit.md): bảng và API nhật ký thao tác.
 - [`../contracts/san-pham.md`](../contracts/san-pham.md): CRUD, tìm kiếm, phân trang và quyền của sản phẩm.
 - [`../contracts/loai-don-vi-tinh.md`](../contracts/loai-don-vi-tinh.md): CRUD, tìm kiếm và quyền của loại sản phẩm và đơn vị tính.
 - [`../contracts/warehouse-location.md`](../contracts/warehouse-location.md): CRUD và quyền của cấu trúc kho.

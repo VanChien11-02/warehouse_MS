@@ -118,7 +118,8 @@ if ($WithDatabase) {
         'database\tests\015_inventory_count_constraints.sql',
         'database\tests\016_inventory_count_completion.sql',
         'database\tests\017_return_constraints.sql',
-        'database\tests\018_return_completion.sql'
+        'database\tests\018_return_completion.sql',
+        'database\tests\019_audit_constraints.sql'
     )
     foreach ($testFile in $databaseTests) {
         & $sqlcmd -S $SqlServer -E -C -b -d BlueStock -i (Join-Path $root $testFile)

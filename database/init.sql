@@ -41,6 +41,7 @@ BEGIN TRANSACTION;
 :r database/schema/026_phieu_tra_hang.sql
 :r database/schema/027_ct_phieu_tra_hang.sql
 :r database/schema/028_return_sequence.sql
+:r database/schema/029_lich_su_thao_tac.sql
 COMMIT TRANSACTION;
 GO
 :r database/programmability/procedures/inbound/sp_HoanTatPhieuNhap.sql
