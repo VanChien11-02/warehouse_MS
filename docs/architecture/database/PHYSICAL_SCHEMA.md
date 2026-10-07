@@ -59,3 +59,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `SEQ_PHIEU_KIEM_KE` cấp mã `KK0001`. Phiếu gắn một vị trí; dòng `(MaPKK, MaLo)` giữ số tồn hệ thống bất biến sau khi tạo và số đếm thực tế có thể để trống trong nháp. Quy tắc lý do chênh lệch và đối chiếu snapshot được ghi trong [`contracts/inventory-count.md`](../../../contracts/inventory-count.md).
 
 `sp_HoanTatKiemKe` khóa phiếu, vị trí và tồn; so snapshot với lượng hiện tại, kiểm tra lý do, sức chứa, đơn vị và bảo quản rồi điều chỉnh tồn cùng dòng sổ `KIEM_KE` trong một transaction. Procedure từ chối chốt lặp; test cố ý gây lỗi ghi sổ muộn để xác nhận tồn và trạng thái rollback.
+
+`vw_ChenhLechKiemKe` chỉ gồm các dòng có chênh lệch khác 0 của phiếu đã hoàn tất, giữ nguyên số hệ thống lúc snapshot và nối đến kho/lô/sản phẩm để báo cáo theo kỳ tại [`contracts/count-discrepancy-report.md`](../../../contracts/count-discrepancy-report.md).

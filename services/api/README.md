@@ -77,7 +77,7 @@ API `/api/phieu-xuat` đã có danh sách, tạo/sửa/hủy nháp, xem chi ti�
 
 `GET /api/phieu-xuat/{maPhieuXuat}/goi-y-fefo` đề xuất lô/vị trí cho một sản phẩm và số lượng, trả phần thiếu nếu tồn không đủ. Gợi ý không giữ chỗ; lúc hoàn tất procedure kiểm tra FEFO và tồn lần nữa.
 
-`GET /api/bao-cao/nhap-xuat` trả báo cáo theo kỳ, kho và sản phẩm từ sổ biến động đã ghi cùng transaction nhập/xuất; đơn giá lấy từ phiếu nhập của lô theo [`contracts/reporting.md`](../../contracts/reporting.md). Chưa có các báo cáo hạn dùng và chênh lệch kiểm kê.
+`GET /api/bao-cao/nhap-xuat` trả báo cáo theo kỳ, kho và sản phẩm từ sổ biến động đã ghi cùng transaction nhập/xuất; đơn giá lấy từ phiếu nhập của lô theo [`contracts/reporting.md`](../../contracts/reporting.md). `GET /api/bao-cao/chenh-lech-kiem-ke` chỉ lấy dòng chênh lệch của phiếu đã hoàn tất theo [`contracts/count-discrepancy-report.md`](../../contracts/count-discrepancy-report.md). Báo cáo hạn dùng chưa có.
 
 API `/api/phieu-chuyen` có danh sách, tạo/sửa/hủy nháp, xem chi tiết và hoàn tất theo [`contracts/transfer.md`](../../contracts/transfer.md). Procedure kiểm tra tồn nguồn, sức chứa, bảo quản và ghi hai phía chuyển trong transaction; chỉ `QLKHO` được hoàn tất.
 

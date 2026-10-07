@@ -90,6 +90,9 @@ BEGIN TRY
     IF (SELECT SoLuongThayDoi FROM dbo.BIEN_DONG_TON_KHO
         WHERE LoaiNghiepVu = N'KIEM_KE' AND MaChungTu = 'TST163') <> -2
         THROW 51998, N'Biến động kiểm kê sai.', 1;
+    IF (SELECT ChenhLech FROM dbo.vw_ChenhLechKiemKe
+        WHERE MaPKK = 'TST163' AND MaLo = @MaLo) <> -2
+        THROW 52002, N'Báo cáo chênh lệch kiểm kê sai.', 1;
     BEGIN TRY
         EXEC dbo.sp_HoanTatKiemKe @MaPKK = 'TST163';
         THROW 51999, N'Phiếu kiểm kê được ghi hai lần.', 1;

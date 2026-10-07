@@ -116,6 +116,8 @@ public class SecurityConfig {
                     .hasAuthority("ROLE_QLKHO")
                 .requestMatchers(HttpMethod.GET, "/api/bao-cao/nhap-xuat")
                     .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO", "ROLE_KETOAN")
+                .requestMatchers(HttpMethod.GET, "/api/bao-cao/chenh-lech-kiem-ke")
+                    .hasAnyAuthority("ROLE_ADMIN", "ROLE_QLKHO", "ROLE_KETOAN")
                 .requestMatchers(HttpMethod.GET, "/api/phieu-chuyen", "/api/phieu-chuyen/*")
                     .authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/phieu-chuyen")

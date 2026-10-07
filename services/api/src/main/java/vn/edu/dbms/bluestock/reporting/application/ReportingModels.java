@@ -16,4 +16,13 @@ public final class ReportingModels {
     public record MovementReportPage(LocalDate tuNgay, LocalDate denNgay,
         List<MovementReportRow> items, int page, int size,
         long totalElements, long totalPages) {}
+
+    public record CountDiscrepancyRow(String maPhieuKiemKe, String maKho,
+        String maViTri, String maLo, String maSanPham, String tenSanPham,
+        long soLuongHeThong, long soLuongThucTe, long chenhLech,
+        String lyDoChenhLech, java.time.OffsetDateTime ngayHoanTat) {}
+
+    public record CountDiscrepancyPage(LocalDate tuNgay, LocalDate denNgay,
+        List<CountDiscrepancyRow> items, int page, int size,
+        long totalElements, long totalPages) {}
 }

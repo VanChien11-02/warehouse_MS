@@ -2,6 +2,7 @@ package vn.edu.dbms.bluestock.reporting.infrastructure;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -9,6 +10,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import vn.edu.dbms.bluestock.reporting.application.ReportingModels.MovementReportPage;
 import vn.edu.dbms.bluestock.reporting.application.ReportingModels.MovementReportRow;
+import vn.edu.dbms.bluestock.reporting.application.ReportingModels.CountDiscrepancyPage;
+import vn.edu.dbms.bluestock.reporting.application.ReportingModels.CountDiscrepancyRow;
 
 @Repository
 public class ReportingJdbcRepository {
@@ -37,6 +40,10 @@ public class ReportingJdbcRepository {
                 AND LoaiNghiepVu NOT IN (N'NHAP', N'XUAT')
                 THEN GiaTriThayDoi ELSE 0 END) AS GiaTriDieuChinh,
             SUM(GiaTriThayDoi) AS GiaTriCuoiKy
+        """;
+    private static final String COUNT_SOURCE = """
+        FROM dbo.vw_ChenhLechKiemKe
+        WHERE NgayHoanTat >= :startUtc AND NgayHoanTat < :endUtc
         """;
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -84,6 +91,46 @@ public class ReportingJdbcRepository {
                 row.getBigDecimal("GiaTriXuat"), row.getBigDecimal("GiaTriDieuChinh"),
                 row.getBigDecimal("GiaTriCuoiKy")));
         return new MovementReportPage(from, through, rows, page, size,
+            total, (total + size - 1) / size);
+    }
+
+    public CountDiscrepancyPage countDiscrepancies(LocalDate from, LocalDate through,
+        LocalDateTime startUtc, LocalDateTime endUtc,
+        String warehouseCode, String positionCode, int page, int size) {
+        var params = new MapSqlParameterSource()
+            .addValue("startUtc", startUtc)
+            .addValue("endUtc", endUtc);
+        var filters = new ArrayList<String>();
+        if (warehouseCode != null) {
+            filters.add("MaKho = :maKho");
+            params.addValue("maKho", warehouseCode);
+        }
+        if (positionCode != null) {
+            filters.add("MaViTri = :maViTri");
+            params.addValue("maViTri", positionCode);
+        }
+        String where = COUNT_SOURCE
+            + (filters.isEmpty() ? "" : "AND " + String.join(" AND ", filters) + "\n");
+        Long count = jdbc.queryForObject("SELECT COUNT_BIG(*) " + where, params, Long.class);
+        long total = count == null ? 0 : count;
+        params.addValue("offset", page * size);
+        params.addValue("size", size);
+        List<CountDiscrepancyRow> rows = jdbc.query("""
+            SELECT MaPKK, MaKho, MaViTri, MaLo, MaSP, TenSP,
+                   SoLuongHeThong, SoLuongThucTe, ChenhLech, LyDoChenhLech,
+                   NgayHoanTat
+            """ + where + "ORDER BY NgayHoanTat DESC, MaPKK DESC, MaLo "
+            + "OFFSET :offset ROWS FETCH NEXT :size ROWS ONLY", params, (row, index) -> {
+                long system = row.getLong("SoLuongHeThong");
+                long actual = row.getLong("SoLuongThucTe");
+                return new CountDiscrepancyRow(row.getString("MaPKK").trim(),
+                    row.getString("MaKho").trim(), row.getString("MaViTri").trim(),
+                    row.getString("MaLo").trim(), row.getString("MaSP").trim(),
+                    row.getString("TenSP"), system, actual, row.getLong("ChenhLech"),
+                    row.getString("LyDoChenhLech"),
+                    row.getObject("NgayHoanTat", LocalDateTime.class).atOffset(ZoneOffset.UTC));
+            });
+        return new CountDiscrepancyPage(from, through, rows, page, size,
             total, (total + size - 1) / size);
     }
 }
