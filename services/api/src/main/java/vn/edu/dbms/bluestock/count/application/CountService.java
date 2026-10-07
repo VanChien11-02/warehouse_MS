@@ -2,10 +2,12 @@ package vn.edu.dbms.bluestock.count.application;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 import vn.edu.dbms.bluestock.count.application.CountException.Kind;
 import vn.edu.dbms.bluestock.count.application.CountModels.CompletionView;
 import vn.edu.dbms.bluestock.count.application.CountModels.CountPage;
@@ -16,9 +18,11 @@ import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
 @Service
 public class CountService {
     private final CountJdbcRepository repository;
+    private final AuditTrail audit;
 
-    public CountService(CountJdbcRepository repository) {
+    public CountService(CountJdbcRepository repository, AuditTrail audit) {
         this.repository = repository;
+        this.audit = audit;
     }
 
     @Transactional(readOnly = true)
@@ -99,10 +103,15 @@ public class CountService {
     }
 
     @Transactional
-    public CountView cancel(String code) {
+    public CountView cancel(String code, String actorAccount) {
         String normalizedCode = normalizeCode(code);
         requireDraft(normalizedCode);
-        repository.cancel(normalizedCode);
+        if (repository.cancel(normalizedCode) != 1) {
+            throw new CountException(Kind.CONFLICT, "COUNT_NOT_DRAFT",
+                "Phiếu kiểm kê không còn ở trạng thái nháp");
+        }
+        audit.record(normalizeCode(actorAccount), "CANCEL", "PHIEU_KIEM_KE", normalizedCode,
+            Map.of("trangThai", "NHAP"), Map.of("trangThai", "DA_HUY"));
         return get(normalizedCode);
     }
 
