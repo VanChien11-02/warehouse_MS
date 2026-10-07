@@ -42,6 +42,9 @@ public class SecurityConfig {
                     .permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/dang-nhap").permitAll()
                 .requestMatchers("/api/auth/**").authenticated()
+                .requestMatchers("/api/nhan-vien", "/api/nhan-vien/*",
+                    "/api/tai-khoan", "/api/tai-khoan/*", "/api/tai-khoan/*/mat-khau")
+                    .hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/san-pham", "/api/san-pham/*")
                     .authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/san-pham")
