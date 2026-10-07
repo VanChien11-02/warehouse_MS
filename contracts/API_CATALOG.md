@@ -24,7 +24,7 @@
 | `PUT` | `/api/auth/doi-mat-khau` | Đổi mật khẩu của user hiện tại | Authenticated | SEC-01 |
 | `GET/POST/PUT` | `/api/nhan-vien` | Danh sách/tạo/cập nhật theo [`identity-admin.md`](identity-admin.md) | Admin | SEC-01 |
 | `GET/POST/PUT` | `/api/tai-khoan` | Quản lý tài khoản, role, trạng thái và reset mật khẩu theo [`identity-admin.md`](identity-admin.md) | Admin | SEC-01 |
-| `GET` | `/api/audit` | Tra cứu nhật ký | Admin/QuanLyKho giới hạn | AUD-01 |
+| `GET` | `/api/audit` | Tra cứu nhật ký theo [`audit.md`](audit.md) | Admin | AUD-01 |
 
 Không thiết kế endpoint trả password hash hoặc dữ liệu xác thực nội bộ.
 

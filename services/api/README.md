@@ -63,6 +63,8 @@ API session hiện có `GET /api/auth/csrf`, `POST /api/auth/dang-nhap`, `GET /a
 
 Admin có thể tạo/cập nhật nhân viên, tạo/khóa/mở tài khoản, đổi role và reset mật khẩu qua `/api/nhan-vien` và `/api/tai-khoan` theo [`contracts/identity-admin.md`](../../contracts/identity-admin.md). Mã nhân viên/tài khoản do Admin nhập; endpoint không trả hash.
 
+`GET /api/audit` cho Admin tra cứu nhật ký theo kỳ/tài khoản theo [`contracts/audit.md`](../../contracts/audit.md). Các thao tác ghi audit sẽ được bổ sung theo từng module trong transaction tương ứng.
+
 API `/api/san-pham` hỗ trợ danh sách phân trang/tìm kiếm, chi tiết, tạo, sửa tên/giá và xóa khi chưa được tham chiếu theo [`contracts/san-pham.md`](../../contracts/san-pham.md). Loại và đơn vị tính mẫu cho thử nghiệm được tạo bằng `database/seed/catalog_demo.sql`; route ghi yêu cầu `ADMIN` hoặc `QLKHO` và CSRF token.
 
 API `/api/loai-san-pham` và `/api/don-vi-tinh` hỗ trợ CRUD, phân trang/tìm kiếm theo [`contracts/loai-don-vi-tinh.md`](../../contracts/loai-don-vi-tinh.md). Có thể tạo hai dữ liệu này qua API trước khi tạo sản phẩm; không cần seed SQL nếu thử luồng danh mục từ đầu.
