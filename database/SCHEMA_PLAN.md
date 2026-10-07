@@ -1,6 +1,6 @@
 # Kế hoạch physical schema SQL Server
 
-> Trạng thái: **Draft cho DB-01**. 27 bảng, năm procedure hoàn tất, năm function và bảy view đã có; phần security, trigger, đo index và rebuild sạch còn cần kiểm chứng.
+> Trạng thái: **Draft cho DB-01**. 27 bảng, năm procedure hoàn tất, năm function và bảy view đã có; script đã dựng được database độc lập trên SQL Server 17.x và toàn bộ test SQL đạt. SQL Server 2022, security, trigger và đo index còn cần kiểm chứng.
 
 ## Mục tiêu
 
@@ -157,7 +157,7 @@ Mỗi index cần query đại diện và bằng chứng trước/sau; không t�
 ## Definition of DB baseline complete
 
 - [ ] Data dictionary được review.
-- [ ] `init.sql` chạy trên SQL Server 2022 từ database sạch.
+- [ ] `init.sql` chạy trên SQL Server 2022 từ database sạch (đã chạy trên SQL Server 17.x).
 - [ ] Seed demo chạy được.
 - [ ] Constraint và five posting procedures có test.
 - [ ] Security roles có test truy cập.

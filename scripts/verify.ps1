@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
     [switch] $WithDatabase,
-    [string] $SqlServer = 'localhost'
+    [string] $SqlServer = 'localhost',
+    [ValidatePattern('^[A-Za-z][A-Za-z0-9_]{0,127}$')]
+    [string] $DatabaseName = 'BlueStock'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -123,7 +125,7 @@ if ($WithDatabase) {
         'database\tests\020_inventory_functions_views.sql'
     )
     foreach ($testFile in $databaseTests) {
-        & $sqlcmd -S $SqlServer -E -C -b -d BlueStock -i (Join-Path $root $testFile)
+        & $sqlcmd -S $SqlServer -E -C -b -d $DatabaseName -i (Join-Path $root $testFile)
         if ($LASTEXITCODE -ne 0) { throw "Database test thất bại: $testFile" }
     }
 }
