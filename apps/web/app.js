@@ -5,8 +5,10 @@ import { createApiClient } from "./core/api-client.js";
 import { listConfigs, inventoryRows, countRows, reportData, documentProducts } from "./data/demo.js";
 import { createProductApi } from "./data/product-api.js";
 import { createInventoryApi } from "./data/inventory-api.js";
+import { createReportApi } from "./data/report-api.js";
 import { createLiveProducts } from "./features/live-products.js";
 import { createLiveInventory } from "./features/live-inventory.js";
+import { createLiveReport } from "./features/live-report.js";
 
 const USE_DUMMY_DATA = new URLSearchParams(window.location.search).get("mode") !== "api";
 const requestedApiPort = new URLSearchParams(window.location.search).get("apiPort");
@@ -49,18 +51,28 @@ const pageSize = 8;
 let toastTimer;
 const apiClient = USE_DUMMY_DATA ? null : createApiClient({ baseUrl: API_BASE_URL });
 let liveInventory = null;
+let liveReport = null;
 const liveProducts = USE_DUMMY_DATA ? null : createLiveProducts({
   client: apiClient,
   products: createProductApi(apiClient),
   escapeHtml,
   formatCurrency,
   showToast,
-  onSessionChange: () => { if (activeView === "inventory") liveInventory?.render(); },
+  onSessionChange: () => {
+    if (activeView === "inventory") liveInventory?.render();
+    if (activeView === "reports") liveReport?.render();
+  },
   closeEditor: closeRecordEditor
 });
 if (!USE_DUMMY_DATA) {
   liveInventory = createLiveInventory({
     inventory: createInventoryApi(apiClient),
+    escapeHtml,
+    isAuthenticated: liveProducts.isAuthenticated,
+    requireLogin: liveProducts.requireLogin
+  });
+  liveReport = createLiveReport({
+    reports: createReportApi(apiClient),
     escapeHtml,
     isAuthenticated: liveProducts.isAuthenticated,
     requireLogin: liveProducts.requireLogin
@@ -119,7 +131,8 @@ function renderNavigation() {
     elements.navGroups.innerHTML = `<section class="nav-group"><p class="nav-group-title">Danh mục</p>
       <button class="nav-item" type="button" data-view="products">${icon("box")}<span>Sản phẩm</span></button></section>
       <section class="nav-group"><p class="nav-group-title">Kho</p>
-      <button class="nav-item" type="button" data-view="inventory">${icon("chart")}<span>Tồn kho</span></button></section>`;
+      <button class="nav-item" type="button" data-view="inventory">${icon("chart")}<span>Tồn kho</span></button>
+      <button class="nav-item" type="button" data-view="reports">${icon("chart")}<span>Báo cáo nhập–xuất–tồn</span></button></section>`;
     updateActiveNavigation();
     return;
   }
@@ -228,7 +241,7 @@ function configureDocument(mode) {
 
 function showView(viewName, updateHash = true) {
   const profile = roleProfiles[activeRole];
-  if (!USE_DUMMY_DATA && !["products", "inventory"].includes(viewName)) viewName = "products";
+  if (!USE_DUMMY_DATA && !["products", "inventory", "reports"].includes(viewName)) viewName = "products";
   else if (!profile.pages.includes(viewName)) {
     showToast("Vai trò hiện tại không hiển thị chức năng này.");
     viewName = "dashboard";
@@ -258,7 +271,8 @@ function showView(viewName, updateHash = true) {
     }
   } else if (viewName === "reports") {
     setVisibleView("reportsView");
-    renderReport();
+    if (USE_DUMMY_DATA) renderReport();
+    else liveReport.render();
   } else {
     setVisibleView("listView");
     activeList = viewName;
@@ -692,7 +706,7 @@ document.querySelector("#returnForm").addEventListener("submit", (event) => {
   showToast("Phiếu trả hợp lệ. Backend sẽ kiểm tra lượng đã xuất trước khi hoàn tất.");
 });
 
-document.querySelector("#runReportButton").addEventListener("click", (event) => {
+if (USE_DUMMY_DATA) document.querySelector("#runReportButton").addEventListener("click", (event) => {
   const button = event.currentTarget;
   button.disabled = true;
   button.textContent = "Đang tổng hợp...";
@@ -747,7 +761,7 @@ if (!USE_DUMMY_DATA) {
   document.querySelector(".location-context").hidden = true;
   document.querySelector("#listView .filter-row").hidden = true;
   document.querySelector("#dataStatus").textContent = "Dữ liệu API";
-  document.querySelector("#dataStatusDetail").textContent = "Sản phẩm và tồn kho";
+  document.querySelector("#dataStatusDetail").textContent = "Danh mục, tồn và báo cáo";
   const modeLink = document.querySelector("#apiModeLink");
   modeLink.href = "?mode=demo#dashboard";
   modeLink.firstChild.textContent = "Dữ liệu demo ";
@@ -761,8 +775,9 @@ if (USE_DUMMY_DATA) {
   showView(roleProfiles[activeRole].pages.includes(initialHash) ? initialHash : "dashboard", false);
 } else {
   liveInventory.start();
+  liveReport.start();
   const initialHash = window.location.hash.slice(1);
-  showView(["products", "inventory"].includes(initialHash) ? initialHash : "products", false);
+  showView(["products", "inventory", "reports"].includes(initialHash) ? initialHash : "products", false);
   liveProducts.start();
 }
 
