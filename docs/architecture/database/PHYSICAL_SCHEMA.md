@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 24 bảng đã có trong `database/schema/`; procedure nhập/xuất/chuyển đã có, procedure kiểm kê và các bảng kiểm soát khác chưa được triển khai.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 24 bảng đã có trong `database/schema/`; procedure nhập/xuất/chuyển/kiểm kê đã có, các bảng kiểm soát khác chưa được triển khai.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
@@ -57,3 +57,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `SEQ_PHIEU_CHUYEN_KHO` cấp mã `PC0001`; `sp_HoanTatChuyenKho` kiểm tra tồn nguồn, sức chứa/đơn vị/bảo quản ở đích và ghi biến động hai phía theo [`contracts/transfer.md`](../../../contracts/transfer.md). API chuyển kho chưa có ở mốc procedure.
 
 `SEQ_PHIEU_KIEM_KE` cấp mã `KK0001`. Phiếu gắn một vị trí; dòng `(MaPKK, MaLo)` giữ số tồn hệ thống bất biến sau khi tạo và số đếm thực tế có thể để trống trong nháp. Quy tắc lý do chênh lệch và đối chiếu snapshot được ghi trong [`contracts/inventory-count.md`](../../../contracts/inventory-count.md).
+
+`sp_HoanTatKiemKe` khóa phiếu, vị trí và tồn; so snapshot với lượng hiện tại, kiểm tra lý do, sức chứa, đơn vị và bảo quản rồi điều chỉnh tồn cùng dòng sổ `KIEM_KE` trong một transaction. Procedure từ chối chốt lặp; test cố ý gây lỗi ghi sổ muộn để xác nhận tồn và trạng thái rollback.

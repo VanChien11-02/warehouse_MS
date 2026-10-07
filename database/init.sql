@@ -45,3 +45,4 @@ GO
 :r database/programmability/procedures/outbound/sp_HoanTatPhieuXuat.sql
 :r database/programmability/views/vw_BienDongTonKhoChiTiet.sql
 :r database/programmability/procedures/transfer/sp_HoanTatChuyenKho.sql
+:r database/programmability/procedures/count/sp_HoanTatKiemKe.sql
