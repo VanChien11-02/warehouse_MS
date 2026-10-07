@@ -123,7 +123,8 @@ if ($WithDatabase) {
         'database\tests\018_return_completion.sql',
         'database\tests\019_audit_constraints.sql',
         'database\tests\020_inventory_functions_views.sql',
-        'database\tests\021_position_stock_guard.sql'
+        'database\tests\021_position_stock_guard.sql',
+        'database\tests\022_application_roles.sql'
     )
     foreach ($testFile in $databaseTests) {
         & $sqlcmd -S $SqlServer -E -C -b -d $DatabaseName -i (Join-Path $root $testFile)

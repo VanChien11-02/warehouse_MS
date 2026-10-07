@@ -63,6 +63,8 @@ Sau migration 022, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database
 
 Sau migration 023, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/024_position_stock_guard.sql` để bảo vệ sức chứa/khu vực/loại của vị trí đã có tồn. Test 021 kiểm tra update nhiều dòng rollback nguyên tử và đổi tên hợp lệ.
 
+Sau migration 024, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/025_application_roles.sql` để tạo bốn role database và cấp quyền theo [`security/README.md`](security/README.md). Test 022 kiểm tra quyền hiệu lực, kể cả GRANT/REVOKE/DENY, bằng user SQL tạm thời.
+
 ## Cấu trúc mục tiêu
 
 ```text

@@ -63,3 +63,4 @@ GO
 :r database/programmability/views/vw_LichSuXuatKho.sql
 :r database/programmability/views/vw_LoSapHetHan.sql
 :r database/programmability/triggers/trg_ViTriKho_BaoVeTon.sql
+:r database/security/001_application_roles.sql
