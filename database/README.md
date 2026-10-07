@@ -65,6 +65,8 @@ Sau migration 023, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database
 
 Sau migration 024, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/025_application_roles.sql` để tạo bốn role database và cấp quyền theo [`security/README.md`](security/README.md). Test 022 kiểm tra quyền hiệu lực, kể cả GRANT/REVOKE/DENY, bằng user SQL tạm thời.
 
+Sau migration 025, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/026_inventory_indexes.sql` để thêm index tra cứu lô, tồn và danh sách chứng từ. Test 023 và cách đo trước/sau ở [`indexes/README.md`](indexes/README.md).
+
 ## Cấu trúc mục tiêu
 
 ```text
