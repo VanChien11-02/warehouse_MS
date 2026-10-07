@@ -27,6 +27,7 @@ Mở `http://127.0.0.1:5174`.
 - `styles.css`: design tokens, trạng thái và bố cục responsive.
 - `app.js`: khởi tạo giao diện, bảng/phân trang và tương tác biểu mẫu.
 - `core/navigation.js`: cấu hình vai trò demo, menu và tiêu đề màn hình.
+- `core/api-client.js`: HTTP client giữ session cookie và CSRF token trong bộ nhớ cho chế độ API.
 - `data/demo.js`: dữ liệu giả của danh mục, tồn, kiểm kê và báo cáo.
 
 JavaScript đã tách cấu hình điều hướng và dữ liệu mẫu khỏi điểm vào. Logic tương tác và CSS vẫn tập trung trong hai file lớn; backlog `GOV-03` cần tiếp tục tách theo feature trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md), giữ hành vi hiện có và không đổi framework.
@@ -37,7 +38,7 @@ Giao diện dùng phong cách editorial tiết chế lấy cảm hứng từ tra
 
 ## Kết nối Spring Boot
 
-`app.js` hiện dùng toàn bộ dữ liệu mẫu. Biến `USE_DUMMY_DATA` chưa điều khiển một adapter API; đổi biến này không kết nối giao diện với backend. Luồng chứng từ/form demo không gửi HTTP. Backend có các route thật và payload trong [`../../contracts/`](../../contracts/), ví dụ `/api/san-pham`, `/api/phieu-nhap`, `/api/ton-kho`, `/api/phieu-xuat`. Dùng HTTP client theo contract để thử backend cho đến khi `FE-02` hoàn thành.
+`app.js` hiện dùng toàn bộ dữ liệu mẫu. `core/api-client.js` chuẩn bị session/CSRF cho adapter API, nhưng chưa được nối vào các màn hình. Biến `USE_DUMMY_DATA` chưa chuyển được giao diện sang backend. Luồng chứng từ/form demo không gửi HTTP. Backend có các route thật và payload trong [`../../contracts/`](../../contracts/), ví dụ `/api/san-pham`, `/api/phieu-nhap`, `/api/ton-kho`, `/api/phieu-xuat`. Dùng HTTP client theo contract để thử backend cho đến khi `FE-02` hoàn thành.
 
 Khi nối giao diện, dùng origin `http://127.0.0.1:5174` khớp cấu hình CORS mặc định của API, xử lý session cookie/CSRF và loading/error/empty state. Tách dữ liệu mẫu và HTTP sau một adapter theo [`../../docs/project/governance/BACKLOG.md`](../../docs/project/governance/BACKLOG.md); không đổi URL rải rác trong form.
 
