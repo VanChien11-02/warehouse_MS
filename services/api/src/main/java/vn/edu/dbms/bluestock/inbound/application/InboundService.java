@@ -120,7 +120,8 @@ public class InboundService {
         return normalized;
     }
 
-    public CompletionView complete(String code, List<AllocationData> allocations) {
+    public CompletionView complete(String code, List<AllocationData> allocations,
+        String actorAccount) {
         String normalizedCode = normalizeCode(code);
         if (allocations == null || allocations.isEmpty()) {
             throw new InboundException(Kind.VALIDATION, "ALLOCATIONS_REQUIRED",
@@ -138,7 +139,7 @@ public class InboundService {
             throw new IllegalStateException("Không tạo được dữ liệu phân bổ", exception);
         }
         try {
-            return repository.complete(normalizedCode, json);
+            return repository.complete(normalizedCode, json, normalizeCode(actorAccount));
         } catch (DataAccessException exception) {
             throw mapProcedureError(SqlErrorNumbers.from(exception));
         }

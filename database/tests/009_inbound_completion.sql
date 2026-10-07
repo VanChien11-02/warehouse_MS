@@ -5,6 +5,9 @@ BEGIN TRY
     BEGIN TRANSACTION;
     INSERT INTO dbo.NHAN_VIEN (MaNV, TenNV, NgayVaoLam)
         VALUES ('TST901', N'Nhân viên test hoàn tất nhập', '2026-01-01');
+    INSERT INTO dbo.TAI_KHOAN (MaTK, MaNV, MaRole, TenTK, MatKhauHash)
+        VALUES ('TST901', 'TST901', 'QLKHO', N'test.inbound.audit',
+            '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
     INSERT INTO dbo.NHA_CUNG_CAP (MaNCC, TenNCC)
         VALUES ('TST901', N'Nhà cung cấp test hoàn tất nhập'),
                ('TST902', N'Nhà cung cấp thiếu mapping');
@@ -35,7 +38,8 @@ BEGIN TRY
     COMMIT TRANSACTION;
 
     EXEC dbo.sp_HoanTatPhieuNhap @MaPN = 'TST901',
-        @PhanBoJson = N'[{"maSanPham":"TST901","maViTri":"TST901","soLuong":6,"ngaySanXuat":"2026-01-01","hanSuDung":"2026-12-31"}]';
+        @PhanBoJson = N'[{"maSanPham":"TST901","maViTri":"TST901","soLuong":6,"ngaySanXuat":"2026-01-01","hanSuDung":"2026-12-31"}]',
+        @MaTK = 'TST901';
 
     IF (SELECT TrangThai FROM dbo.PHIEU_NHAP WHERE MaPN = 'TST901') <> N'DA_HOAN_THANH'
         THROW 51901, N'Phiếu nhập không hoàn tất.', 1;
@@ -48,6 +52,10 @@ BEGIN TRY
         WHERE MaChungTu = 'TST901' AND LoaiNghiepVu = N'NHAP'
           AND SoLuongThayDoi = 6) <> 1
         THROW 51910, N'Nhập chưa ghi một biến động tồn.', 1;
+    IF (SELECT COUNT(*) FROM dbo.LICH_SU_THAO_TAC
+        WHERE MaTK = 'TST901' AND TenBang = N'PHIEU_NHAP'
+          AND MaBanGhi = 'TST901' AND HanhDong = N'COMPLETE') <> 1
+        THROW 52040, N'Hoàn tất nhập chưa ghi actor audit.', 1;
 
     BEGIN TRY
         EXEC dbo.sp_HoanTatPhieuNhap @MaPN = 'TST901',
@@ -99,6 +107,7 @@ BEGIN TRY
     DELETE FROM dbo.LO_HANG WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
     DELETE FROM dbo.CT_PHIEU_NHAP WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
     DELETE FROM dbo.PHIEU_NHAP WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
+    DELETE FROM dbo.LICH_SU_THAO_TAC WHERE MaTK = 'TST901';
     DELETE FROM dbo.NHA_CUNG_CAP_SAN_PHAM WHERE MaNCC = 'TST901';
     DELETE FROM dbo.SAN_PHAM WHERE MaSP = 'TST901';
     DELETE FROM dbo.LOAI_SAN_PHAM WHERE MaLoai = 'TST901';
@@ -107,6 +116,7 @@ BEGIN TRY
     DELETE FROM dbo.KHU_VUC WHERE MaKhuVuc = 'TST901';
     DELETE FROM dbo.KHO WHERE MaKho = 'TST901';
     DELETE FROM dbo.NHA_CUNG_CAP WHERE MaNCC IN ('TST901', 'TST902');
+    DELETE FROM dbo.TAI_KHOAN WHERE MaTK = 'TST901';
     DELETE FROM dbo.NHAN_VIEN WHERE MaNV = 'TST901';
     COMMIT TRANSACTION;
     PRINT N'Inbound completion passed.';
@@ -120,6 +130,7 @@ BEGIN CATCH
     DELETE FROM dbo.LO_HANG WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
     DELETE FROM dbo.CT_PHIEU_NHAP WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
     DELETE FROM dbo.PHIEU_NHAP WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
+    DELETE FROM dbo.LICH_SU_THAO_TAC WHERE MaTK = 'TST901';
     DELETE FROM dbo.NHA_CUNG_CAP_SAN_PHAM WHERE MaNCC = 'TST901';
     DELETE FROM dbo.SAN_PHAM WHERE MaSP = 'TST901';
     DELETE FROM dbo.LOAI_SAN_PHAM WHERE MaLoai = 'TST901';
@@ -128,6 +139,7 @@ BEGIN CATCH
     DELETE FROM dbo.KHU_VUC WHERE MaKhuVuc = 'TST901';
     DELETE FROM dbo.KHO WHERE MaKho = 'TST901';
     DELETE FROM dbo.NHA_CUNG_CAP WHERE MaNCC IN ('TST901', 'TST902');
+    DELETE FROM dbo.TAI_KHOAN WHERE MaTK = 'TST901';
     DELETE FROM dbo.NHAN_VIEN WHERE MaNV = 'TST901';
     COMMIT TRANSACTION;
     THROW;

@@ -77,9 +77,10 @@ public class InboundController {
 
     @PostMapping("/{maPhieuNhap}/hoan-tat")
     public CompletionView complete(@PathVariable String maPhieuNhap,
-        @Valid @RequestBody CompletionRequest body) {
+        @Valid @RequestBody CompletionRequest body,
+        @AuthenticationPrincipal AccountPrincipal principal) {
         return service.complete(maPhieuNhap, body.phanBo().stream()
-            .map(AllocationRequest::data).toList());
+            .map(AllocationRequest::data).toList(), principal.maTaiKhoan());
     }
 
     public record CreateInboundRequest(@NotBlank String maNhaCungCap,

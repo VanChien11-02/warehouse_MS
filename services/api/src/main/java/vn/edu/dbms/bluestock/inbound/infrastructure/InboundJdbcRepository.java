@@ -123,11 +123,11 @@ public class InboundJdbcRepository {
             header.trangThai(), header.ghiChu(), header.ngayHoanTat(), lines));
     }
 
-    public CompletionView complete(String code, String allocationsJson) {
-        return jdbc.queryForObject("EXEC dbo.sp_HoanTatPhieuNhap @MaPN = ?, @PhanBoJson = ?",
+    public CompletionView complete(String code, String allocationsJson, String actorAccount) {
+        return jdbc.queryForObject("EXEC dbo.sp_HoanTatPhieuNhap @MaPN = ?, @PhanBoJson = ?, @MaTK = ?",
             (row, index) -> new CompletionView(row.getString("maPhieuNhap").trim(),
                 row.getString("trangThai"), utc(row.getObject("ngayHoanTat", LocalDateTime.class))),
-            code, allocationsJson);
+            code, allocationsJson, actorAccount);
     }
 
     private static OffsetDateTime utc(LocalDateTime value) {

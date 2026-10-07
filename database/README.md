@@ -45,6 +45,8 @@ Sau migration 014, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock
 
 Sau migration 016, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/017_audit.sql` để tạo bảng/index nhật ký thao tác. Test 019 kiểm tra FK, JSON check và index.
 
+Sau migration 017, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/018_inbound_audit.sql` để cập nhật `sp_HoanTatPhieuNhap` nhận actor tùy chọn và ghi audit cùng transaction. Test 009 kiểm tra actor được ghi khi gọi với `@MaTK`.
+
 ## Cấu trúc mục tiêu
 
 ```text

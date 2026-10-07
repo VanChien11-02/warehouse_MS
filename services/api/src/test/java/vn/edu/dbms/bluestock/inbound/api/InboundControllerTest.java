@@ -107,9 +107,10 @@ class InboundControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_QLKHO")
     void managerCanCompleteInbound() throws Exception {
-        when(service.complete(eq("PN0001"), any())).thenReturn(new CompletionView(
+        when(service.complete(eq("PN0001"), any(), eq("TK0001"))).thenReturn(new CompletionView(
             "PN0001", "DA_HOAN_THANH", OffsetDateTime.parse("2026-10-07T00:00:00Z")));
         mvc.perform(post("/api/phieu-nhap/PN0001/hoan-tat").with(csrf())
+                .with(user(principal("QLKHO")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(completionBody()))
             .andExpect(status().isOk())

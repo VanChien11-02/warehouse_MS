@@ -16,7 +16,7 @@ Mỗi lô/vị trí được tạo khi hoàn tất ghi một dòng `BIEN_DONG_TO
 
 `SEQ_PHIEU_NHAP` và `SEQ_LO_HANG` cấp số cho mã `PN0001` và `LO0001` theo ADR 0003. Khoảng trống sau rollback là hợp lệ; procedure phải trả lỗi rõ khi vượt không gian bốn chữ số.
 
-`dbo.sp_HoanTatPhieuNhap(@MaPN CHAR(6), @PhanBoJson NVARCHAR(MAX))` là điểm ghi sổ nhập. JSON là array, mỗi phần tử tạo một lô mới:
+`dbo.sp_HoanTatPhieuNhap(@MaPN CHAR(6), @PhanBoJson NVARCHAR(MAX), @MaTK CHAR(6) = NULL)` là điểm ghi sổ nhập. API truyền tài khoản hiện tại để ghi audit cùng transaction; lời gọi SQL trực tiếp có thể bỏ `@MaTK`. JSON là array, mỗi phần tử tạo một lô mới:
 
 ```json
 [{"maSanPham":"SP0001","maViTri":"VT0001","soLuong":10,"ngaySanXuat":"2026-01-01","hanSuDung":"2026-12-31"}]
