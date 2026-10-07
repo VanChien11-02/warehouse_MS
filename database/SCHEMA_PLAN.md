@@ -1,6 +1,6 @@
 # Kế hoạch physical schema SQL Server
 
-> Trạng thái: **Draft cho DB-01**. 27 bảng, năm procedure hoàn tất, năm function và bảy view đã có; script đã dựng được database độc lập trên SQL Server 17.x và toàn bộ test SQL đạt. SQL Server 2022, security, trigger và đo index còn cần kiểm chứng.
+> Trạng thái: **Draft cho DB-01**. 27 bảng, năm procedure hoàn tất, năm function, bảy view và một trigger bảo vệ vị trí đã có; script đã dựng được database độc lập trên SQL Server 17.x. SQL Server 2022, security và đo index còn cần kiểm chứng.
 
 ## Mục tiêu
 

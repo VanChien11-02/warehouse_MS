@@ -61,6 +61,8 @@ Sau migration 021, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database
 
 Sau migration 022, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/023_inventory_functions_views.sql` để thêm năm hàm tồn/hạn dùng và bốn view tổng hợp/lịch sử. Test 020 đối chiếu lượng, giá nhập thực tế, hàng hỏng/hết hạn và lịch sử chứng từ. Database dựng mới bằng `init.sql` đã có các object này.
 
+Sau migration 023, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/024_position_stock_guard.sql` để bảo vệ sức chứa/khu vực/loại của vị trí đã có tồn. Test 021 kiểm tra update nhiều dòng rollback nguyên tử và đổi tên hợp lệ.
+
 ## Cấu trúc mục tiêu
 
 ```text

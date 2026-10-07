@@ -62,3 +62,4 @@ GO
 :r database/programmability/views/vw_LichSuNhapKho.sql
 :r database/programmability/views/vw_LichSuXuatKho.sql
 :r database/programmability/views/vw_LoSapHetHan.sql
+:r database/programmability/triggers/trg_ViTriKho_BaoVeTon.sql
