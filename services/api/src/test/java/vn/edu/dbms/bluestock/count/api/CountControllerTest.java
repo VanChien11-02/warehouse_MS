@@ -78,9 +78,10 @@ class CountControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_QLKHO")
     void managerCanComplete() throws Exception {
-        when(service.complete("KK0001")).thenReturn(new CompletionView("KK0001",
+        when(service.complete("KK0001", "TK0001")).thenReturn(new CompletionView("KK0001",
             "DA_HOAN_THANH", OffsetDateTime.parse("2026-10-07T00:00:00Z")));
-        mvc.perform(post("/api/phieu-kiem-ke/KK0001/hoan-tat").with(csrf()))
+        mvc.perform(post("/api/phieu-kiem-ke/KK0001/hoan-tat").with(csrf())
+                .with(user(principal("QLKHO"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.trangThai").value("DA_HOAN_THANH"));
     }

@@ -1,5 +1,6 @@
 CREATE OR ALTER PROCEDURE dbo.sp_HoanTatKiemKe
-    @MaPKK CHAR(6)
+    @MaPKK CHAR(6),
+    @MaTK CHAR(6) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -95,6 +96,12 @@ BEGIN
         UPDATE dbo.PHIEU_KIEM_KE
         SET TrangThai = N'DA_HOAN_THANH', NgayHoanTat = @NgayHoanTat
         WHERE MaPKK = @MaPKK;
+
+        IF @MaTK IS NOT NULL
+            INSERT INTO dbo.LICH_SU_THAO_TAC
+                (MaTK, HanhDong, TenBang, MaBanGhi, DuLieuCu, DuLieuMoi)
+            VALUES (@MaTK, N'COMPLETE', N'PHIEU_KIEM_KE', @MaPKK,
+                N'{"trangThai":"NHAP"}', N'{"trangThai":"DA_HOAN_THANH"}');
 
         COMMIT TRANSACTION;
         SELECT RTRIM(@MaPKK) AS maPhieuKiemKe, N'DA_HOAN_THANH' AS trangThai,

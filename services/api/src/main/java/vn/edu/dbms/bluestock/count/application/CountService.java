@@ -106,9 +106,9 @@ public class CountService {
         return get(normalizedCode);
     }
 
-    public CompletionView complete(String code) {
+    public CompletionView complete(String code, String actorAccount) {
         try {
-            return repository.complete(normalizeCode(code));
+            return repository.complete(normalizeCode(code), normalizeCode(actorAccount));
         } catch (DataAccessException exception) {
             throw mapProcedureError(SqlErrorNumbers.from(exception));
         }

@@ -14,6 +14,8 @@ Hoàn tất xuất qua API truyền actor vào `sp_HoanTatPhieuXuat`; audit `COM
 
 Hoàn tất chuyển qua API truyền actor vào `sp_HoanTatChuyenKho`; audit `COMPLETE` của `PHIEU_CHUYEN_KHO` cùng transaction với hai phía tồn.
 
+Hoàn tất kiểm kê qua API truyền actor vào `sp_HoanTatKiemKe`; audit `COMPLETE` của `PHIEU_KIEM_KE` cùng transaction với điều chỉnh tồn.
+
 Index `(ThoiGian DESC, MaTK)` phục vụ tra cứu theo thời gian và tài khoản. Ghi audit trong cùng transaction với thay đổi nghiệp vụ khi thao tác bắt đầu từ API. Procedure gọi trực tiếp ngoài API không có tài khoản ứng dụng nên không tự ghi `MaTK` giả.
 
 `GET /api/audit?tuNgay=2026-10-01&denNgay=2026-10-31&maTaiKhoan=TK0001&page=0&size=20` chỉ dành cho `Admin`. Hai ngày theo `yyyy-MM-dd` là bắt buộc, bao gồm cả hai ngày ở `Asia/Bangkok`; server đổi sang UTC để lọc `ThoiGian`. `maTaiKhoan` tùy chọn, `page` bắt đầu 0, `size` từ 1 đến 100. Kết quả sắp `ThoiGian DESC, MaLichSu DESC`, trả `{tuNgay,denNgay,items,page,size,totalElements,totalPages}`. Item gồm `maLichSu`, `maTaiKhoan`, `thoiGian` ISO-8601 UTC, `hanhDong`, `tenBang`, `maBanGhi`, `duLieuCu`, `duLieuMoi`; hai trường dữ liệu là chuỗi JSON hoặc `null`.

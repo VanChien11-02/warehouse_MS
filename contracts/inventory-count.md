@@ -29,6 +29,7 @@ API dùng JSON `camelCase`, lỗi `{ "code": "...", "message": "..." }`. Không 
 - Server khóa phiếu, vị trí và tồn. Tập lô có tồn dương và lượng hiện tại phải bằng snapshot; lô thêm thủ công có snapshot 0 phải vẫn không có tồn tại vị trí. Nếu khác, trả `COUNT_STALE_SNAPSHOT` (HTTP 409); lập phiếu mới để kiểm kê lại. Một vị trí trống không tạo phiếu vì không có gì để đối chiếu.
 - Kiểm tra sức chứa, cùng đơn vị tính và bảo quản của mọi lô có tồn sau chốt. Cập nhật tồn, ghi một dòng `BIEN_DONG_TON_KHO` loại `KIEM_KE` cho mỗi chênh lệch khác 0 và chuyển phiếu sang `DA_HOAN_THANH` trong cùng transaction (BR-CNT-003). Lần chốt tiếp theo trả 409 và không ghi sổ thêm.
 - `NgayKiemKe` là thời điểm snapshot UTC; `NgayHoanTat` và `NgayGhiSo` là thời điểm ghi sổ UTC. Không sửa/xóa chứng từ đã hoàn tất.
+- API truyền tài khoản hiện tại vào `sp_HoanTatKiemKe(@MaPKK, @MaTK = NULL)` để ghi audit `COMPLETE` trong cùng transaction. Lời gọi SQL trực tiếp có thể bỏ `@MaTK`.
 
 Mã lỗi chính: `COUNT_NOT_FOUND` 404, `COUNT_NOT_DRAFT` 409, `COUNT_LINES_REQUIRED` 422, `COUNT_ACTUAL_REQUIRED` 422, `COUNT_REASON_REQUIRED` 422, `COUNT_STALE_SNAPSHOT` 409, `COUNT_CAPACITY_EXCEEDED` 409, `COUNT_UNIT_MISMATCH` 422, `COUNT_STORAGE_MISMATCH` 422. Khi bổ sung endpoint hoặc thay đổi payload phải sửa contract, SQL và test cùng thay đổi.
 

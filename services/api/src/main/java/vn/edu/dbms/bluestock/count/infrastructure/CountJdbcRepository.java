@@ -151,11 +151,11 @@ public class CountJdbcRepository {
             header.ghiChu(), header.ngayHoanTat(), lines));
     }
 
-    public CompletionView complete(String code) {
-        return jdbc.queryForObject("EXEC dbo.sp_HoanTatKiemKe @MaPKK = ?",
+    public CompletionView complete(String code, String actorAccount) {
+        return jdbc.queryForObject("EXEC dbo.sp_HoanTatKiemKe @MaPKK = ?, @MaTK = ?",
             (row, index) -> new CompletionView(row.getString("maPhieuKiemKe").trim(),
                 row.getString("trangThai"), utc(row.getObject("ngayHoanTat", LocalDateTime.class))),
-            code);
+            code, actorAccount);
     }
 
     private static OffsetDateTime utc(LocalDateTime value) {

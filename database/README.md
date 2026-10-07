@@ -51,6 +51,8 @@ Sau migration 018, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database
 
 Sau migration 019, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/020_transfer_audit.sql` để cập nhật `sp_HoanTatChuyenKho` nhận actor tùy chọn. Test 014 kiểm tra actor audit cùng ghi sổ chuyển.
 
+Sau migration 020, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/021_count_audit.sql` để cập nhật `sp_HoanTatKiemKe` nhận actor tùy chọn. Test 016 kiểm tra actor audit cùng điều chỉnh tồn.
+
 ## Cấu trúc mục tiêu
 
 ```text
