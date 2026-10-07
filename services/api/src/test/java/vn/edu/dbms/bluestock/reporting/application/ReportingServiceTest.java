@@ -45,4 +45,13 @@ class ReportingServiceTest {
             LocalDateTime.of(2026, 10, 2, 17, 0),
             "KHO001", "VT0001", 0, 20);
     }
+
+    @Test
+    void expiringLotsValidateDaysAndNormalizeWarehouse() {
+        service.expiringLots(30, " kho001 ", 1, 10);
+        verify(repository).expiringLots(30, "KHO001", 1, 10);
+        ReportingException error = assertThrows(ReportingException.class,
+            () -> service.expiringLots(-1, null, 0, 20));
+        assertEquals("INVALID_DAYS", error.code());
+    }
 }

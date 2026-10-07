@@ -12,6 +12,8 @@ import vn.edu.dbms.bluestock.reporting.application.ReportingModels.MovementRepor
 import vn.edu.dbms.bluestock.reporting.application.ReportingModels.MovementReportRow;
 import vn.edu.dbms.bluestock.reporting.application.ReportingModels.CountDiscrepancyPage;
 import vn.edu.dbms.bluestock.reporting.application.ReportingModels.CountDiscrepancyRow;
+import vn.edu.dbms.bluestock.reporting.application.ReportingModels.ExpiringLotPage;
+import vn.edu.dbms.bluestock.reporting.application.ReportingModels.ExpiringLotRow;
 
 @Repository
 public class ReportingJdbcRepository {
@@ -131,6 +133,33 @@ public class ReportingJdbcRepository {
                     row.getObject("NgayHoanTat", LocalDateTime.class).atOffset(ZoneOffset.UTC));
             });
         return new CountDiscrepancyPage(from, through, rows, page, size,
+            total, (total + size - 1) / size);
+    }
+
+    public ExpiringLotPage expiringLots(int days, String warehouseCode, int page, int size) {
+        var params = new MapSqlParameterSource().addValue("days", days);
+        String source = "FROM dbo.fn_LoSapHetHan(:days) ";
+        if (warehouseCode != null) {
+            source += "WHERE MaKho = :maKho ";
+            params.addValue("maKho", warehouseCode);
+        }
+        Long count = jdbc.queryForObject("SELECT COUNT_BIG(*) " + source, params, Long.class);
+        long total = count == null ? 0 : count;
+        params.addValue("offset", page * size);
+        params.addValue("size", size);
+        List<ExpiringLotRow> rows = jdbc.query("""
+            SELECT MaKho, TenKho, MaViTri, TenViTri, MaLo, MaSP,
+                   TenSP, SoLuongTon, HanSuDung, SoNgayConLai
+            """ + source + """
+            ORDER BY HanSuDung, MaKho, MaViTri, MaLo
+            OFFSET :offset ROWS FETCH NEXT :size ROWS ONLY
+            """, params, (row, index) -> new ExpiringLotRow(
+                row.getString("MaKho").trim(), row.getString("TenKho"),
+                row.getString("MaViTri").trim(), row.getString("TenViTri"),
+                row.getString("MaLo").trim(), row.getString("MaSP").trim(),
+                row.getString("TenSP"), row.getInt("SoLuongTon"),
+                row.getDate("HanSuDung").toLocalDate(), row.getInt("SoNgayConLai")));
+        return new ExpiringLotPage(days, rows, page, size,
             total, (total + size - 1) / size);
     }
 }

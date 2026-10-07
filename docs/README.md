@@ -51,6 +51,7 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 - [`../contracts/inventory-query.md`](../contracts/inventory-query.md): tra cứu tồn khả dụng theo lô/vị trí và nguồn giá nhập.
 - [`../contracts/outbound-fefo-completion.md`](../contracts/outbound-fefo-completion.md): schema, procedure và API tạo/xem/hoàn tất xuất.
 - [`../contracts/reporting.md`](../contracts/reporting.md): báo cáo nhập–xuất–tồn theo kỳ và kho/sản phẩm.
+- [`../contracts/expiry-report.md`](../contracts/expiry-report.md): báo cáo lô sắp hết hạn theo tồn khả dụng.
 - [`../contracts/transfer.md`](../contracts/transfer.md): schema phiếu chuyển vị trí và quy tắc ghi sổ.
 - [`../database/SCHEMA_PLAN.md`](../database/SCHEMA_PLAN.md): kế hoạch physical schema, object SQL và test database.
 
