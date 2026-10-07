@@ -53,6 +53,14 @@ class TransferControllerTest {
     }
 
     @Test
+    void staffCanCancelDraft() throws Exception {
+        when(service.cancel("PC0001", "TK0001")).thenReturn(transfer());
+        mvc.perform(post("/api/phieu-chuyen/PC0001/huy")
+                .with(csrf()).with(user(principal("NVKHO"))))
+            .andExpect(status().isOk());
+    }
+
+    @Test
     @WithMockUser(authorities = "ROLE_NVKHO")
     void staffCanUpdateDraft() throws Exception {
         when(service.update(eq("PC0001"), eq(null), any())).thenReturn(transfer());

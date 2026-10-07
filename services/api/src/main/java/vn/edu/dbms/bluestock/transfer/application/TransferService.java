@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
 import vn.edu.dbms.bluestock.transfer.application.TransferException.Kind;
 import vn.edu.dbms.bluestock.transfer.application.TransferModels.CompletionView;
@@ -19,9 +21,11 @@ import vn.edu.dbms.bluestock.transfer.infrastructure.TransferJdbcRepository;
 @Service
 public class TransferService {
     private final TransferJdbcRepository repository;
+    private final AuditTrail audit;
 
-    public TransferService(TransferJdbcRepository repository) {
+    public TransferService(TransferJdbcRepository repository, AuditTrail audit) {
         this.repository = repository;
+        this.audit = audit;
     }
 
     @Transactional(readOnly = true)
@@ -79,10 +83,15 @@ public class TransferService {
     }
 
     @Transactional
-    public TransferView cancel(String code) {
+    public TransferView cancel(String code, String actorAccount) {
         String normalizedCode = normalizeCode(code);
         requireDraft(normalizedCode);
-        repository.cancel(normalizedCode);
+        if (repository.cancel(normalizedCode) != 1) {
+            throw new TransferException(Kind.CONFLICT, "TRANSFER_NOT_DRAFT",
+                "Phiếu chuyển không còn ở trạng thái nháp");
+        }
+        audit.record(normalizeCode(actorAccount), "CANCEL", "PHIEU_CHUYEN_KHO", normalizedCode,
+            Map.of("trangThai", "NHAP"), Map.of("trangThai", "DA_HUY"));
         return get(normalizedCode);
     }
 
