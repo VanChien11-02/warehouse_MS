@@ -52,3 +52,13 @@ GO
 :r database/programmability/procedures/count/sp_HoanTatKiemKe.sql
 :r database/programmability/views/vw_ChenhLechKiemKe.sql
 :r database/programmability/procedures/returning/sp_HoanTatTraHang.sql
+
+:r database/programmability/functions/fn_TonTheoSanPham.sql
+:r database/programmability/functions/fn_TonTheoLo.sql
+:r database/programmability/functions/fn_TonKhaDungTaiViTri.sql
+:r database/programmability/functions/fn_GiaTriTonKho.sql
+:r database/programmability/functions/fn_LoSapHetHan.sql
+:r database/programmability/views/vw_TonKhoTheoSanPham.sql
+:r database/programmability/views/vw_LichSuNhapKho.sql
+:r database/programmability/views/vw_LichSuXuatKho.sql
+:r database/programmability/views/vw_LoSapHetHan.sql

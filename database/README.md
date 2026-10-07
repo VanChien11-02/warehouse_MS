@@ -55,6 +55,8 @@ Sau migration 020, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database
 
 Sau migration 021, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/022_return_audit.sql` để cập nhật `sp_HoanTatTraHang` nhận actor tùy chọn. Test 018 kiểm tra actor audit cùng ghi sổ trả hàng.
 
+Sau migration 022, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/023_inventory_functions_views.sql` để thêm năm hàm tồn/hạn dùng và bốn view tổng hợp/lịch sử. Test 020 đối chiếu lượng, giá nhập thực tế, hàng hỏng/hết hạn và lịch sử chứng từ. Database dựng mới bằng `init.sql` đã có các object này.
+
 ## Cấu trúc mục tiêu
 
 ```text
