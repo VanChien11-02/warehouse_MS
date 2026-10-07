@@ -50,3 +50,4 @@ GO
 :r database/programmability/procedures/transfer/sp_HoanTatChuyenKho.sql
 :r database/programmability/procedures/count/sp_HoanTatKiemKe.sql
 :r database/programmability/views/vw_ChenhLechKiemKe.sql
+:r database/programmability/procedures/returning/sp_HoanTatTraHang.sql

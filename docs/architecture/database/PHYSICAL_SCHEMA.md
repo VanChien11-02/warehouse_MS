@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 26 bảng đã có trong `database/schema/`; procedure nhập/xuất/chuyển/kiểm kê đã có, procedure trả và audit chưa triển khai.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 26 bảng đã có trong `database/schema/`; năm procedure hoàn tất nhập/xuất/chuyển/kiểm kê/trả đã có, audit chưa triển khai.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
@@ -65,3 +65,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `vw_ChenhLechKiemKe` chỉ gồm các dòng có chênh lệch khác 0 của phiếu đã hoàn tất, giữ nguyên số hệ thống lúc snapshot và nối đến kho/lô/sản phẩm để báo cáo theo kỳ tại [`contracts/count-discrepancy-report.md`](../../../contracts/count-discrepancy-report.md).
 
 `SEQ_PHIEU_TRA_HANG` cấp mã `TH0001`; phiếu trả gắn phiếu xuất và mỗi dòng gắn lô/vị trí đích, theo [`contracts/returning.md`](../../../contracts/returning.md).
+
+`sp_HoanTatTraHang` khóa phiếu xuất gốc để không thể chốt song song vượt tổng lượng xuất, kiểm tra tình trạng/vị trí/sức chứa rồi tăng tồn và ghi sổ `TRA_HANG` trong cùng transaction. Test xác nhận trả tốt/hỏng, giới hạn cộng dồn, vị trí hỏng, chốt lặp và rollback khi lỗi ghi sổ muộn.
