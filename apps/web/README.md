@@ -25,9 +25,11 @@ Mở `http://127.0.0.1:5174`.
 
 - `index.html`: app shell, các màn hình nghiệp vụ và biểu mẫu.
 - `styles.css`: design tokens, trạng thái và bố cục responsive.
-- `app.js`: điều hướng theo vai trò, dữ liệu demo, bảng/phân trang và tương tác biểu mẫu.
+- `app.js`: khởi tạo giao diện, bảng/phân trang và tương tác biểu mẫu.
+- `core/navigation.js`: cấu hình vai trò demo, menu và tiêu đề màn hình.
+- `data/demo.js`: dữ liệu giả của danh mục, tồn, kiểm kê và báo cáo.
 
-Ba file hiện tại là baseline chạy được nhưng chưa phải ranh giới phù hợp để bốn người sửa song song. Backlog `GOV-03` sẽ tách dần JavaScript/CSS theo `core` và bốn feature trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md), đồng thời giữ nguyên hành vi và không đổi framework.
+JavaScript đã tách cấu hình điều hướng và dữ liệu mẫu khỏi điểm vào. Logic tương tác và CSS vẫn tập trung trong hai file lớn; backlog `GOV-03` cần tiếp tục tách theo feature trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md), giữ hành vi hiện có và không đổi framework.
 
 ## Ngôn ngữ giao diện
 
