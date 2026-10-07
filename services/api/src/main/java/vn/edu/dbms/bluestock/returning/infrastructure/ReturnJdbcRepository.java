@@ -114,11 +114,11 @@ public class ReturnJdbcRepository {
             header.ghiChu(), header.ngayHoanTat(), lines));
     }
 
-    public CompletionView complete(String code) {
-        return jdbc.queryForObject("EXEC dbo.sp_HoanTatTraHang @MaPTH = ?",
+    public CompletionView complete(String code, String actorAccount) {
+        return jdbc.queryForObject("EXEC dbo.sp_HoanTatTraHang @MaPTH = ?, @MaTK = ?",
             (row, index) -> new CompletionView(row.getString("maPhieuTraHang").trim(),
                 row.getString("trangThai"), utc(row.getObject("ngayHoanTat", LocalDateTime.class))),
-            code);
+            code, actorAccount);
     }
 
     private static OffsetDateTime utc(LocalDateTime value) {

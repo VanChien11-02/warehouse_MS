@@ -10,7 +10,7 @@
 
 `Tốt` chỉ vào vị trí khác loại `Hư hỏng`; `Hư hỏng` chỉ vào vị trí loại `Hư hỏng` và không khả dụng cho xuất FEFO. Vị trí nhận phải phù hợp yêu cầu bảo quản, sức chứa và đơn vị tính theo ADR 0004. Hoàn tất dùng transaction, khóa phiếu xuất gốc để tuần tự hóa các phiếu trả cùng nguồn, tăng tồn và ghi sổ `TRA_HANG` cùng transaction. Hoàn tất lặp trả conflict; phiếu hoàn tất không sửa hoặc xóa.
 
-`dbo.sp_HoanTatTraHang(@MaPTH CHAR(6))` trả `maPhieuTraHang`, `trangThai`, `ngayHoanTat` UTC. Mã lỗi SQL: `51501` không thấy phiếu, `51502` không còn nháp, `51503` thiếu dòng, `51504` phiếu xuất gốc chưa hoàn tất, `51505` lô chưa xuất/trả vượt, `51506` vị trí/tình trạng/bảo quản sai, `51507` vượt sức chứa, `51508` trộn đơn vị tính. Lỗi ghi sổ cuối transaction rollback toàn bộ tồn và trạng thái.
+`dbo.sp_HoanTatTraHang(@MaPTH CHAR(6), @MaTK CHAR(6) = NULL)` trả `maPhieuTraHang`, `trangThai`, `ngayHoanTat` UTC. Mã lỗi SQL: `51501` không thấy phiếu, `51502` không còn nháp, `51503` thiếu dòng, `51504` phiếu xuất gốc chưa hoàn tất, `51505` lô chưa xuất/trả vượt, `51506` vị trí/tình trạng/bảo quản sai, `51507` vượt sức chứa, `51508` trộn đơn vị tính. Lỗi ghi sổ cuối transaction rollback toàn bộ tồn và trạng thái.
 
 HTTP API dùng session/CSRF chung:
 

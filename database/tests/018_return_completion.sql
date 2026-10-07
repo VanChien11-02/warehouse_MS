@@ -2,6 +2,7 @@ SET NOCOUNT ON;
 SET XACT_ABORT OFF;
 
 DECLARE @CleanupSql NVARCHAR(MAX) = N'
+    DELETE FROM dbo.LICH_SU_THAO_TAC WHERE MaTK = ''TST181'';
     DELETE FROM dbo.BIEN_DONG_TON_KHO WHERE MaChungTu IN (''TST181'', ''TST182'', ''TST183'', ''TST184'', ''TST185'');
     DELETE FROM dbo.CT_PHIEU_TRA_HANG WHERE MaPTH IN (''TST181'', ''TST182'', ''TST183'', ''TST184'', ''TST185'');
     DELETE FROM dbo.PHIEU_TRA_HANG WHERE MaPTH IN (''TST181'', ''TST182'', ''TST183'', ''TST184'', ''TST185'');
@@ -21,6 +22,7 @@ DECLARE @CleanupSql NVARCHAR(MAX) = N'
     DELETE FROM dbo.KHO WHERE MaKho = ''TST181'';
     DELETE FROM dbo.DOI_TAC_NHAN_HANG WHERE MaDTNH = ''TST181'';
     DELETE FROM dbo.NHA_CUNG_CAP WHERE MaNCC = ''TST181'';
+    DELETE FROM dbo.TAI_KHOAN WHERE MaTK = ''TST181'';
     DELETE FROM dbo.NHAN_VIEN WHERE MaNV = ''TST181'';
 ';
 
@@ -28,6 +30,9 @@ BEGIN TRY
     BEGIN TRANSACTION;
     INSERT INTO dbo.NHAN_VIEN (MaNV, TenNV, NgayVaoLam)
         VALUES ('TST181', N'Nhân viên trả', '2026-01-01');
+    INSERT INTO dbo.TAI_KHOAN (MaTK, MaNV, MaRole, TenTK, MatKhauHash)
+        VALUES ('TST181', 'TST181', 'QLKHO', N'test.return.audit',
+            '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
     INSERT INTO dbo.NHA_CUNG_CAP (MaNCC, TenNCC)
         VALUES ('TST181', N'Nhà cung cấp trả');
     INSERT INTO dbo.DOI_TAC_NHAN_HANG (MaDTNH, TenDoiTac, LoaiDoiTac)
@@ -75,8 +80,12 @@ BEGIN TRY
                ('TST183', @MaLo, 'TST181', 3, N'Tốt'),
                ('TST184', @MaLo, 'TST182', 1, N'Tốt');
 
-    EXEC dbo.sp_HoanTatTraHang @MaPTH = 'TST181';
+    EXEC dbo.sp_HoanTatTraHang @MaPTH = 'TST181', @MaTK = 'TST181';
     EXEC dbo.sp_HoanTatTraHang @MaPTH = 'TST182';
+    IF (SELECT COUNT(*) FROM dbo.LICH_SU_THAO_TAC
+        WHERE MaTK = 'TST181' AND TenBang = N'PHIEU_TRA_HANG'
+          AND MaBanGhi = 'TST181' AND HanhDong = N'COMPLETE') <> 1
+        THROW 52044, N'Hoàn tất trả hàng chưa ghi actor audit.', 1;
     IF (SELECT SoLuongTon FROM dbo.TON_KHO WHERE MaViTri = 'TST181' AND MaLo = @MaLo) <> 4
         OR (SELECT SoLuongTon FROM dbo.TON_KHO WHERE MaViTri = 'TST182' AND MaLo = @MaLo) <> 1
         THROW 52021, N'Tồn sau trả tốt/hỏng sai.', 1;

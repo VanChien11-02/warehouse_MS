@@ -69,8 +69,9 @@ public class ReturnController {
     }
 
     @PostMapping("/{maPhieuTraHang}/hoan-tat")
-    public CompletionView complete(@PathVariable String maPhieuTraHang) {
-        return service.complete(maPhieuTraHang);
+    public CompletionView complete(@PathVariable String maPhieuTraHang,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        return service.complete(maPhieuTraHang, principal.maTaiKhoan());
     }
 
     public record CreateReturnRequest(@NotBlank String maPhieuXuat,
