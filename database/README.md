@@ -47,6 +47,8 @@ Sau migration 016, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock
 
 Sau migration 017, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/018_inbound_audit.sql` để cập nhật `sp_HoanTatPhieuNhap` nhận actor tùy chọn và ghi audit cùng transaction. Test 009 kiểm tra actor được ghi khi gọi với `@MaTK`.
 
+Sau migration 018, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/019_outbound_audit.sql` để cập nhật `sp_HoanTatPhieuXuat` nhận actor tùy chọn. Test 012 kiểm tra actor audit cùng ghi sổ xuất.
+
 ## Cấu trúc mục tiêu
 
 ```text

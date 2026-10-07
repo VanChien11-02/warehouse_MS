@@ -82,8 +82,9 @@ public class OutboundController {
     }
 
     @PostMapping("/{maPhieuXuat}/hoan-tat")
-    public CompletionView complete(@PathVariable String maPhieuXuat) {
-        return service.complete(maPhieuXuat);
+    public CompletionView complete(@PathVariable String maPhieuXuat,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        return service.complete(maPhieuXuat, principal.maTaiKhoan());
     }
 
     public record CreateOutboundRequest(@NotBlank String maDoiTacNhanHang,

@@ -124,11 +124,11 @@ public class OutboundService {
         return normalized;
     }
 
-    public CompletionView complete(String code) {
+    public CompletionView complete(String code, String actorAccount) {
         String normalizedCode = normalizeCode(code);
         LocalDate businessDate = LocalDate.now(BUSINESS_ZONE);
         try {
-            return repository.complete(normalizedCode, businessDate);
+            return repository.complete(normalizedCode, businessDate, normalizeCode(actorAccount));
         } catch (DataAccessException exception) {
             throw mapProcedureError(SqlErrorNumbers.from(exception));
         }
