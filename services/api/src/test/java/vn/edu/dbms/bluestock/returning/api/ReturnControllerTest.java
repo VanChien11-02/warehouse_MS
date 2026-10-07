@@ -53,6 +53,14 @@ class ReturnControllerTest {
     }
 
     @Test
+    void staffCanCancelDraft() throws Exception {
+        when(service.cancel("TH0001", "TK0001")).thenReturn(returnDoc());
+        mvc.perform(post("/api/phieu-tra-hang/TH0001/huy")
+                .with(csrf()).with(user(principal("NVKHO"))))
+            .andExpect(status().isOk());
+    }
+
+    @Test
     void staffCanCreateDraft() throws Exception {
         when(service.create(eq("NV0001"), eq("PX0001"), eq(null), any()))
             .thenReturn(returnDoc());
