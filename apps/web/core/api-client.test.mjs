@@ -34,6 +34,13 @@ test("API errors keep HTTP status and public code", async () => {
     error instanceof ApiRequestError && error.status === 401 && error.code === "UNAUTHORIZED");
 });
 
+test("network failures return a readable error", async () => {
+  const client = createApiClient({ fetchImpl: async () => { throw new TypeError("Failed to fetch"); } });
+  await assert.rejects(client.send("/san-pham"), (error) =>
+    error instanceof ApiRequestError && error.code === "NETWORK_ERROR"
+      && error.message === "Không kết nối được API.");
+});
+
 test("logout clears CSRF token and handles empty response", async () => {
   const calls = [];
   const client = createApiClient({ fetchImpl: async (url, options) => {

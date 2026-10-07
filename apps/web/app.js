@@ -1,10 +1,17 @@
 "use strict";
 
 import { roleProfiles, navDefinition, pageMeta } from "./core/navigation.js";
+import { createApiClient } from "./core/api-client.js";
 import { listConfigs, inventoryRows, countRows, reportData, documentProducts } from "./data/demo.js";
+import { createProductApi } from "./data/product-api.js";
+import { createLiveProducts } from "./features/live-products.js";
 
-const USE_DUMMY_DATA = true;
-const API_BASE_URL = "http://127.0.0.1:8080/api";
+const USE_DUMMY_DATA = new URLSearchParams(window.location.search).get("mode") !== "api";
+const requestedApiPort = new URLSearchParams(window.location.search).get("apiPort");
+const apiPort = /^\d{1,5}$/.test(requestedApiPort || "")
+  && Number(requestedApiPort) >= 1 && Number(requestedApiPort) <= 65535
+  ? requestedApiPort : "8080";
+const API_BASE_URL = `http://127.0.0.1:${apiPort}/api`;
 
 const elements = {
   sidebar: document.querySelector("#sidebar"),
@@ -38,6 +45,15 @@ let activeList = "products";
 let currentPage = 1;
 const pageSize = 8;
 let toastTimer;
+const apiClient = USE_DUMMY_DATA ? null : createApiClient({ baseUrl: API_BASE_URL });
+const liveProducts = USE_DUMMY_DATA ? null : createLiveProducts({
+  client: apiClient,
+  products: createProductApi(apiClient),
+  escapeHtml,
+  formatCurrency,
+  showToast,
+  closeEditor: closeRecordEditor
+});
 
 function icon(name) {
   return `<svg aria-hidden="true"><use href="#icon-${name}"/></svg>`;
@@ -87,6 +103,12 @@ function closeMobileMenu() {
 }
 
 function renderNavigation() {
+  if (!USE_DUMMY_DATA) {
+    elements.navGroups.innerHTML = `<section class="nav-group"><p class="nav-group-title">Danh mục</p>
+      <button class="nav-item" type="button" data-view="products">${icon("box")}<span>Sản phẩm</span></button></section>`;
+    updateActiveNavigation();
+    return;
+  }
   const allowedPages = new Set(roleProfiles[activeRole].pages);
   const fragment = document.createDocumentFragment();
 
@@ -192,7 +214,8 @@ function configureDocument(mode) {
 
 function showView(viewName, updateHash = true) {
   const profile = roleProfiles[activeRole];
-  if (!profile.pages.includes(viewName)) {
+  if (!USE_DUMMY_DATA) viewName = "products";
+  else if (!profile.pages.includes(viewName)) {
     showToast("Vai trò hiện tại không hiển thị chức năng này.");
     viewName = "dashboard";
   }
@@ -237,6 +260,12 @@ function showView(viewName, updateHash = true) {
 }
 
 function configureList() {
+  if (!USE_DUMMY_DATA) {
+    document.querySelector("#listTitle").textContent = "Danh sách sản phẩm";
+    document.querySelector("#listDescription").textContent = "Danh mục sản phẩm hiện có.";
+    renderList();
+    return;
+  }
   const config = listConfigs[activeList] || listConfigs.products;
   document.querySelector("#listTitle").textContent = config.title;
   document.querySelector("#listDescription").textContent = config.description;
@@ -247,6 +276,10 @@ function configureList() {
 }
 
 function renderList() {
+  if (!USE_DUMMY_DATA) {
+    liveProducts.render(currentPage, elements.listSearch.value);
+    return;
+  }
   const config = listConfigs[activeList] || listConfigs.products;
   const query = elements.listSearch.value.trim().toLocaleLowerCase("vi");
   const selectedStatus = elements.statusFilter.value;
@@ -287,6 +320,11 @@ function renderList() {
 
 function clearListFilters() {
   elements.listSearch.value = "";
+  if (!USE_DUMMY_DATA) {
+    currentPage = 1;
+    renderList();
+    return;
+  }
   elements.statusFilter.value = "";
   document.querySelector("#dateFromFilter").value = "";
   document.querySelector("#dateToFilter").value = "";
@@ -295,6 +333,10 @@ function clearListFilters() {
 }
 
 function openRecordEditor() {
+  if (!USE_DUMMY_DATA) {
+    liveProducts.openEditor();
+    return;
+  }
   const config = listConfigs[activeList] || listConfigs.products;
   document.querySelector("#recordEditorTitle").textContent = config.addLabel;
   elements.recordForm.reset();
@@ -311,6 +353,10 @@ function closeRecordEditor() {
 }
 
 function addListRecord(event) {
+  if (!USE_DUMMY_DATA) {
+    liveProducts.submit(event);
+    return;
+  }
   event.preventDefault();
   if (!elements.recordForm.checkValidity()) {
     elements.recordForm.reportValidity();
@@ -497,6 +543,7 @@ function renderReport() {
 }
 
 function openCommandResults(query) {
+  if (!USE_DUMMY_DATA) return;
   const normalized = query.trim().toLocaleLowerCase("vi");
   if (!normalized) {
     closeCommandResults();
@@ -565,7 +612,10 @@ elements.pageNumbers.addEventListener("click", (event) => {
   renderList();
 });
 elements.dataTable.addEventListener("click", (event) => {
-  if (event.target.closest("[data-row-action]")) showToast("Đã mở bảng thông tin chi tiết bản ghi demo.");
+  const button = event.target.closest("[data-row-action]");
+  if (!button) return;
+  if (USE_DUMMY_DATA) showToast("Đã mở bảng thông tin chi tiết bản ghi demo.");
+  else liveProducts.openEditor(button.dataset.code);
 });
 
 document.querySelector("#addRecordButton").addEventListener("click", openRecordEditor);
@@ -672,12 +722,30 @@ const reportFrom = new Date();
 reportFrom.setDate(reportFrom.getDate() - 30);
 document.querySelector("#reportFrom").value = localDateValue(reportFrom);
 
+if (!USE_DUMMY_DATA) {
+  document.querySelector("#demoRoleSwitcher").hidden = true;
+  document.querySelector("#notificationButton").hidden = true;
+  document.querySelector("#exportButton").hidden = true;
+  document.querySelector(".global-search").hidden = true;
+  document.querySelector(".location-context").hidden = true;
+  document.querySelector("#listView .filter-row").hidden = true;
+  document.querySelector("#dataStatus").textContent = "Dữ liệu API";
+  document.querySelector("#dataStatusDetail").textContent = "Danh mục sản phẩm";
+  const modeLink = document.querySelector("#apiModeLink");
+  modeLink.href = "?mode=demo#dashboard";
+  modeLink.firstChild.textContent = "Dữ liệu demo ";
+}
 renderNavigation();
-renderInventory();
-renderCountRows();
-renderReport();
-const initialHash = window.location.hash.slice(1);
-showView(roleProfiles[activeRole].pages.includes(initialHash) ? initialHash : "dashboard", false);
+if (USE_DUMMY_DATA) {
+  renderInventory();
+  renderCountRows();
+  renderReport();
+  const initialHash = window.location.hash.slice(1);
+  showView(roleProfiles[activeRole].pages.includes(initialHash) ? initialHash : "dashboard", false);
+} else {
+  showView("products", false);
+  liveProducts.start();
+}
 
 window.warehouseUi = {
   showView,

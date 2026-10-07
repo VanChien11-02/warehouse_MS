@@ -29,6 +29,8 @@ Mở `http://127.0.0.1:5174`.
 - `core/navigation.js`: cấu hình vai trò demo, menu và tiêu đề màn hình.
 - `core/api-client.js`: HTTP client giữ session cookie và CSRF token trong bộ nhớ cho chế độ API.
 - `data/demo.js`: dữ liệu giả của danh mục, tồn, kiểm kê và báo cáo.
+- `data/product-api.js`: adapter theo contract cho CRUD sản phẩm, loại và đơn vị tính.
+- `features/live-products.js`: màn hình sản phẩm dùng API thật.
 
 JavaScript đã tách cấu hình điều hướng và dữ liệu mẫu khỏi điểm vào. Logic tương tác và CSS vẫn tập trung trong hai file lớn; backlog `GOV-03` cần tiếp tục tách theo feature trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md), giữ hành vi hiện có và không đổi framework.
 
@@ -38,9 +40,13 @@ Giao diện dùng phong cách editorial tiết chế lấy cảm hứng từ tra
 
 ## Kết nối Spring Boot
 
-`app.js` hiện dùng toàn bộ dữ liệu mẫu. `core/api-client.js` chuẩn bị session/CSRF cho adapter API, nhưng chưa được nối vào các màn hình. Biến `USE_DUMMY_DATA` chưa chuyển được giao diện sang backend. Luồng chứng từ/form demo không gửi HTTP. Backend có các route thật và payload trong [`../../contracts/`](../../contracts/), ví dụ `/api/san-pham`, `/api/phieu-nhap`, `/api/ton-kho`, `/api/phieu-xuat`. Dùng HTTP client theo contract để thử backend cho đến khi `FE-02` hoàn thành.
+Mở `http://127.0.0.1:5174/?mode=api#products` để đăng nhập và xem/tạo/sửa/xóa sản phẩm qua API theo [`../../contracts/session-rbac.md`](../../contracts/session-rbac.md) và [`../../contracts/san-pham.md`](../../contracts/san-pham.md). Chế độ này chỉ hiển thị màn hình sản phẩm để dữ liệu thật không bị trộn với dữ liệu giả. Cần API tại `http://127.0.0.1:8080` và frontend mở đúng origin `http://127.0.0.1:5174`; backend phải được cấu hình JDBC và bootstrap tài khoản trước.
 
-Khi nối giao diện, dùng origin `http://127.0.0.1:5174` khớp cấu hình CORS mặc định của API, xử lý session cookie/CSRF và loading/error/empty state. Tách dữ liệu mẫu và HTTP sau một adapter theo [`../../docs/project/governance/BACKLOG.md`](../../docs/project/governance/BACKLOG.md); không đổi URL rải rác trong form.
+Nếu port 8080 đang dùng, đặt `SERVER_PORT=8082` trong terminal API và mở frontend bằng `http://127.0.0.1:5174/?mode=api&apiPort=8082#products`. `apiPort` chỉ đổi cổng trên `127.0.0.1`; không gửi session sang host khác.
+
+Mở `http://127.0.0.1:5174/` để xem prototype bằng dữ liệu mẫu. Các luồng chứng từ, tồn, báo cáo và màn hình danh mục khác vẫn là demo, chưa gửi HTTP. Dùng [`../../docs/testing/API_SMOKE.md`](../../docs/testing/API_SMOKE.md) với Postman để thử toàn bộ nghiệp vụ backend.
+
+Frontend cần tiếp tục chuyển các màn hình theo [`../../docs/project/governance/BACKLOG.md`](../../docs/project/governance/BACKLOG.md). Dùng adapter HTTP và contract của từng resource, đồng thời giữ loading/error/empty state; không đổi URL rải rác trong form.
 
 Danh sách resource/endpoint dự kiến nằm trong [`../../contracts/API_CATALOG.md`](../../contracts/API_CATALOG.md). Frontend không tự thêm field hoặc route chưa có contract được review.
 

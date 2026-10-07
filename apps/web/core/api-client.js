@@ -19,12 +19,17 @@ export function createApiClient({ baseUrl = "http://127.0.0.1:8080/api", fetchIm
       if (!csrfToken) await refreshCsrf();
       headers[csrfHeader] = csrfToken;
     }
-    const response = await fetchImpl(`${baseUrl}${path}`, {
-      method,
-      credentials: "include",
-      headers,
-      ...(body === undefined ? {} : { body: JSON.stringify(body) })
-    });
+    let response;
+    try {
+      response = await fetchImpl(`${baseUrl}${path}`, {
+        method,
+        credentials: "include",
+        headers,
+        ...(body === undefined ? {} : { body: JSON.stringify(body) })
+      });
+    } catch {
+      throw new ApiRequestError(0, "NETWORK_ERROR", "Không kết nối được API.");
+    }
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new ApiRequestError(response.status, error.code || "HTTP_ERROR",

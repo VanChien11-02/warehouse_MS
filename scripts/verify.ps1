@@ -48,7 +48,7 @@ foreach ($relativePath in $requiredFiles) {
 Write-Host '2/4 Kiểm tra JavaScript frontend...'
 $node = (Get-Command node -ErrorAction Stop).Source
 foreach ($scriptFile in @('app.js', 'core\navigation.js', 'core\api-client.js',
-        'data\demo.js', 'data\product-api.js')) {
+        'data\demo.js', 'data\product-api.js', 'features\live-products.js')) {
     & $node --check (Join-Path $root 'apps\web' $scriptFile)
     if ($LASTEXITCODE -ne 0) { throw "JavaScript frontend không hợp lệ: $scriptFile" }
 }

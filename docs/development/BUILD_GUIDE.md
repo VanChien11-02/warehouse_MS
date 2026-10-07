@@ -37,7 +37,7 @@ Cổng kiểm tra root:
 pwsh -File scripts/verify.ps1
 ```
 
-Backend đã có session/RBAC, CRUD danh mục/kho/đối tác, năm luồng chứng từ, tồn, báo cáo và audit. `database/init.sql` dựng 27 bảng cùng procedure, function, view, trigger, index và bốn database role. Frontend static vẫn dùng dữ liệu mẫu và chưa gọi API thật.
+Backend đã có session/RBAC, CRUD danh mục/kho/đối tác, năm luồng chứng từ, tồn, báo cáo và audit. `database/init.sql` dựng 27 bảng cùng procedure, function, view, trigger, index và bốn database role. Frontend có chế độ API cho sản phẩm; các màn hình khác vẫn dùng dữ liệu mẫu.
 
 ## 3. Cấu hình local
 
@@ -103,7 +103,7 @@ Mở frontend static ở terminal khác:
 pwsh -File scripts/dev.ps1 -Target web
 ```
 
-Giao diện hiện trình bày dữ liệu mẫu; để thử API thật, dùng HTTP client theo contract. Không dùng form demo làm bằng chứng E2E backend.
+Giao diện mặc định trình bày dữ liệu mẫu. Mở `http://127.0.0.1:5174/?mode=api#products` để thử CRUD sản phẩm với session/CSRF thật; các màn hình khác chưa nối API. Để thử nghiệp vụ kho, dùng HTTP client theo contract. Không dùng form demo làm bằng chứng E2E backend.
 
 Trước khi bàn giao, chạy hai cổng kiểm tra:
 
