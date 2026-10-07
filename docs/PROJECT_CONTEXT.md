@@ -17,7 +17,7 @@ Bốn vai trò dự kiến:
 
 | Thành phần | Hiện trạng | Nguồn |
 | --- | --- | --- |
-| Frontend | Baseline HTML/CSS/Vanilla JavaScript có chế độ API cho CRUD sản phẩm; các màn hình khác còn dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
+| Frontend | Baseline HTML/CSS/Vanilla JavaScript có chế độ API cho CRUD sản phẩm và tra cứu tồn kho; các màn hình khác còn dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
 | Backend | Spring Boot/Maven Wrapper, session/RBAC, CRUD nền tảng, năm luồng chứng từ, tra cứu tồn, báo cáo nhập–xuất–tồn/chênh lệch/hạn dùng và audit | [`../services/api/README.md`](../services/api/README.md) |
 | Database | `init.sql` dựng 27 bảng, năm procedure hoàn tất, năm function, bảy view, trigger, index và bốn database role; seed demo riêng | [`../database/README.md`](../database/README.md) |
 | API contract | Baseline tổng thể còn Draft; các contract chi tiết cho API đã triển khai nằm trong `contracts/` | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |

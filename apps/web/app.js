@@ -4,7 +4,9 @@ import { roleProfiles, navDefinition, pageMeta } from "./core/navigation.js";
 import { createApiClient } from "./core/api-client.js";
 import { listConfigs, inventoryRows, countRows, reportData, documentProducts } from "./data/demo.js";
 import { createProductApi } from "./data/product-api.js";
+import { createInventoryApi } from "./data/inventory-api.js";
 import { createLiveProducts } from "./features/live-products.js";
+import { createLiveInventory } from "./features/live-inventory.js";
 
 const USE_DUMMY_DATA = new URLSearchParams(window.location.search).get("mode") !== "api";
 const requestedApiPort = new URLSearchParams(window.location.search).get("apiPort");
@@ -46,14 +48,24 @@ let currentPage = 1;
 const pageSize = 8;
 let toastTimer;
 const apiClient = USE_DUMMY_DATA ? null : createApiClient({ baseUrl: API_BASE_URL });
+let liveInventory = null;
 const liveProducts = USE_DUMMY_DATA ? null : createLiveProducts({
   client: apiClient,
   products: createProductApi(apiClient),
   escapeHtml,
   formatCurrency,
   showToast,
+  onSessionChange: () => { if (activeView === "inventory") liveInventory?.render(); },
   closeEditor: closeRecordEditor
 });
+if (!USE_DUMMY_DATA) {
+  liveInventory = createLiveInventory({
+    inventory: createInventoryApi(apiClient),
+    escapeHtml,
+    isAuthenticated: liveProducts.isAuthenticated,
+    requireLogin: liveProducts.requireLogin
+  });
+}
 
 function icon(name) {
   return `<svg aria-hidden="true"><use href="#icon-${name}"/></svg>`;
@@ -105,7 +117,9 @@ function closeMobileMenu() {
 function renderNavigation() {
   if (!USE_DUMMY_DATA) {
     elements.navGroups.innerHTML = `<section class="nav-group"><p class="nav-group-title">Danh mục</p>
-      <button class="nav-item" type="button" data-view="products">${icon("box")}<span>Sản phẩm</span></button></section>`;
+      <button class="nav-item" type="button" data-view="products">${icon("box")}<span>Sản phẩm</span></button></section>
+      <section class="nav-group"><p class="nav-group-title">Kho</p>
+      <button class="nav-item" type="button" data-view="inventory">${icon("chart")}<span>Tồn kho</span></button></section>`;
     updateActiveNavigation();
     return;
   }
@@ -214,7 +228,7 @@ function configureDocument(mode) {
 
 function showView(viewName, updateHash = true) {
   const profile = roleProfiles[activeRole];
-  if (!USE_DUMMY_DATA) viewName = "products";
+  if (!USE_DUMMY_DATA && !["products", "inventory"].includes(viewName)) viewName = "products";
   else if (!profile.pages.includes(viewName)) {
     showToast("Vai trò hiện tại không hiển thị chức năng này.");
     viewName = "dashboard";
@@ -228,7 +242,8 @@ function showView(viewName, updateHash = true) {
   if (viewName === "dashboard") setVisibleView("dashboardView");
   else if (viewName === "inventory") {
     setVisibleView("inventoryView");
-    renderInventory();
+    if (USE_DUMMY_DATA) renderInventory();
+    else liveInventory.render();
   } else if (["inbound", "outbound", "transfer"].includes(viewName)) {
     setVisibleView("documentView");
     configureDocument(viewName);
@@ -636,17 +651,19 @@ elements.documentRows.addEventListener("change", handleDocumentChange);
 elements.documentForm.addEventListener("submit", submitDocument);
 document.querySelector("#saveDraftButton").addEventListener("click", () => showToast("Đã lưu bản nháp trên giao diện demo."));
 
-document.querySelector("#inventorySearch").addEventListener("input", (event) => renderInventory(event.target.value));
-document.querySelector("#refreshInventoryButton").addEventListener("click", (event) => {
-  const button = event.currentTarget;
-  button.disabled = true;
-  button.textContent = "Đang làm mới...";
-  window.setTimeout(() => {
-    button.disabled = false;
-    button.textContent = "Làm mới dữ liệu";
-    showToast("Dữ liệu tồn kho demo đã được làm mới.");
-  }, 650);
-});
+if (USE_DUMMY_DATA) {
+  document.querySelector("#inventorySearch").addEventListener("input", (event) => renderInventory(event.target.value));
+  document.querySelector("#refreshInventoryButton").addEventListener("click", (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    button.textContent = "Đang làm mới...";
+    window.setTimeout(() => {
+      button.disabled = false;
+      button.textContent = "Làm mới dữ liệu";
+      showToast("Dữ liệu tồn kho demo đã được làm mới.");
+    }, 650);
+  });
+}
 
 document.querySelector("#countTable").addEventListener("input", (event) => {
   if (event.target.matches(".actual-count")) updateCountVariance();
@@ -730,7 +747,7 @@ if (!USE_DUMMY_DATA) {
   document.querySelector(".location-context").hidden = true;
   document.querySelector("#listView .filter-row").hidden = true;
   document.querySelector("#dataStatus").textContent = "Dữ liệu API";
-  document.querySelector("#dataStatusDetail").textContent = "Danh mục sản phẩm";
+  document.querySelector("#dataStatusDetail").textContent = "Sản phẩm và tồn kho";
   const modeLink = document.querySelector("#apiModeLink");
   modeLink.href = "?mode=demo#dashboard";
   modeLink.firstChild.textContent = "Dữ liệu demo ";
@@ -743,7 +760,9 @@ if (USE_DUMMY_DATA) {
   const initialHash = window.location.hash.slice(1);
   showView(roleProfiles[activeRole].pages.includes(initialHash) ? initialHash : "dashboard", false);
 } else {
-  showView("products", false);
+  liveInventory.start();
+  const initialHash = window.location.hash.slice(1);
+  showView(["products", "inventory"].includes(initialHash) ? initialHash : "products", false);
   liveProducts.start();
 }
 

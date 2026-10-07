@@ -1,4 +1,5 @@
 export function createLiveProducts({ client, products, escapeHtml, formatCurrency, showToast,
+  onSessionChange = () => {},
   closeEditor }) {
   const dialog = document.querySelector("#loginDialog");
   const loginForm = document.querySelector("#loginForm");
@@ -35,6 +36,7 @@ export function createLiveProducts({ client, products, escapeHtml, formatCurrenc
     document.querySelector("#userName").textContent = user?.tenNhanVien || "Chưa đăng nhập";
     document.querySelector("#userRole").textContent = user?.role || "Dữ liệu API";
     document.querySelector("#userAvatar").textContent = user?.tenNhanVien?.trim().slice(0, 2).toUpperCase() || "?";
+    onSessionChange();
   }
 
   function showPage(page) {
@@ -228,5 +230,9 @@ export function createLiveProducts({ client, products, escapeHtml, formatCurrenc
     }
   }
 
-  return { render, openEditor, submit, start };
+  return {
+    render, openEditor, submit, start,
+    isAuthenticated: () => !!user,
+    requireLogin: () => { setUser(null); showLogin("Phiên đăng nhập đã hết hạn."); }
+  };
 }
