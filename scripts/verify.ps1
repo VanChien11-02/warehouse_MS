@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [switch] $WithDatabase,
+    [switch] $WithConcurrency,
     [string] $SqlServer = 'localhost',
     [ValidatePattern('^[A-Za-z][A-Za-z0-9_]{0,127}$')]
     [string] $DatabaseName = 'BlueStock'
@@ -131,6 +132,13 @@ if ($WithDatabase) {
         & $sqlcmd -S $SqlServer -E -C -b -d $DatabaseName -i (Join-Path $root $testFile)
         if ($LASTEXITCODE -ne 0) { throw "Database test thất bại: $testFile" }
     }
+}
+
+if ($WithConcurrency) {
+    if (-not $WithDatabase) { throw 'Dùng -WithConcurrency cùng -WithDatabase.' }
+    & pwsh -File (Join-Path $root 'scripts\verify-concurrency.ps1') `
+        -SqlServer $SqlServer -DatabaseName $DatabaseName
+    if ($LASTEXITCODE -ne 0) { throw 'Concurrency test thất bại.' }
 }
 
 Write-Host 'Baseline verification passed.'

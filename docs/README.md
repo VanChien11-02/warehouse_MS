@@ -34,6 +34,7 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 ## Kiểm thử
 
 - [`testing/README.md`](testing/README.md): chiến lược test và bằng chứng cần lưu.
+- [`testing/CONCURRENCY.md`](testing/CONCURRENCY.md): kịch bản hai session xuất cạnh tranh cùng tồn.
 
 ## Yêu cầu và hợp đồng
 
