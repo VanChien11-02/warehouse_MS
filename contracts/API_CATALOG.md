@@ -79,7 +79,7 @@ Gợi ý FEFO không giữ chỗ tồn vĩnh viễn. Khi hoàn tất phải ki�
 | Resource | Route chính | Hành vi đặc biệt |
 | --- | --- | --- |
 | Phiếu chuyển | `/api/phieu-chuyen` | CRUD nháp, `/{id}/hoan-tat`, `/{id}/huy` |
-| Phiếu kiểm kê | `/api/phieu-kiem-ke` | Tạo snapshot, nhập thực tế, `/{id}/hoan-tat` |
+| Phiếu kiểm kê | `/api/phieu-kiem-ke` | Tạo snapshot, nhập thực tế, chốt/hủy theo [`inventory-count.md`](inventory-count.md) |
 | Phiếu trả hàng | `/api/phieu-tra-hang` | Tạo từ phiếu xuất, kiểm tra giới hạn trả, `/{id}/hoan-tat` |
 
 Mỗi resource cần contract riêng cho header/detail, trạng thái, quyền, validation và lỗi transaction.
