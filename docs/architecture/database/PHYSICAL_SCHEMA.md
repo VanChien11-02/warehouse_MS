@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 22 bảng đã có trong `database/schema/`; procedure nhập/xuất/chuyển đã có, các bảng kiểm soát khác chưa được triển khai.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 24 bảng đã có trong `database/schema/`; procedure nhập/xuất/chuyển đã có, procedure kiểm kê và các bảng kiểm soát khác chưa được triển khai.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
@@ -28,6 +28,8 @@ Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 | `BIEN_DONG_TON_KHO` | `MaBienDong BIGINT IDENTITY` | `MaViTri`, `MaLo` | Mỗi cặp nghiệp vụ/chứng từ/vị trí/lô xuất hiện một lần; delta khác 0; thời điểm UTC |
 | `PHIEU_CHUYEN_KHO` | `MaPCK CHAR(6)` | `MaNV` | Trạng thái nháp/hoàn tất/hủy; thời điểm UTC, hoàn tất phải có `NgayHoanTat` |
 | `CT_PHIEU_CHUYEN_KHO` | `(MaPCK, MaLo, MaViTriNguon, MaViTriDich)` | `MaPCK`, `MaLo`, hai vị trí | Số lượng nguyên dương; nguồn khác đích |
+| `PHIEU_KIEM_KE` | `MaPKK CHAR(6)` | `MaNV`, `MaViTri` | Trạng thái nháp/hoàn tất/hủy; thời điểm UTC, hoàn tất phải có `NgayHoanTat` |
+| `CT_KIEM_KE` | `(MaPKK, MaLo)` | `MaPKK`, `MaLo` | Lưu số tồn hệ thống tại lúc tạo snapshot và số đếm thực tế không âm; lý do chênh lệch kiểm tra khi hoàn tất |
 
 Tên và mô tả dùng `NVARCHAR` để lưu tiếng Việt; mã dùng `CHAR(6)` theo tài liệu nguồn. `MoTa` dùng `NVARCHAR(1000)` thay cho kiểu `TEXT` cũ. Giá mặc định bằng 0 khi không cung cấp, nhưng giá nhập/xuất thực tế nằm trên dòng chứng từ.
 
@@ -53,3 +55,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `vw_BienDongTonKhoChiTiet` nối sổ biến động với kho, sản phẩm và giá nhập thực tế của lô. View là nguồn cho [`contracts/reporting.md`](../../../contracts/reporting.md); test SQL xác nhận giá trị nhập/xuất và số dư sau ghi sổ.
 
 `SEQ_PHIEU_CHUYEN_KHO` cấp mã `PC0001`; `sp_HoanTatChuyenKho` kiểm tra tồn nguồn, sức chứa/đơn vị/bảo quản ở đích và ghi biến động hai phía theo [`contracts/transfer.md`](../../../contracts/transfer.md). API chuyển kho chưa có ở mốc procedure.
+
+`SEQ_PHIEU_KIEM_KE` cấp mã `KK0001`. Phiếu gắn một vị trí; dòng `(MaPKK, MaLo)` giữ số tồn hệ thống bất biến sau khi tạo và số đếm thực tế có thể để trống trong nháp. Quy tắc lý do chênh lệch và đối chiếu snapshot được ghi trong [`contracts/inventory-count.md`](../../../contracts/inventory-count.md).
