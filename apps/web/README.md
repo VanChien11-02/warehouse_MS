@@ -46,6 +46,8 @@ Mở `http://127.0.0.1:5174/?mode=api#products` để đăng nhập và xem/tạ
 
 Nếu port 8080 đang dùng, đặt `SERVER_PORT=8082` trong terminal API và mở frontend bằng `http://127.0.0.1:5174/?mode=api&apiPort=8082#products`. `apiPort` chỉ đổi cổng trên `127.0.0.1`; không gửi session sang host khác.
 
+Nếu port 5174 cũng đang dùng, chạy `pwsh -File scripts/dev.ps1 -Target web -Port 5176`, đặt thêm `APP_WEB_ORIGIN=http://127.0.0.1:5176` cho API, rồi mở `http://127.0.0.1:5176/?mode=api&apiPort=8082#products`.
+
 Mở `http://127.0.0.1:5174/` để xem prototype bằng dữ liệu mẫu. Các luồng chứng từ, báo cáo và màn hình danh mục khác vẫn là demo, chưa gửi HTTP. Dùng [`../../docs/testing/API_SMOKE.md`](../../docs/testing/API_SMOKE.md) với Postman để thử toàn bộ nghiệp vụ backend.
 
 Frontend cần tiếp tục chuyển các màn hình theo [`../../docs/project/governance/BACKLOG.md`](../../docs/project/governance/BACKLOG.md). Dùng adapter HTTP và contract của từng resource, đồng thời giữ loading/error/empty state; không đổi URL rải rác trong form.

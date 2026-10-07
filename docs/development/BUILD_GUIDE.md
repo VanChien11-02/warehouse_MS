@@ -105,6 +105,8 @@ pwsh -File scripts/dev.ps1 -Target web
 
 Giao diện mặc định trình bày dữ liệu mẫu. Mở `http://127.0.0.1:5174/?mode=api#products` để thử CRUD sản phẩm hoặc `?mode=api#inventory` để tra cứu tồn với session thật; các màn hình khác chưa nối API. Để thử nghiệp vụ chứng từ, dùng HTTP client theo contract. Không dùng form demo làm bằng chứng E2E backend.
 
+Nếu port 5174 hoặc 8080 đã có ứng dụng khác sử dụng, chạy web bằng `pwsh -File scripts/dev.ps1 -Target web -Port 5176`, đặt `APP_WEB_ORIGIN=http://127.0.0.1:5176` và `SERVER_PORT=8082` trong terminal API, rồi mở `http://127.0.0.1:5176/?mode=api&apiPort=8082#products`. Origin phải khớp chính xác để cookie session và CORS hoạt động.
+
 Trước khi bàn giao, chạy hai cổng kiểm tra:
 
 ```powershell
