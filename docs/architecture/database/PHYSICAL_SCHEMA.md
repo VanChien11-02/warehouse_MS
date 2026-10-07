@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 24 bảng đã có trong `database/schema/`; procedure nhập/xuất/chuyển/kiểm kê đã có, các bảng kiểm soát khác chưa được triển khai.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 26 bảng đã có trong `database/schema/`; procedure nhập/xuất/chuyển/kiểm kê đã có, procedure trả và audit chưa triển khai.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
@@ -30,6 +30,8 @@ Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 | `CT_PHIEU_CHUYEN_KHO` | `(MaPCK, MaLo, MaViTriNguon, MaViTriDich)` | `MaPCK`, `MaLo`, hai vị trí | Số lượng nguyên dương; nguồn khác đích |
 | `PHIEU_KIEM_KE` | `MaPKK CHAR(6)` | `MaNV`, `MaViTri` | Trạng thái nháp/hoàn tất/hủy; thời điểm UTC, hoàn tất phải có `NgayHoanTat` |
 | `CT_KIEM_KE` | `(MaPKK, MaLo)` | `MaPKK`, `MaLo` | Lưu số tồn hệ thống tại lúc tạo snapshot và số đếm thực tế không âm; lý do chênh lệch kiểm tra khi hoàn tất |
+| `PHIEU_TRA_HANG` | `MaPTH CHAR(6)` | `MaPX`, `MaNV` | Tham chiếu phiếu xuất gốc; trạng thái nháp/hoàn tất/hủy; thời điểm UTC |
+| `CT_PHIEU_TRA_HANG` | `(MaPTH, MaLo)` | `MaPTH`, `MaLo`, `MaViTri` | Số lượng dương; tình trạng `Tốt`/`Hư hỏng`; đích lưu trữ cụ thể |
 
 Tên và mô tả dùng `NVARCHAR` để lưu tiếng Việt; mã dùng `CHAR(6)` theo tài liệu nguồn. `MoTa` dùng `NVARCHAR(1000)` thay cho kiểu `TEXT` cũ. Giá mặc định bằng 0 khi không cung cấp, nhưng giá nhập/xuất thực tế nằm trên dòng chứng từ.
 
@@ -61,3 +63,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `sp_HoanTatKiemKe` khóa phiếu, vị trí và tồn; so snapshot với lượng hiện tại, kiểm tra lý do, sức chứa, đơn vị và bảo quản rồi điều chỉnh tồn cùng dòng sổ `KIEM_KE` trong một transaction. Procedure từ chối chốt lặp; test cố ý gây lỗi ghi sổ muộn để xác nhận tồn và trạng thái rollback.
 
 `vw_ChenhLechKiemKe` chỉ gồm các dòng có chênh lệch khác 0 của phiếu đã hoàn tất, giữ nguyên số hệ thống lúc snapshot và nối đến kho/lô/sản phẩm để báo cáo theo kỳ tại [`contracts/count-discrepancy-report.md`](../../../contracts/count-discrepancy-report.md).
+
+`SEQ_PHIEU_TRA_HANG` cấp mã `TH0001`; phiếu trả gắn phiếu xuất và mỗi dòng gắn lô/vị trí đích, theo [`contracts/returning.md`](../../../contracts/returning.md).
