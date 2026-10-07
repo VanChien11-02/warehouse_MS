@@ -1,6 +1,6 @@
 # Danh mục API dự kiến
 
-> Trạng thái: **Draft**. File này là inventory để không bỏ sót hoặc đặt endpoint trùng nhau. Request/response chi tiết phải nằm trong contract riêng hoặc OpenAPI sau khi nhóm chốt baseline.
+> Trạng thái: **Draft**. File này giữ cả route đã triển khai và ý tưởng chưa triển khai; không dùng bảng bên dưới làm danh sách endpoint chạy được. Request/response và quyền của route đã triển khai nằm trong contract chi tiết.
 
 ## Quy ước chung
 
@@ -54,11 +54,11 @@ CRUD không cho phép xóa dữ liệu đã được chứng từ tham chiếu. 
 | `GET` | `/api/phieu-nhap/{maPhieuNhap}` | Chi tiết phiếu theo [`inbound-completion.md`](inbound-completion.md) | Theo role |
 | `PUT` | `/api/phieu-nhap/{maPhieuNhap}` | Sửa header/dòng khi còn nháp | NhanVienKho/QuanLyKho |
 | `POST` | `/api/phieu-nhap/{maPhieuNhap}/hoan-tat` | Tạo lô, put-away, tăng tồn theo [`inbound-completion.md`](inbound-completion.md) | QuanLyKho |
-| `POST` | `/api/phieu-nhap/{maPhieuNhap}/huy` | Hủy phiếu nháp | Quyền cần chốt |
+| `POST` | `/api/phieu-nhap/{maPhieuNhap}/huy` | Hủy phiếu nháp | QuanLyKho/NhanVienKho |
 | `GET` | `/api/ton-kho` | Lọc theo kho/vị trí/sản phẩm/lô/hạn theo [`inventory-query.md`](inventory-query.md) | Bốn role |
 | `GET` | `/api/lo-hang` | Tra cứu lô và hạn dùng | Authenticated theo role |
 
-Payload hoàn tất nhập phải chỉ ra cách phân bổ lô vào vị trí nếu thông tin đó chưa nằm trong phiếu. Hình thức payload cụ thể cần contract riêng.
+Payload và quyền thực tế của nhập/tồn nằm trong [`inbound-completion.md`](inbound-completion.md) và [`inventory-query.md`](inventory-query.md). `GET /api/lo-hang` vẫn là ý tưởng Draft; hiện tra cứu lô có tồn qua `/api/ton-kho`, gồm mã lô, hạn dùng, vị trí và phiếu nhập nguồn.
 
 ## Xuất kho
 
@@ -70,7 +70,7 @@ Payload hoàn tất nhập phải chỉ ra cách phân bổ lô vào vị trí n
 | `PUT` | `/api/phieu-xuat/{maPhieuXuat}` | Sửa phiếu nháp | NhanVienKho/QuanLyKho |
 | `GET` | `/api/phieu-xuat/{maPhieuXuat}/goi-y-fefo` | Gợi ý lô/vị trí theo [`outbound-fefo-completion.md`](outbound-fefo-completion.md) | NhanVienKho/QuanLyKho |
 | `POST` | `/api/phieu-xuat/{maPhieuXuat}/hoan-tat` | Kiểm tra và trừ tồn nguyên tử theo [`outbound-fefo-completion.md`](outbound-fefo-completion.md) | QuanLyKho |
-| `POST` | `/api/phieu-xuat/{maPhieuXuat}/huy` | Hủy phiếu nháp | Quyền cần chốt |
+| `POST` | `/api/phieu-xuat/{maPhieuXuat}/huy` | Hủy phiếu nháp | QuanLyKho/NhanVienKho |
 
 Gợi ý FEFO không giữ chỗ tồn vĩnh viễn. Khi hoàn tất phải kiểm tra/khóa lại tồn trong transaction.
 
@@ -82,7 +82,7 @@ Gợi ý FEFO không giữ chỗ tồn vĩnh viễn. Khi hoàn tất phải ki�
 | Phiếu kiểm kê | `/api/phieu-kiem-ke` | Tạo snapshot, nhập thực tế, chốt/hủy theo [`inventory-count.md`](inventory-count.md) |
 | Phiếu trả hàng | `/api/phieu-tra-hang` | Tạo từ phiếu xuất, kiểm tra giới hạn trả, `/{id}/hoan-tat` theo [`returning.md`](returning.md) |
 
-Mỗi resource cần contract riêng cho header/detail, trạng thái, quyền, validation và lỗi transaction.
+Contract hiện hành: [`transfer.md`](transfer.md), [`inventory-count.md`](inventory-count.md), [`returning.md`](returning.md).
 
 ## Báo cáo
 
@@ -93,7 +93,7 @@ Mỗi resource cần contract riêng cho header/detail, trạng thái, quyền, 
 | `GET` | `/api/bao-cao/lo-sap-het-han` | số ngày, kho | QuanLyKho/NhanVienKho |
 | `GET` | `/api/bao-cao/chenh-lech-kiem-ke` | kỳ/kho/vị trí theo [`count-discrepancy-report.md`](count-discrepancy-report.md) | Admin/QuanLyKho/KeToan |
 
-Nguồn giá và boundary thời gian phải được chốt trước báo cáo giá trị.
+`/api/bao-cao/ton-kho` vẫn là ý tưởng Draft; `/api/ton-kho` đã trả số lượng/giá trị theo lô và vị trí. Báo cáo đã triển khai nằm trong [`reporting.md`](reporting.md), [`expiry-report.md`](expiry-report.md) và [`count-discrepancy-report.md`](count-discrepancy-report.md).
 
 ## Contract chi tiết cần tạo theo ưu tiên
 

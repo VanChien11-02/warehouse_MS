@@ -55,6 +55,20 @@ Mẫu biến môi trường nằm tại [`../../services/api/.env.example`](../.
 
 JDBC cần SQL Server bật TCP/IP và lắng nghe cổng trong `SPRING_DATASOURCE_URL` (mẫu dùng 1433). Bật TCP/IP bằng SQL Server Configuration Manager, khởi động lại instance rồi kiểm tra `Test-NetConnection 127.0.0.1 -Port 1433`. `sqlcmd -E` trên cùng máy có thể dùng shared memory dù TCP/IP đang tắt, nên kết quả test SQL không thay thế kiểm tra kết nối JDBC. Tạo SQL login cục bộ với quyền trên `BlueStock`, đặt username/password qua biến môi trường; không ghi chúng vào repository.
 
+Nếu instance chỉ cho Windows Authentication, bật chế độ SQL Server and Windows Authentication trong cấu hình instance rồi khởi động lại dịch vụ. Có thể dùng login SQL có sẵn hoặc tạo login kỹ thuật riêng cho bản demo trong SSMS. Trên database demo, gán user của login đó vào `db_owner` để API chạy các use case; đây là quyền của kết nối kỹ thuật, không thay cho bốn role ứng dụng. Bốn role SQL dùng khi truy cập database trực tiếp được mô tả trong [`../../database/security/README.md`](../../database/security/README.md). Giữ mật khẩu login ngoài repository và không dùng tài khoản demo cho dữ liệu thật.
+
+Ví dụ chạy trong SSMS sau khi thay mật khẩu giữ riêng ở máy:
+
+```sql
+CREATE LOGIN [bluestock_api_local] WITH PASSWORD = '<mat-khau-rieng-du-manh>';
+GO
+USE [BlueStock];
+CREATE USER [bluestock_api_local] FOR LOGIN [bluestock_api_local];
+ALTER ROLE [db_owner] ADD MEMBER [bluestock_api_local];
+```
+
+Đặt `SPRING_DATASOURCE_USERNAME=bluestock_api_local` và `SPRING_DATASOURCE_PASSWORD` bằng mật khẩu vừa tạo trong terminal chạy API. Nếu login/user đã có, dùng tài khoản hiện tại thay vì chạy lại lệnh `CREATE`.
+
 Sau khi dựng database, chạy `pwsh -File scripts/bootstrap-admin.ps1` đúng một lần khi bảng tài khoản còn trống. Lệnh yêu cầu mật khẩu tại terminal, lưu BCrypt hash và khởi động API. Dừng tiến trình bootstrap rồi chạy `pwsh -File scripts/dev.ps1 -Target api` với cùng cấu hình JDBC.
 
 Seed `database/seed/demo.sql` tạo danh mục, đối tác, kho/vị trí và phiếu nhập đã hoàn tất với ba lô, 40 đơn vị tồn; có thể chạy lại mà không ghi sổ hai lần. Seed không tạo tài khoản hoặc mật khẩu. Nếu chỉ cần danh mục trống để thử CRUD, dùng `database/seed/catalog_demo.sql` thay cho seed đầy đủ.
