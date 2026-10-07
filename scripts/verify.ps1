@@ -48,7 +48,7 @@ foreach ($relativePath in $requiredFiles) {
 Write-Host '2/4 Kiểm tra JavaScript frontend...'
 $node = (Get-Command node -ErrorAction Stop).Source
 foreach ($scriptFile in @('app.js', 'core\navigation.js', 'core\api-client.js',
-        'data\demo.js', 'data\product-api.js', 'data\inventory-api.js',
+        'data\demo.js', 'data\product-api.js', 'data\inventory-api.js', 'data\report-api.js',
         'features\live-products.js', 'features\live-inventory.js')) {
     & $node --check (Join-Path $root 'apps\web' $scriptFile)
     if ($LASTEXITCODE -ne 0) { throw "JavaScript frontend không hợp lệ: $scriptFile" }
@@ -59,6 +59,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Frontend API client test thất bại.' }
 if ($LASTEXITCODE -ne 0) { throw 'Frontend product adapter test thất bại.' }
 & $node --test (Join-Path $root 'apps\web\data\inventory-api.test.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Frontend inventory adapter test thất bại.' }
+& $node --test (Join-Path $root 'apps\web\data\report-api.test.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Frontend report adapter test thất bại.' }
 & $node --check (Join-Path $root 'scripts\serve-web.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Static server script không hợp lệ.' }
 
