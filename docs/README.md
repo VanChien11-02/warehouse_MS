@@ -35,6 +35,7 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 
 - [`testing/README.md`](testing/README.md): chiến lược test và bằng chứng cần lưu.
 - [`testing/CONCURRENCY.md`](testing/CONCURRENCY.md): kịch bản hai session xuất cạnh tranh cùng tồn.
+- [`testing/API_SMOKE.md`](testing/API_SMOKE.md): kịch bản Postman nhập → tồn → xuất FEFO → báo cáo trên dữ liệu demo.
 
 ## Yêu cầu và hợp đồng
 

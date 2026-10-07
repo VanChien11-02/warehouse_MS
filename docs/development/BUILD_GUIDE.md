@@ -81,7 +81,7 @@ pwsh -File scripts/bootstrap-admin.ps1
 pwsh -File scripts/dev.ps1 -Target api
 ```
 
-Kiểm tra `GET http://127.0.0.1:8080/api/health` và `GET http://127.0.0.1:8080/actuator/health`. Endpoint thứ hai phải phản ánh kết nối database. Quy trình đăng nhập, CSRF và quyền nằm ở [`../../contracts/session-rbac.md`](../../contracts/session-rbac.md). Tài khoản cho ba role còn lại được Admin tạo qua [`../../contracts/identity-admin.md`](../../contracts/identity-admin.md). Demo nhập → tồn → xuất FEFO → báo cáo dùng dữ liệu trong [`../../database/seed/README.md`](../../database/seed/README.md).
+Kiểm tra `GET http://127.0.0.1:8080/api/health` và `GET http://127.0.0.1:8080/actuator/health`. Endpoint thứ hai phải phản ánh kết nối database. Quy trình đăng nhập, CSRF và quyền nằm ở [`../../contracts/session-rbac.md`](../../contracts/session-rbac.md). Tài khoản cho ba role còn lại được Admin tạo qua [`../../contracts/identity-admin.md`](../../contracts/identity-admin.md). Kịch bản Postman nhập → tồn → xuất FEFO → báo cáo nằm ở [`../testing/API_SMOKE.md`](../testing/API_SMOKE.md).
 
 Mở frontend static ở terminal khác:
 
