@@ -81,9 +81,10 @@ class TransferControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_QLKHO")
     void managerCanCompleteTransfer() throws Exception {
-        when(service.complete("PC0001")).thenReturn(new CompletionView("PC0001",
+        when(service.complete("PC0001", "TK0001")).thenReturn(new CompletionView("PC0001",
             "DA_HOAN_THANH", OffsetDateTime.parse("2026-10-07T00:00:00Z")));
-        mvc.perform(post("/api/phieu-chuyen/PC0001/hoan-tat").with(csrf()))
+        mvc.perform(post("/api/phieu-chuyen/PC0001/hoan-tat").with(csrf())
+                .with(user(principal("QLKHO"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.trangThai").value("DA_HOAN_THANH"));
     }

@@ -110,11 +110,11 @@ public class TransferJdbcRepository {
             header.ngayHoanTat(), lines));
     }
 
-    public CompletionView complete(String code) {
-        return jdbc.queryForObject("EXEC dbo.sp_HoanTatChuyenKho @MaPCK = ?",
+    public CompletionView complete(String code, String actorAccount) {
+        return jdbc.queryForObject("EXEC dbo.sp_HoanTatChuyenKho @MaPCK = ?, @MaTK = ?",
             (row, index) -> new CompletionView(row.getString("maPhieuChuyen").trim(),
                 row.getString("trangThai"), utc(row.getObject("ngayHoanTat", LocalDateTime.class))),
-            code);
+            code, actorAccount);
     }
 
     private static OffsetDateTime utc(LocalDateTime value) {

@@ -2,6 +2,7 @@ SET NOCOUNT ON;
 SET XACT_ABORT OFF;
 
 DECLARE @CleanupSql NVARCHAR(MAX) = N'
+    DELETE FROM dbo.LICH_SU_THAO_TAC WHERE MaTK = ''TST141'';
     DELETE FROM dbo.BIEN_DONG_TON_KHO WHERE MaChungTu IN (''TST141'', ''TST142'', ''TST143'', ''TST144'', ''TST145'');
     DELETE FROM dbo.CT_PHIEU_CHUYEN_KHO WHERE MaPCK IN (''TST141'', ''TST142'', ''TST143'', ''TST144'', ''TST145'');
     DELETE FROM dbo.PHIEU_CHUYEN_KHO WHERE MaPCK IN (''TST141'', ''TST142'', ''TST143'', ''TST144'', ''TST145'');
@@ -18,6 +19,7 @@ DECLARE @CleanupSql NVARCHAR(MAX) = N'
     DELETE FROM dbo.KHU_VUC WHERE MaKhuVuc IN (''TST141'', ''TST142'', ''TST143'');
     DELETE FROM dbo.KHO WHERE MaKho IN (''TST141'', ''TST142'');
     DELETE FROM dbo.NHA_CUNG_CAP WHERE MaNCC = ''TST141'';
+    DELETE FROM dbo.TAI_KHOAN WHERE MaTK = ''TST141'';
     DELETE FROM dbo.NHAN_VIEN WHERE MaNV = ''TST141'';
 ';
 
@@ -25,6 +27,9 @@ BEGIN TRY
     BEGIN TRANSACTION;
     INSERT INTO dbo.NHAN_VIEN (MaNV, TenNV, NgayVaoLam)
         VALUES ('TST141', N'Nhân viên test chuyển', '2026-01-01');
+    INSERT INTO dbo.TAI_KHOAN (MaTK, MaNV, MaRole, TenTK, MatKhauHash)
+        VALUES ('TST141', 'TST141', 'QLKHO', N'test.transfer.audit',
+            '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
     INSERT INTO dbo.NHA_CUNG_CAP (MaNCC, TenNCC)
         VALUES ('TST141', N'Nhà cung cấp test chuyển');
     INSERT INTO dbo.LOAI_SAN_PHAM (MaLoai, TenLoai, YeuCauBaoQuan)
@@ -67,7 +72,7 @@ BEGIN TRY
                ('TST143', @MaLo, 'TST141', 'TST142', 2),
                ('TST144', @MaLo, 'TST141', 'TST143', 1);
 
-    EXEC dbo.sp_HoanTatChuyenKho @MaPCK = 'TST141';
+    EXEC dbo.sp_HoanTatChuyenKho @MaPCK = 'TST141', @MaTK = 'TST141';
     IF (SELECT SoLuongTon FROM dbo.TON_KHO
         WHERE MaViTri = 'TST141' AND MaLo = @MaLo) <> 3
         THROW 51971, N'Tồn nguồn sau chuyển sai.', 1;
@@ -77,6 +82,10 @@ BEGIN TRY
     IF (SELECT SUM(SoLuongThayDoi) FROM dbo.BIEN_DONG_TON_KHO
         WHERE LoaiNghiepVu = N'CHUYEN' AND MaChungTu = 'TST141') <> 0
         THROW 51973, N'Chuyển kho chưa ghi hai phía cân bằng.', 1;
+    IF (SELECT COUNT(*) FROM dbo.LICH_SU_THAO_TAC
+        WHERE MaTK = 'TST141' AND TenBang = N'PHIEU_CHUYEN_KHO'
+          AND MaBanGhi = 'TST141' AND HanhDong = N'COMPLETE') <> 1
+        THROW 52042, N'Hoàn tất chuyển chưa ghi actor audit.', 1;
     IF (SELECT SUM(SoLuongThayDoi) FROM dbo.vw_BienDongTonKhoChiTiet
         WHERE MaKho = 'TST141' AND MaSP = 'TST141') <> 3
         THROW 51974, N'Báo cáo kho nguồn sau chuyển sai.', 1;
