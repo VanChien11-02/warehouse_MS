@@ -46,8 +46,10 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<EmployeeView> create(@Valid @RequestBody CreateEmployeeRequest body) {
-        EmployeeView created = service.createEmployee(body.maNhanVien(), body.data());
+    public ResponseEntity<EmployeeView> create(@Valid @RequestBody CreateEmployeeRequest body,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        EmployeeView created = service.createEmployee(body.maNhanVien(), body.data(),
+            principal.maTaiKhoan());
         return ResponseEntity.created(URI.create("/api/nhan-vien/" + created.maNhanVien()))
             .body(created);
     }
@@ -56,7 +58,8 @@ public class EmployeeController {
     public EmployeeView update(@PathVariable String maNhanVien,
         @Valid @RequestBody UpdateEmployeeRequest body,
         @AuthenticationPrincipal AccountPrincipal principal) {
-        return service.updateEmployee(maNhanVien, body.data(), principal.maNhanVien());
+        return service.updateEmployee(maNhanVien, body.data(), principal.maNhanVien(),
+            principal.maTaiKhoan());
     }
 
     public record CreateEmployeeRequest(@NotBlank String maNhanVien,

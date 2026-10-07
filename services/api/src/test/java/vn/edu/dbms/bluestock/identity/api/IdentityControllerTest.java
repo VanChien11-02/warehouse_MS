@@ -45,8 +45,8 @@ class IdentityControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     void adminCanCreateEmployee() throws Exception {
-        when(service.createEmployee(eq("NV0002"), any())).thenReturn(employee());
-        mvc.perform(post("/api/nhan-vien").with(csrf())
+        when(service.createEmployee(eq("NV0002"), any(), eq("TK0001"))).thenReturn(employee());
+        mvc.perform(post("/api/nhan-vien").with(csrf()).with(user(principal()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"maNhanVien\":\"NV0002\",\"tenNhanVien\":\"Thủ kho\",\"ngayVaoLam\":\"2026-10-07\"}"))
             .andExpect(status().isCreated())
@@ -56,9 +56,9 @@ class IdentityControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     void adminCanCreateAccountWithoutReturningHash() throws Exception {
-        when(service.createAccount("TK0002", "NV0002", "staff", "NVKHO", "strong-password-123"))
+        when(service.createAccount("TK0002", "NV0002", "staff", "NVKHO", "strong-password-123", "TK0001"))
             .thenReturn(account());
-        mvc.perform(post("/api/tai-khoan").with(csrf())
+        mvc.perform(post("/api/tai-khoan").with(csrf()).with(user(principal()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"maTaiKhoan\":\"TK0002\",\"maNhanVien\":\"NV0002\",\"tenTaiKhoan\":\"staff\",\"role\":\"NVKHO\",\"matKhau\":\"strong-password-123\"}"))
             .andExpect(status().isCreated())
@@ -97,5 +97,10 @@ class IdentityControllerTest {
 
     private static AccountView account() {
         return new AccountView("TK0002", "NV0002", "Thủ kho", "staff", "NVKHO", true);
+    }
+
+    private static AccountPrincipal principal() {
+        return new AccountPrincipal("TK0001", "NV0001", "Admin",
+            "admin", "hash", "ADMIN", true);
     }
 }

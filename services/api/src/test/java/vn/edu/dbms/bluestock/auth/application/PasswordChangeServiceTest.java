@@ -6,6 +6,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,7 +21,8 @@ import static org.mockito.Mockito.when;
 class PasswordChangeServiceTest {
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    private final PasswordChangeService service = new PasswordChangeService(jdbc, encoder);
+    private final AuditTrail audit = mock(AuditTrail.class);
+    private final PasswordChangeService service = new PasswordChangeService(jdbc, encoder, audit);
 
     @Test
     void currentPasswordMustMatchLatestHashBeforeUpdating() {
@@ -40,6 +42,7 @@ class PasswordChangeServiceTest {
         verify(jdbc).update(anyString(), hash.capture(), eq("TK0001"));
         assertFalse(hash.getValue().equals("new-password-123"));
         assertTrue(encoder.matches("new-password-123", hash.getValue()));
+        verify(audit).record("TK0001", "PASSWORD_CHANGE", "TAI_KHOAN", "TK0001", null, null);
     }
 
     @Test

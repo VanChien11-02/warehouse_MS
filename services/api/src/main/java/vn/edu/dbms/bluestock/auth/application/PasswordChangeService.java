@@ -6,15 +6,18 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 
 @Service
 public class PasswordChangeService {
     private final JdbcTemplate jdbc;
     private final PasswordEncoder encoder;
+    private final AuditTrail audit;
 
-    public PasswordChangeService(JdbcTemplate jdbc, PasswordEncoder encoder) {
+    public PasswordChangeService(JdbcTemplate jdbc, PasswordEncoder encoder, AuditTrail audit) {
         this.jdbc = jdbc;
         this.encoder = encoder;
+        this.audit = audit;
     }
 
     @Transactional
@@ -32,5 +35,6 @@ public class PasswordChangeService {
         }
         jdbc.update("UPDATE dbo.TAI_KHOAN SET MatKhauHash = ? WHERE MaTK = ?",
             encoder.encode(newPassword), accountCode);
+        audit.record(accountCode, "PASSWORD_CHANGE", "TAI_KHOAN", accountCode, null, null);
     }
 }

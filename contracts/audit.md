@@ -6,6 +6,8 @@
 
 `LICH_SU_THAO_TAC` lưu `MaLichSu BIGINT IDENTITY`, `MaTK` của người thao tác, thời điểm UTC, hành động, tên bảng, mã bản ghi và JSON trước/sau nếu cần. Hành động thuộc `CREATE`, `UPDATE`, `CANCEL`, `COMPLETE`, `PASSWORD_CHANGE`, `PASSWORD_RESET`. JSON phải hợp lệ; không lưu mật khẩu, hash, CSRF token, cookie, connection string hoặc toàn bộ request body. Chỉ ghi trường nghiệp vụ an toàn cần truy vết.
 
+API quản trị nhân viên/tài khoản ghi `CREATE`/`UPDATE` với response DTO an toàn trước/sau trong cùng transaction; đổi và reset mật khẩu chỉ ghi hành động, không ghi giá trị mật khẩu hoặc hash. Nếu ghi audit thất bại, thay đổi quản trị rollback.
+
 Index `(ThoiGian DESC, MaTK)` phục vụ tra cứu theo thời gian và tài khoản. Ghi audit trong cùng transaction với thay đổi nghiệp vụ khi thao tác bắt đầu từ API. Procedure gọi trực tiếp ngoài API không có tài khoản ứng dụng nên không tự ghi `MaTK` giả.
 
 `GET /api/audit?tuNgay=2026-10-01&denNgay=2026-10-31&maTaiKhoan=TK0001&page=0&size=20` chỉ dành cho `Admin`. Hai ngày theo `yyyy-MM-dd` là bắt buộc, bao gồm cả hai ngày ở `Asia/Bangkok`; server đổi sang UTC để lọc `ThoiGian`. `maTaiKhoan` tùy chọn, `page` bắt đầu 0, `size` từ 1 đến 100. Kết quả sắp `ThoiGian DESC, MaLichSu DESC`, trả `{tuNgay,denNgay,items,page,size,totalElements,totalPages}`. Item gồm `maLichSu`, `maTaiKhoan`, `thoiGian` ISO-8601 UTC, `hanhDong`, `tenBang`, `maBanGhi`, `duLieuCu`, `duLieuMoi`; hai trường dữ liệu là chuỗi JSON hoặc `null`.

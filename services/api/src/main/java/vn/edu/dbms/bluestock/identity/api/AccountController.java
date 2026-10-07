@@ -41,9 +41,10 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<AccountView> create(@Valid @RequestBody CreateAccountRequest body) {
+    public ResponseEntity<AccountView> create(@Valid @RequestBody CreateAccountRequest body,
+        @AuthenticationPrincipal AccountPrincipal principal) {
         AccountView created = service.createAccount(body.maTaiKhoan(), body.maNhanVien(),
-            body.tenTaiKhoan(), body.role(), body.matKhau());
+            body.tenTaiKhoan(), body.role(), body.matKhau(), principal.maTaiKhoan());
         return ResponseEntity.created(URI.create("/api/tai-khoan/" + created.maTaiKhoan()))
             .body(created);
     }
@@ -58,8 +59,9 @@ public class AccountController {
 
     @PutMapping("/{maTaiKhoan}/mat-khau")
     public ResponseEntity<Void> resetPassword(@PathVariable String maTaiKhoan,
-        @Valid @RequestBody ResetPasswordRequest body) {
-        service.resetPassword(maTaiKhoan, body.matKhauMoi());
+        @Valid @RequestBody ResetPasswordRequest body,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        service.resetPassword(maTaiKhoan, body.matKhauMoi(), principal.maTaiKhoan());
         return ResponseEntity.noContent().build();
     }
 

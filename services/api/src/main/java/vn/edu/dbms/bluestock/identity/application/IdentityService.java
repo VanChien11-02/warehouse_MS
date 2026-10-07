@@ -14,16 +14,20 @@ import vn.edu.dbms.bluestock.identity.application.IdentityModels.EmployeePage;
 import vn.edu.dbms.bluestock.identity.application.IdentityModels.EmployeeView;
 import vn.edu.dbms.bluestock.identity.infrastructure.IdentityJdbcRepository;
 import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 
 @Service
 public class IdentityService {
     private static final List<String> ROLES = List.of("ADMIN", "QLKHO", "NVKHO", "KETOAN");
     private final IdentityJdbcRepository repository;
     private final PasswordEncoder encoder;
+    private final AuditTrail audit;
 
-    public IdentityService(IdentityJdbcRepository repository, PasswordEncoder encoder) {
+    public IdentityService(IdentityJdbcRepository repository, PasswordEncoder encoder,
+        AuditTrail audit) {
         this.repository = repository;
         this.encoder = encoder;
+        this.audit = audit;
     }
 
     @Transactional(readOnly = true)
@@ -39,7 +43,7 @@ public class IdentityService {
     }
 
     @Transactional
-    public EmployeeView createEmployee(String code, EmployeeData data) {
+    public EmployeeView createEmployee(String code, EmployeeData data, String actorAccount) {
         String normalizedCode = normalizeCode(code);
         EmployeeData normalized = normalizeEmployee(data);
         try {
@@ -48,11 +52,14 @@ public class IdentityService {
             throw new IdentityException(Kind.CONFLICT, "EMPLOYEE_CONFLICT",
                 "Mã nhân viên đã tồn tại hoặc dữ liệu không hợp lệ");
         }
-        return getEmployee(normalizedCode);
+        EmployeeView created = getEmployee(normalizedCode);
+        audit.record(actorAccount, "CREATE", "NHAN_VIEN", normalizedCode, null, created);
+        return created;
     }
 
     @Transactional
-    public EmployeeView updateEmployee(String code, EmployeeData data, String actorEmployee) {
+    public EmployeeView updateEmployee(String code, EmployeeData data,
+        String actorEmployee, String actorAccount) {
         String normalizedCode = normalizeCode(code);
         repository.lockedEmployeeActive(normalizedCode).orElseThrow(() ->
             new IdentityException(Kind.NOT_FOUND, "EMPLOYEE_NOT_FOUND", "Không tìm thấy nhân viên"));
@@ -61,8 +68,11 @@ public class IdentityService {
             throw new IdentityException(Kind.CONFLICT, "SELF_DEACTIVATION_FORBIDDEN",
                 "Không thể tự ngừng trạng thái làm việc");
         }
+        EmployeeView before = getEmployee(normalizedCode);
         repository.updateEmployee(normalizedCode, normalized);
-        return getEmployee(normalizedCode);
+        EmployeeView after = getEmployee(normalizedCode);
+        audit.record(actorAccount, "UPDATE", "NHAN_VIEN", normalizedCode, before, after);
+        return after;
     }
 
     @Transactional(readOnly = true)
@@ -79,7 +89,7 @@ public class IdentityService {
 
     @Transactional
     public AccountView createAccount(String code, String employee, String username,
-        String role, String password) {
+        String role, String password, String actorAccount) {
         String normalizedCode = normalizeCode(code);
         String normalizedEmployee = normalizeCode(employee);
         String normalizedRole = normalizeRole(role);
@@ -102,7 +112,9 @@ public class IdentityService {
             throw new IdentityException(Kind.VALIDATION, "INVALID_REFERENCE",
                 "Nhân viên hoặc role không hợp lệ");
         }
-        return getAccount(normalizedCode);
+        AccountView created = getAccount(normalizedCode);
+        audit.record(actorAccount, "CREATE", "TAI_KHOAN", normalizedCode, null, created);
+        return created;
     }
 
     @Transactional
@@ -111,7 +123,7 @@ public class IdentityService {
         String normalizedCode = normalizeCode(code);
         String normalizedRole = normalizeRole(role);
         String normalizedUsername = requireUsername(username);
-        repository.lockedAccount(normalizedCode).orElseThrow(() ->
+        AccountView before = repository.lockedAccount(normalizedCode).orElseThrow(() ->
             new IdentityException(Kind.NOT_FOUND, "ACCOUNT_NOT_FOUND", "Không tìm thấy tài khoản"));
         if (normalizedCode.equals(normalizeCode(actorAccount))
             && (!active || !"ADMIN".equals(normalizedRole))) {
@@ -124,16 +136,19 @@ public class IdentityService {
             throw new IdentityException(Kind.CONFLICT, "ACCOUNT_CONFLICT",
                 "Tên tài khoản đã được dùng");
         }
-        return getAccount(normalizedCode);
+        AccountView after = getAccount(normalizedCode);
+        audit.record(actorAccount, "UPDATE", "TAI_KHOAN", normalizedCode, before, after);
+        return after;
     }
 
     @Transactional
-    public void resetPassword(String code, String password) {
+    public void resetPassword(String code, String password, String actorAccount) {
         String normalizedCode = normalizeCode(code);
         validatePassword(password);
         repository.lockedAccount(normalizedCode).orElseThrow(() ->
             new IdentityException(Kind.NOT_FOUND, "ACCOUNT_NOT_FOUND", "Không tìm thấy tài khoản"));
         repository.resetPassword(normalizedCode, encoder.encode(password));
+        audit.record(actorAccount, "PASSWORD_RESET", "TAI_KHOAN", normalizedCode, null, null);
     }
 
     private static EmployeeData normalizeEmployee(EmployeeData data) {
