@@ -28,4 +28,10 @@ Business rule dùng mã ổn định trong [`../requirements/BUSINESS_RULES.md`]
 pwsh -File scripts/verify.ps1
 ```
 
-Khi backend/database được thêm, owner phải nối kiểm tra module vào cổng root trong cùng PR.
+Backend test đã được nối vào cổng mặc định. Chạy thêm SQL và tranh chấp hai session trên database đã dựng:
+
+```powershell
+pwsh -File scripts/verify.ps1 -WithDatabase -WithConcurrency
+```
+
+`-DatabaseName <ten_database>` chọn database thử riêng. Bài SQL dùng `sqlcmd` với Windows Authentication; E2E HTTP cần API kết nối JDBC qua TCP/IP và tài khoản đăng nhập được tạo qua bootstrap. Kết quả SQL/Java không chứng minh API HTTP hay frontend đã tích hợp.

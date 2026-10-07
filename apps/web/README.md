@@ -35,25 +35,9 @@ Giao diện dùng phong cách editorial tiết chế lấy cảm hứng từ tra
 
 ## Kết nối Spring Boot
 
-Mở `app.js` và đổi:
+`app.js` hiện dùng toàn bộ dữ liệu mẫu. Biến `USE_DUMMY_DATA` chưa điều khiển một adapter API; đổi biến này không kết nối giao diện với backend. Luồng chứng từ/form demo không gửi HTTP. Backend có các route thật và payload trong [`../../contracts/`](../../contracts/), ví dụ `/api/san-pham`, `/api/phieu-nhap`, `/api/ton-kho`, `/api/phieu-xuat`. Dùng HTTP client theo contract để thử backend cho đến khi `FE-02` hoàn thành.
 
-```js
-const USE_DUMMY_DATA = false;
-```
-
-API mặc định: `http://localhost:8080/api`.
-
-Endpoint đã chuẩn bị:
-
-- `GET /api/sanpham`
-- `POST /api/sanpham`
-- `PUT /api/sanpham/{maSP}`
-- `DELETE /api/sanpham/{maSP}`
-- `GET /api/baocao/tonkho`
-
-Backend cần cấu hình CORS đúng origin frontend. Khi có API contract chính thức, tên field và lỗi phải theo `contracts/`, không tự suy đoán ở UI.
-
-Các URL trên phản ánh adapter baseline hiện tại. URL chính thức chỉ được đổi sau khi nhóm chốt [`../../contracts/BASELINE.md`](../../contracts/BASELINE.md) và cập nhật adapter, backend, test cùng tài liệu trong một thay đổi thống nhất.
+Khi nối giao diện, dùng origin `http://127.0.0.1:5174` khớp cấu hình CORS mặc định của API, xử lý session cookie/CSRF và loading/error/empty state. Tách dữ liệu mẫu và HTTP sau một adapter theo [`../../docs/project/governance/BACKLOG.md`](../../docs/project/governance/BACKLOG.md); không đổi URL rải rác trong form.
 
 Danh sách resource/endpoint dự kiến nằm trong [`../../contracts/API_CATALOG.md`](../../contracts/API_CATALOG.md). Frontend không tự thêm field hoặc route chưa có contract được review.
 
