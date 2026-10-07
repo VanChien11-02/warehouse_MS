@@ -2,7 +2,7 @@
 
 Thư mục này chứa toàn bộ script T-SQL có thể dựng lại database từ đầu và các đối tượng phục vụ rubric.
 
-Hiện `init.sql` tạo 22 bảng gồm sổ biến động tồn và phiếu chuyển kho. Bốn role ứng dụng được seed; chưa có tài khoản. Procedure nhập/xuất/chuyển và view tồn đã có; các bảng kiểm soát khác sẽ được bổ sung theo từng module.
+`init.sql` tạo 27 bảng, năm procedure hoàn tất chứng từ, năm function, bảy view, một trigger bảo vệ vị trí, index tra cứu và bốn role SQL. Bốn role ứng dụng được seed trong bảng `ROLE`; chưa có tài khoản đăng nhập. Script dựng mới không tạo dữ liệu demo hoặc mật khẩu.
 
 ## Chạy schema nền tảng
 
@@ -19,7 +19,7 @@ Các bài test SQL tạo và dọn dữ liệu giả trong database được ch�
 
 `init.sql` tạo database `BlueStock` và dừng nếu tên này đã tồn tại; script không xóa hoặc ghi đè database cũ. Khi dùng SQL Server ở máy khác, thay `localhost` bằng tên instance tương ứng.
 
-Sau khi dựng schema, có thể chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/seed/catalog_demo.sql` để tạo loại và đơn vị tính mẫu trước khi thử API sản phẩm. Seed không tạo sản phẩm hoặc tài khoản, và có thể chạy lại.
+Sau khi dựng schema, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/seed/demo.sql` để tạo danh mục, đối tác, kho/vị trí và ba lô mẫu phục vụ luồng FEFO. Seed dùng dữ liệu giả, không tạo tài khoản hoặc mật khẩu và có thể chạy lại. Xem [`seed/README.md`](seed/README.md). Nếu chỉ thử CRUD sản phẩm, dùng `database/seed/catalog_demo.sql` để tạo loại/đơn vị tính mà chưa tạo sản phẩm.
 
 Nếu database local đã được dựng từ commit trước khi có đối tác, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/001_partner.sql`. Migration này chỉ thêm bốn bảng, dừng nếu đã chạy hoặc có bảng dở dang; không xóa dữ liệu cũ. Database dựng mới bằng `init.sql` đã có bốn bảng này và không chạy migration.
 

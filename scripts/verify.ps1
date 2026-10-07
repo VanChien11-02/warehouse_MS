@@ -34,6 +34,7 @@ $requiredFiles = @(
     'contracts/san-pham.md',
     'database/SCHEMA_PLAN.md',
     'database/seed/catalog_demo.sql',
+    'database/seed/demo.sql',
     'scripts/bootstrap-admin.ps1',
     'docs/architecture/database/ERD_VA_NGHIEP_VU.md'
 )
