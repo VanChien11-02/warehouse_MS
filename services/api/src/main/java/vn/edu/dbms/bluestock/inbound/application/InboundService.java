@@ -6,10 +6,12 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 import vn.edu.dbms.bluestock.inbound.application.InboundException.Kind;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.AllocationData;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
@@ -23,10 +25,13 @@ import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
 public class InboundService {
     private final InboundJdbcRepository repository;
     private final ObjectMapper objectMapper;
+    private final AuditTrail audit;
 
-    public InboundService(InboundJdbcRepository repository, ObjectMapper objectMapper) {
+    public InboundService(InboundJdbcRepository repository, ObjectMapper objectMapper,
+        AuditTrail audit) {
         this.repository = repository;
         this.objectMapper = objectMapper;
+        this.audit = audit;
     }
 
     @Transactional(readOnly = true)
@@ -87,10 +92,15 @@ public class InboundService {
     }
 
     @Transactional
-    public InboundView cancel(String code) {
+    public InboundView cancel(String code, String actorAccount) {
         String normalizedCode = normalizeCode(code);
         requireDraft(normalizedCode);
-        repository.cancel(normalizedCode);
+        if (repository.cancel(normalizedCode) != 1) {
+            throw new InboundException(Kind.CONFLICT, "INBOUND_NOT_DRAFT",
+                "Phiếu nhập không còn ở trạng thái nháp");
+        }
+        audit.record(normalizeCode(actorAccount), "CANCEL", "PHIEU_NHAP", normalizedCode,
+            Map.of("trangThai", "NHAP"), Map.of("trangThai", "DA_HUY"));
         return get(normalizedCode);
     }
 

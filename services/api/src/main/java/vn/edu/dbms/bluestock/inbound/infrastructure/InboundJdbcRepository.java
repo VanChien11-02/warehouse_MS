@@ -91,8 +91,9 @@ public class InboundJdbcRepository {
         for (LineData line : lines) insertLine(code, line);
     }
 
-    public void cancel(String code) {
-        jdbc.update("UPDATE dbo.PHIEU_NHAP SET TrangThai = N'DA_HUY' WHERE MaPN = ?", code);
+    public int cancel(String code) {
+        return jdbc.update("UPDATE dbo.PHIEU_NHAP SET TrangThai = N'DA_HUY' "
+            + "WHERE MaPN = ? AND TrangThai = N'NHAP'", code);
     }
 
     public Optional<InboundView> findByCode(String code) {

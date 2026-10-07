@@ -71,8 +71,9 @@ public class InboundController {
     }
 
     @PostMapping("/{maPhieuNhap}/huy")
-    public InboundView cancel(@PathVariable String maPhieuNhap) {
-        return service.cancel(maPhieuNhap);
+    public InboundView cancel(@PathVariable String maPhieuNhap,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        return service.cancel(maPhieuNhap, principal.maTaiKhoan());
     }
 
     @PostMapping("/{maPhieuNhap}/hoan-tat")

@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.dao.DataIntegrityViolationException;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.AllocationData;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineData;
 import vn.edu.dbms.bluestock.inbound.infrastructure.InboundJdbcRepository;
@@ -21,11 +22,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class InboundServiceTest {
     private final InboundJdbcRepository repository = mock(InboundJdbcRepository.class);
-    private final InboundService service = new InboundService(repository, new ObjectMapper());
+    private final AuditTrail audit = mock(AuditTrail.class);
+    private final InboundService service = new InboundService(repository, new ObjectMapper(), audit);
 
     @Test
     void duplicateProductLineIsRejectedBeforeWriting() {
@@ -95,10 +98,22 @@ class InboundServiceTest {
     @Test
     void cancelDraftPreservesDocumentAndChangesStatus() {
         when(repository.lockedStatus("PN0001")).thenReturn(Optional.of("NHAP"));
+        when(repository.cancel("PN0001")).thenReturn(1);
         when(repository.findByCode("PN0001")).thenReturn(Optional.of(new InboundModels.InboundView(
             "PN0001", null, "NCC001", "Nhà cung cấp", "NV0001", "DA_HUY",
             null, null, List.of())));
-        assertEquals("DA_HUY", service.cancel("pn0001").trangThai());
+        assertEquals("DA_HUY", service.cancel("pn0001", "tk0001").trangThai());
         verify(repository).cancel("PN0001");
+        verify(audit).record("TK0001", "CANCEL", "PHIEU_NHAP", "PN0001",
+            java.util.Map.of("trangThai", "NHAP"), java.util.Map.of("trangThai", "DA_HUY"));
+    }
+
+    @Test
+    void failedCancellationDoesNotWriteAudit() {
+        when(repository.lockedStatus("PN0001")).thenReturn(Optional.of("NHAP"));
+        var error = assertThrows(InboundException.class,
+            () -> service.cancel("PN0001", "TK0001"));
+        assertEquals("INBOUND_NOT_DRAFT", error.code());
+        verifyNoInteractions(audit);
     }
 }
