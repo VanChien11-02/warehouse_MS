@@ -116,4 +116,4 @@ pwsh -File scripts/dev.ps1 -Target web
 pwsh -File scripts/verify.ps1
 ```
 
-Database sạch dựng bằng `database/init.sql`, dữ liệu giả qua `database/seed/demo.sql`. Test Java, SQL và tranh chấp hai session đã đạt trên SQL Server 2025 Express. Chạy API cần SQL Server bật TCP/IP và cấu hình JDBC theo [`../services/api/README.md`](../services/api/README.md); E2E HTTP và SQL Server 2022 chưa được xác nhận trên máy hiện tại.
+Database sạch dựng bằng `database/init.sql`, dữ liệu giả qua `database/seed/demo.sql`. Test Java, SQL, tranh chấp hai session và E2E HTTP nhập → tồn → xuất FEFO → báo cáo đã đạt trên SQL Server 2025 Express; kịch bản trình duyệt với API thật cũng đạt theo [`testing/LOCAL_EVIDENCE.md`](testing/LOCAL_EVIDENCE.md). Chạy API cần SQL Server bật TCP/IP và cấu hình JDBC theo [`../services/api/README.md`](../services/api/README.md). JDK 21 và SQL Server 2022 chưa được xác nhận trên máy hiện tại.
