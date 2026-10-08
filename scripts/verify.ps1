@@ -4,6 +4,8 @@ param(
     [switch] $WithConcurrency,
     [string] $SqlServer = 'localhost',
     [ValidatePattern('^[A-Za-z][A-Za-z0-9_]{0,127}$')]
+    [string] $SqlUser = '',
+    [ValidatePattern('^[A-Za-z][A-Za-z0-9_]{0,127}$')]
     [string] $DatabaseName = 'BlueStock'
 )
 
@@ -120,6 +122,10 @@ else {
 if ($WithDatabase) {
     Write-Host 'Kiểm tra ràng buộc database...'
     $sqlcmd = (Get-Command sqlcmd -ErrorAction Stop).Source
+    if ($SqlUser -and [string]::IsNullOrWhiteSpace($env:SQLCMDPASSWORD)) {
+        throw 'Đặt SQLCMDPASSWORD trong terminal khi dùng -SqlUser.'
+    }
+    $sqlAuth = if ($SqlUser) { @('-U', $SqlUser) } else { @('-E') }
     $databaseTests = @(
         'database\tests\001_catalog_warehouse_constraints.sql',
         'database\tests\002_auth_constraints.sql',
@@ -146,7 +152,7 @@ if ($WithDatabase) {
         'database\tests\023_inventory_indexes.sql'
     )
     foreach ($testFile in $databaseTests) {
-        & $sqlcmd -S $SqlServer -E -C -b -d $DatabaseName -i (Join-Path $root $testFile)
+        & $sqlcmd -S $SqlServer @sqlAuth -C -b -f i:65001 -d $DatabaseName -i (Join-Path $root $testFile)
         if ($LASTEXITCODE -ne 0) { throw "Database test thất bại: $testFile" }
     }
 }
@@ -154,7 +160,7 @@ if ($WithDatabase) {
 if ($WithConcurrency) {
     if (-not $WithDatabase) { throw 'Dùng -WithConcurrency cùng -WithDatabase.' }
     & pwsh -File (Join-Path $root 'scripts\verify-concurrency.ps1') `
-        -SqlServer $SqlServer -DatabaseName $DatabaseName
+        -SqlServer $SqlServer -SqlUser $SqlUser -DatabaseName $DatabaseName
     if ($LASTEXITCODE -ne 0) { throw 'Concurrency test thất bại.' }
 }
 
