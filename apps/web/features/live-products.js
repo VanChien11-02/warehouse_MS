@@ -233,6 +233,7 @@ export function createLiveProducts({ client, products, escapeHtml, formatCurrenc
   return {
     render, openEditor, submit, start,
     isAuthenticated: () => !!user,
+    getRole: () => user?.role || null,
     requireLogin: () => { setUser(null); showLogin("Phiên đăng nhập đã hết hạn."); }
   };
 }

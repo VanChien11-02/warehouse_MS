@@ -6,9 +6,11 @@ import { listConfigs, inventoryRows, countRows, reportData, documentProducts } f
 import { createProductApi } from "./data/product-api.js";
 import { createInventoryApi } from "./data/inventory-api.js";
 import { createReportApi } from "./data/report-api.js";
+import { createDocumentApi } from "./data/document-api.js";
 import { createLiveProducts } from "./features/live-products.js";
 import { createLiveInventory } from "./features/live-inventory.js";
 import { createLiveReport } from "./features/live-report.js";
+import { createLiveDocuments } from "./features/live-documents.js";
 
 const USE_DUMMY_DATA = new URLSearchParams(window.location.search).get("mode") !== "api";
 const requestedApiPort = new URLSearchParams(window.location.search).get("apiPort");
@@ -52,6 +54,7 @@ let toastTimer;
 const apiClient = USE_DUMMY_DATA ? null : createApiClient({ baseUrl: API_BASE_URL });
 let liveInventory = null;
 let liveReport = null;
+let liveDocuments = null;
 const liveProducts = USE_DUMMY_DATA ? null : createLiveProducts({
   client: apiClient,
   products: createProductApi(apiClient),
@@ -61,6 +64,7 @@ const liveProducts = USE_DUMMY_DATA ? null : createLiveProducts({
   onSessionChange: () => {
     if (activeView === "inventory") liveInventory?.render();
     if (activeView === "reports") liveReport?.render();
+    if (["inbound", "outbound"].includes(activeView)) liveDocuments?.show(activeView);
   },
   closeEditor: closeRecordEditor
 });
@@ -75,6 +79,12 @@ if (!USE_DUMMY_DATA) {
     reports: createReportApi(apiClient),
     escapeHtml,
     isAuthenticated: liveProducts.isAuthenticated,
+    requireLogin: liveProducts.requireLogin
+  });
+  liveDocuments = createLiveDocuments({
+    documents: createDocumentApi(apiClient),
+    isAuthenticated: liveProducts.isAuthenticated,
+    getRole: liveProducts.getRole,
     requireLogin: liveProducts.requireLogin
   });
 }
@@ -132,7 +142,10 @@ function renderNavigation() {
       <button class="nav-item" type="button" data-view="products">${icon("box")}<span>Sản phẩm</span></button></section>
       <section class="nav-group"><p class="nav-group-title">Kho</p>
       <button class="nav-item" type="button" data-view="inventory">${icon("chart")}<span>Tồn kho</span></button>
-      <button class="nav-item" type="button" data-view="reports">${icon("chart")}<span>Báo cáo nhập–xuất–tồn</span></button></section>`;
+      <button class="nav-item" type="button" data-view="reports">${icon("chart")}<span>Báo cáo nhập–xuất–tồn</span></button></section>
+      <section class="nav-group"><p class="nav-group-title">Chứng từ</p>
+      <button class="nav-item" type="button" data-view="inbound">${icon("file")}<span>Phiếu nhập</span></button>
+      <button class="nav-item" type="button" data-view="outbound">${icon("file")}<span>Phiếu xuất</span></button></section>`;
     updateActiveNavigation();
     return;
   }
@@ -241,7 +254,7 @@ function configureDocument(mode) {
 
 function showView(viewName, updateHash = true) {
   const profile = roleProfiles[activeRole];
-  if (!USE_DUMMY_DATA && !["products", "inventory", "reports"].includes(viewName)) viewName = "products";
+  if (!USE_DUMMY_DATA && !["products", "inventory", "reports", "inbound", "outbound"].includes(viewName)) viewName = "products";
   else if (!profile.pages.includes(viewName)) {
     showToast("Vai trò hiện tại không hiển thị chức năng này.");
     viewName = "dashboard";
@@ -257,6 +270,9 @@ function showView(viewName, updateHash = true) {
     setVisibleView("inventoryView");
     if (USE_DUMMY_DATA) renderInventory();
     else liveInventory.render();
+  } else if (!USE_DUMMY_DATA && ["inbound", "outbound"].includes(viewName)) {
+    setVisibleView(liveDocuments.viewId);
+    liveDocuments.show(viewName);
   } else if (["inbound", "outbound", "transfer"].includes(viewName)) {
     setVisibleView("documentView");
     configureDocument(viewName);
@@ -761,7 +777,7 @@ if (!USE_DUMMY_DATA) {
   document.querySelector(".location-context").hidden = true;
   document.querySelector("#listView .filter-row").hidden = true;
   document.querySelector("#dataStatus").textContent = "Dữ liệu API";
-  document.querySelector("#dataStatusDetail").textContent = "Danh mục, tồn và báo cáo";
+  document.querySelector("#dataStatusDetail").textContent = "Danh mục và nghiệp vụ kho";
   const modeLink = document.querySelector("#apiModeLink");
   modeLink.href = "?mode=demo#dashboard";
   modeLink.firstChild.textContent = "Dữ liệu demo ";
@@ -776,8 +792,9 @@ if (USE_DUMMY_DATA) {
 } else {
   liveInventory.start();
   liveReport.start();
+  liveDocuments.start();
   const initialHash = window.location.hash.slice(1);
-  showView(["products", "inventory", "reports"].includes(initialHash) ? initialHash : "products", false);
+  showView(["products", "inventory", "reports", "inbound", "outbound"].includes(initialHash) ? initialHash : "products", false);
   liveProducts.start();
 }
 

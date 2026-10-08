@@ -1359,6 +1359,12 @@ td a {
   padding: 18px 20px 20px;
 }
 
+.live-document-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding: 0 20px 20px;
+}
+
 .four-columns {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }

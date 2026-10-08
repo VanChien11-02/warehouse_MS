@@ -4,7 +4,7 @@
 
 ## Trạng thái hiện tại
 
-- Frontend baseline có dashboard và form chứng từ bằng dữ liệu mẫu; chế độ API hiện hỗ trợ CRUD sản phẩm, tra cứu tồn kho và báo cáo nhập–xuất–tồn.
+- Frontend baseline có dashboard và các form demo; chế độ API hỗ trợ CRUD sản phẩm, phiếu nhập/xuất một dòng, tra cứu tồn kho và báo cáo nhập–xuất–tồn.
 - Backend có session/RBAC, quản trị tài khoản, CRUD danh mục/kho/đối tác, năm luồng chứng từ, tra cứu tồn, báo cáo và audit.
 - `database/init.sql` dựng 27 bảng, năm procedure hoàn tất chứng từ, năm function, bảy view, trigger, index và bốn database role. Seed demo tách khỏi schema và không chứa tài khoản hay mật khẩu.
 - Các test Java, SQL và tranh chấp hai session đã chạy trên SQL Server 2025 Express; kết nối JDBC/HTTP với SQL Server local và SQL Server 2022 còn cần kiểm chứng.

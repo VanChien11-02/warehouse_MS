@@ -50,7 +50,8 @@ $node = (Get-Command node -ErrorAction Stop).Source
 foreach ($scriptFile in @('app.js', 'core\navigation.js', 'core\api-client.js',
         'data\demo.js', 'data\product-api.js', 'data\inventory-api.js', 'data\report-api.js',
         'data\document-api.js',
-        'features\live-products.js', 'features\live-inventory.js', 'features\live-report.js')) {
+        'features\live-products.js', 'features\live-inventory.js', 'features\live-report.js',
+        'features\live-documents.js')) {
     & $node --check (Join-Path $root 'apps\web' $scriptFile)
     if ($LASTEXITCODE -ne 0) { throw "JavaScript frontend không hợp lệ: $scriptFile" }
 }
