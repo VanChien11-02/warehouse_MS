@@ -34,6 +34,19 @@ Mỗi chủ phần việc phải:
 
 Chi tiết ranh giới file, dependency và baseline trước khi tách branch nằm trong [`WORKSTREAMS.md`](WORKSTREAMS.md).
 
+### Việc nhận sau khi nhánh triển khai được merge
+
+Sau khi nhóm review và merge các PR hiện có, trưởng nhóm ghi lại commit `main` làm baseline chung. Mỗi thành viên tạo branch trong bảng trên từ **cùng commit đó**, kiểm tra phần đã có, rồi mở PR nhỏ cho từng lỗi hoặc phần thiếu. Việc nhận ownership ở đây là trách nhiệm kiểm tra và bảo trì tiếp, không ghi lại tác giả của phần code đã có. Bảng sau là lịch review đề xuất; nhóm xác nhận reviewer thực tế trước khi đưa task vào `Ready`.
+
+| Owner | Kiểm tra đầu tiên trên branch của mình | Reviewer đề xuất |
+| --- | --- | --- |
+| TV1 Chiến | Đối chiếu ERD với constraint, trigger, view, index; thử CRUD danh mục/kho và lưu bằng chứng query plan cho `PERF-01` | TV2 Thi |
+| TV2 Thi | Chạy lại procedure/function nhập và tra tồn; chứng minh hoàn tất lặp, lỗi nghiệp vụ và rollback bằng SQL/API | TV3 Trung |
+| TV3 Trung | Kiểm tra xuất FEFO, chuyển kho, kiểm kê, trả hàng; chạy tranh chấp hai session và đối chiếu sổ biến động sau rollback | TV4 Phát |
+| TV4 Phát | Kiểm tra bốn role SQL, quyền API theo role, bootstrap tài khoản, audit và quy trình dựng demo từ máy sạch | TV1 Chiến |
+
+Nếu một lỗi chạm hai module, owner của module có file cần sửa mở PR và mời owner module còn lại review. Thay đổi schema/API đi kèm contract, script, test và tài liệu trong chính PR đó. Không merge trực tiếp branch workstream của người khác vào branch của mình; cập nhật từ nhánh tích hợp mà nhóm đã chốt.
+
 ## Nguyên tắc chia việc
 
 - Owner module chịu trách nhiệm xuyên suốt yêu cầu → contract → code → test → tài liệu.

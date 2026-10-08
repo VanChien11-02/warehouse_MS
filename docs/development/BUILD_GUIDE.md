@@ -2,6 +2,8 @@
 
 Tài liệu này hướng dẫn dựng database sạch, chạy API và kiểm tra từng lớp. Contract tổng thể vẫn ở trạng thái Draft; xem backlog để biết các hạng mục cần nhóm review.
 
+Nếu muốn dựng cả SQL Server 2022, API và web bằng một lệnh, xem [`DOCKER_DEMO.md`](DOCKER_DEMO.md). Hướng dẫn bên dưới dành cho cài đặt trực tiếp trên máy.
+
 ## 1. Yêu cầu môi trường
 
 | Công cụ | Phiên bản |

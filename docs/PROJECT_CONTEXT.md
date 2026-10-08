@@ -19,7 +19,7 @@ Bốn vai trò dự kiến:
 | --- | --- | --- |
 | Frontend | Baseline HTML/CSS/Vanilla JavaScript có chế độ API cho CRUD sản phẩm, phiếu nhập/xuất một dòng, tra cứu tồn kho và báo cáo nhập–xuất–tồn; các màn hình khác còn dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
 | Backend | Spring Boot/Maven Wrapper, session/RBAC, CRUD nền tảng, năm luồng chứng từ, tra cứu tồn, báo cáo nhập–xuất–tồn/chênh lệch/hạn dùng và audit | [`../services/api/README.md`](../services/api/README.md) |
-| Database | `init.sql` dựng 27 bảng, năm procedure hoàn tất, năm function, bảy view, trigger, index và bốn database role; seed demo riêng | [`../database/README.md`](../database/README.md) |
+| Database | `init.sql` dựng 27 bảng, năm procedure hoàn tất, năm function, bảy view, trigger, index và bốn database role; seed demo riêng; Compose đã chạy SQL Server 2022 | [`../database/README.md`](../database/README.md) |
 | API contract | Baseline tổng thể còn Draft; các contract chi tiết cho API đã triển khai nằm trong `contracts/` | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
 | Phân công | Có đề xuất bốn workstream, còn chờ nhóm xác nhận | [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md) |
 
@@ -116,4 +116,4 @@ pwsh -File scripts/dev.ps1 -Target web
 pwsh -File scripts/verify.ps1
 ```
 
-Database sạch dựng bằng `database/init.sql`, dữ liệu giả qua `database/seed/demo.sql`. Test Java, SQL, tranh chấp hai session và E2E HTTP nhập → tồn → xuất FEFO → báo cáo đã đạt trên SQL Server 2025 Express; kịch bản trình duyệt với API thật cũng đạt theo [`testing/LOCAL_EVIDENCE.md`](testing/LOCAL_EVIDENCE.md). Chạy API cần SQL Server bật TCP/IP và cấu hình JDBC theo [`../services/api/README.md`](../services/api/README.md). JDK 21 và SQL Server 2022 chưa được xác nhận trên máy hiện tại.
+Database sạch dựng bằng `database/init.sql`, dữ liệu giả qua `database/seed/demo.sql`. Test Java, SQL, tranh chấp hai session và E2E HTTP nhập → tồn → xuất FEFO → báo cáo đã đạt trên SQL Server 2025 Express; kịch bản trình duyệt với API thật cũng đạt. Compose đã chạy API trên JDK 21 cùng SQL Server 2022 và đạt cổng kiểm chứng Java/SQL/concurrency theo [`testing/LOCAL_EVIDENCE.md`](testing/LOCAL_EVIDENCE.md). Chạy trực tiếp trên máy cần SQL Server bật TCP/IP và cấu hình JDBC theo [`../services/api/README.md`](../services/api/README.md); Compose có hướng dẫn riêng tại [`development/DOCKER_DEMO.md`](development/DOCKER_DEMO.md).

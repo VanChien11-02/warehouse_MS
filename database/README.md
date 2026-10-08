@@ -2,6 +2,8 @@
 
 Thư mục này chứa toàn bộ script T-SQL có thể dựng lại database từ đầu và các đối tượng phục vụ rubric.
 
+Để dựng SQL Server 2022 và API/web bằng Compose trên máy hỗ trợ Docker, xem [`../docs/development/DOCKER_DEMO.md`](../docs/development/DOCKER_DEMO.md). Cách chạy `sqlcmd -E` bên dưới dành cho SQL Server cài trực tiếp trên Windows.
+
 `init.sql` tạo 27 bảng, năm procedure hoàn tất chứng từ, năm function, bảy view, một trigger bảo vệ vị trí, index tra cứu và bốn role SQL. Bốn role ứng dụng được seed trong bảng `ROLE`; chưa có tài khoản đăng nhập. Script dựng mới không tạo dữ liệu demo hoặc mật khẩu.
 
 ## Chạy schema nền tảng
