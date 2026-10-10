@@ -79,6 +79,8 @@ API `/api/phieu-xuat` đã có danh sách, tạo/sửa/hủy nháp, xem chi ti�
 
 `GET /api/bao-cao/nhap-xuat` trả báo cáo theo kỳ, kho và sản phẩm từ sổ biến động đã ghi cùng transaction nhập/xuất; đơn giá lấy từ phiếu nhập của lô theo [`contracts/reporting.md`](../../contracts/reporting.md). Chưa có các báo cáo hạn dùng và chênh lệch kiểm kê.
 
+API `/api/phieu-chuyen` có danh sách, tạo/sửa/hủy nháp, xem chi tiết và hoàn tất theo [`contracts/transfer.md`](../../contracts/transfer.md). Procedure kiểm tra tồn nguồn, sức chứa, bảo quản và ghi hai phía chuyển trong transaction; chỉ `QLKHO` được hoàn tất.
+
 Khi database chưa có tài khoản, từ root chạy `pwsh -File scripts/bootstrap-admin.ps1` sau khi đặt biến kết nối JDBC. Lệnh hỏi mật khẩu admin (ít nhất 12 ký tự), tạo tài khoản `admin` với mã `NV0001`/`TK0001` và khởi động API. Dừng tiến trình sau khi tạo xong, rồi chạy `scripts/dev.ps1 -Target api` bình thường. Có thể đổi tên đăng nhập bằng `-Username`; lệnh từ chối chạy lại nếu đã có tài khoản. Mật khẩu không được ghi vào file.
 
 Không commit connection string thật hoặc mật khẩu SQL Server.

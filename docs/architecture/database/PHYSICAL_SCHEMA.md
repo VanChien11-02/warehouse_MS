@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 20 bảng đã có trong `database/schema/`; procedure nhập/xuất đã có, các bảng kiểm soát kho còn lại chưa được triển khai.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 22 bảng đã có trong `database/schema/`; procedure nhập/xuất/chuyển đã có, các bảng kiểm soát khác chưa được triển khai.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
@@ -26,6 +26,8 @@ Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 | `PHIEU_XUAT` | `MaPX CHAR(6)` | `MaDTNH`, `MaNV` | Trạng thái nháp/hoàn tất/hủy; `NgayHoanTat` chỉ có khi hoàn tất; thời điểm UTC |
 | `CT_PHIEU_XUAT` | `(MaPX, MaLo, MaViTri)` | `MaPX`, `MaLo`, `MaViTri` | Dòng chỉ rõ nguồn tồn, số lượng dương, `DonGiaXuat DECIMAL(19,4)` không âm |
 | `BIEN_DONG_TON_KHO` | `MaBienDong BIGINT IDENTITY` | `MaViTri`, `MaLo` | Mỗi cặp nghiệp vụ/chứng từ/vị trí/lô xuất hiện một lần; delta khác 0; thời điểm UTC |
+| `PHIEU_CHUYEN_KHO` | `MaPCK CHAR(6)` | `MaNV` | Trạng thái nháp/hoàn tất/hủy; thời điểm UTC, hoàn tất phải có `NgayHoanTat` |
+| `CT_PHIEU_CHUYEN_KHO` | `(MaPCK, MaLo, MaViTriNguon, MaViTriDich)` | `MaPCK`, `MaLo`, hai vị trí | Số lượng nguyên dương; nguồn khác đích |
 
 Tên và mô tả dùng `NVARCHAR` để lưu tiếng Việt; mã dùng `CHAR(6)` theo tài liệu nguồn. `MoTa` dùng `NVARCHAR(1000)` thay cho kiểu `TEXT` cũ. Giá mặc định bằng 0 khi không cung cấp, nhưng giá nhập/xuất thực tế nằm trên dòng chứng từ.
 
@@ -49,3 +51,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `BIEN_DONG_TON_KHO` là sổ biến động ghi cùng transaction hoàn tất nhập/xuất. Mỗi dòng giữ loại nghiệp vụ, mã chứng từ, vị trí, lô, lượng tăng/giảm và thời điểm ghi sổ UTC. Unique key ngăn lặp cùng nghiệp vụ/chứng từ/vị trí/lô; index `IX_BIEN_DONG_TON_KHO_NGAY` phục vụ lọc khoảng ngày báo cáo. Migration 007 chỉ dựng sổ từ dữ liệu lịch sử khi mỗi lô còn đúng một vị trí và tổng biến động khớp tồn hiện có; dữ liệu lệch dừng migration để đối chiếu thủ công. Các nghiệp vụ chuyển/kiểm kê/trả sẽ bổ sung dòng sổ theo contract của chúng.
 
 `vw_BienDongTonKhoChiTiet` nối sổ biến động với kho, sản phẩm và giá nhập thực tế của lô. View là nguồn cho [`contracts/reporting.md`](../../../contracts/reporting.md); test SQL xác nhận giá trị nhập/xuất và số dư sau ghi sổ.
+
+`SEQ_PHIEU_CHUYEN_KHO` cấp mã `PC0001`; `sp_HoanTatChuyenKho` kiểm tra tồn nguồn, sức chứa/đơn vị/bảo quản ở đích và ghi biến động hai phía theo [`contracts/transfer.md`](../../../contracts/transfer.md). API chuyển kho chưa có ở mốc procedure.

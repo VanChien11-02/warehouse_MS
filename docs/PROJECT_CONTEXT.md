@@ -18,8 +18,8 @@ Bốn vai trò dự kiến:
 | Thành phần | Hiện trạng | Nguồn |
 | --- | --- | --- |
 | Frontend | Baseline HTML/CSS/Vanilla JavaScript chạy bằng static server, đang dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
-| Backend | Có Spring Boot/Maven Wrapper, health/session API, CRUD danh mục/đối tác/cấu trúc kho, tạo/xem/hoàn tất nhập/xuất, tra cứu tồn và báo cáo nhập–xuất–tồn; kiểm soát kho chưa có | [`../services/api/README.md`](../services/api/README.md) |
-| Database | Có `init.sql` dựng 20 bảng gồm sổ biến động tồn, procedure hoàn tất nhập/xuất và view tồn; các bảng kiểm soát kho chưa có | [`../database/README.md`](../database/README.md) |
+| Backend | Có Spring Boot/Maven Wrapper, health/session API, CRUD danh mục/đối tác/cấu trúc kho, nhập/xuất/chuyển kho cốt lõi, tra cứu tồn và báo cáo nhập–xuất–tồn; kiểm kê/trả hàng chưa có | [`../services/api/README.md`](../services/api/README.md) |
+| Database | Có `init.sql` dựng 22 bảng gồm sổ biến động tồn và schema chuyển kho, procedure hoàn tất nhập/xuất/chuyển và view tồn; các bảng kiểm soát khác chưa có | [`../database/README.md`](../database/README.md) |
 | API contract | Baseline Draft; contract session và danh mục sản phẩm đã chốt cho nhánh BE, nghiệp vụ kho còn thiếu | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
 | Phân công | Có đề xuất bốn workstream, còn chờ nhóm xác nhận | [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md) |
 

@@ -20,6 +20,7 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 - [`architecture/adr/0003-be-platform-contract.md`](architecture/adr/0003-be-platform-contract.md): quy ước nền tảng đã chốt cho nhánh triển khai backend.
 - [`architecture/adr/0004-stock-policies.md`](architecture/adr/0004-stock-policies.md): quy tắc ghi sổ và định giá tồn kho cho nhánh triển khai backend.
 - [`architecture/adr/0005-outbound-fefo-enforcement.md`](architecture/adr/0005-outbound-fefo-enforcement.md): kiểm tra thứ tự FEFO tại transaction hoàn tất xuất.
+- [`architecture/adr/0006-transfer-posting.md`](architecture/adr/0006-transfer-posting.md): khóa và ghi sổ chuyển kho.
 
 ## Quản lý dự án
 
@@ -48,6 +49,7 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 - [`../contracts/inventory-query.md`](../contracts/inventory-query.md): tra cứu tồn khả dụng theo lô/vị trí và nguồn giá nhập.
 - [`../contracts/outbound-fefo-completion.md`](../contracts/outbound-fefo-completion.md): schema, procedure và API tạo/xem/hoàn tất xuất.
 - [`../contracts/reporting.md`](../contracts/reporting.md): báo cáo nhập–xuất–tồn theo kỳ và kho/sản phẩm.
+- [`../contracts/transfer.md`](../contracts/transfer.md): schema phiếu chuyển vị trí và quy tắc ghi sổ.
 - [`../database/SCHEMA_PLAN.md`](../database/SCHEMA_PLAN.md): kế hoạch physical schema, object SQL và test database.
 
 ## Tài liệu nguồn
