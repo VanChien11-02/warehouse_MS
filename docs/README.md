@@ -11,11 +11,14 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 ## Kiến trúc và dữ liệu
 
 - [`architecture/database/ERD_VA_NGHIEP_VU.md`](architecture/database/ERD_VA_NGHIEP_VU.md): ERD, quy tắc dữ liệu và danh sách nghiệp vụ.
+- [`architecture/database/PHYSICAL_SCHEMA.md`](architecture/database/PHYSICAL_SCHEMA.md): kiểu dữ liệu và ràng buộc của các bảng đã triển khai.
 - [`architecture/database/mermaid-diagram.png`](architecture/database/mermaid-diagram.png): ảnh ERD tham khảo hiện tại.
 - [`architecture/SYSTEM_ARCHITECTURE.md`](architecture/SYSTEM_ARCHITECTURE.md): luồng frontend/API/database, transaction và nguồn sự thật.
 - [`architecture/MODULE_CATALOG.md`](architecture/MODULE_CATALOG.md): ownership kỹ thuật, dependency và public surface của từng module.
 - [`architecture/adr/0001-repository-layout.md`](architecture/adr/0001-repository-layout.md): quyết định cấu trúc repository.
 - [`architecture/adr/0002-technology-stack.md`](architecture/adr/0002-technology-stack.md): quyết định công nghệ frontend/backend/database.
+- [`architecture/adr/0003-be-platform-contract.md`](architecture/adr/0003-be-platform-contract.md): quy ước nền tảng đã chốt cho nhánh triển khai backend.
+- [`architecture/adr/0004-stock-policies.md`](architecture/adr/0004-stock-policies.md): quy tắc ghi sổ và định giá tồn kho cho nhánh triển khai backend.
 
 ## Quản lý dự án
 
@@ -35,6 +38,7 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 - [`requirements/BUSINESS_RULES.md`](requirements/BUSINESS_RULES.md): quy tắc nghiệp vụ có mã `BR-*` để liên kết với contract/code/test.
 - [`../contracts/BASELINE.md`](../contracts/BASELINE.md): quy ước contract chung đang ở trạng thái Draft.
 - [`../contracts/API_CATALOG.md`](../contracts/API_CATALOG.md): inventory endpoint dự kiến và thứ tự viết contract chi tiết.
+- [`../contracts/session-rbac.md`](../contracts/session-rbac.md): session, CSRF, payload đăng nhập và mã role cho nhánh BE.
 - [`../database/SCHEMA_PLAN.md`](../database/SCHEMA_PLAN.md): kế hoạch physical schema, object SQL và test database.
 
 ## Tài liệu nguồn

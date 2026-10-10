@@ -33,7 +33,15 @@ function Require-Command {
 $git = Require-Command 'git'
 $pwsh = Require-Command 'pwsh'
 $node = Require-Command 'node'
-$java = Require-Command 'java'
+$jdkRoot = $env:JAVA_HOME
+if ([string]::IsNullOrWhiteSpace($jdkRoot)) {
+    throw 'Thiếu JAVA_HOME. Biến này phải trỏ tới thư mục JDK 21 trở lên để Maven Wrapper chạy.'
+}
+$java = Join-Path $jdkRoot 'bin\java.exe'
+$javac = Join-Path $jdkRoot 'bin\javac.exe'
+if (-not (Test-Path -LiteralPath $java -PathType Leaf) -or -not (Test-Path -LiteralPath $javac -PathType Leaf)) {
+    throw 'JAVA_HOME không trỏ tới JDK hợp lệ (thiếu bin\java.exe hoặc bin\javac.exe).'
+}
 
 $pwshMajor = Get-MajorVersion -Command $pwsh -Arguments @('--version') -Pattern '(\d+)\.'
 $nodeMajor = Get-MajorVersion -Command $node -Arguments @('--version') -Pattern 'v(\d+)\.'

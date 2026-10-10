@@ -1,6 +1,6 @@
 # Kế hoạch physical schema SQL Server
 
-> Trạng thái: **Draft cho DB-01**. ERD là nguồn nghiệp vụ hiện hành; kiểu/độ dài vật lý chỉ được xem là Accepted sau khi data dictionary được nhóm review.
+> Trạng thái: **Draft cho DB-01**. Chín bảng nền tảng đã có data dictionary tại `docs/architecture/database/PHYSICAL_SCHEMA.md`; các bảng nghiệp vụ còn lại chưa được triển khai.
 
 ## Mục tiêu
 
@@ -74,7 +74,7 @@ Mỗi column phải có các thuộc tính sau trước khi schema được Acce
 | Mapping API | `maSanPham` |
 | Business rule | mã `BR-*` liên quan |
 
-Các quyết định chưa chốt: độ dài mã/tên, precision tiền, kiểu thời điểm, collation, cách sinh mã và soft delete.
+Precision tiền, kiểu thời điểm và cách sinh mã dùng ADR 0003. Độ dài mã/tên đã triển khai cho chín bảng nền tảng; collation và chính sách ngừng dùng danh mục cần ghi rõ khi triển khai endpoint tương ứng.
 
 ## Constraint bắt buộc tối thiểu
 

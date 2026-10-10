@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param()
+param(
+    [switch] $WithDatabase,
+    [string] $SqlServer = 'localhost'
+)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -24,7 +27,9 @@ $requiredFiles = @(
     'docs/project/governance/OPEN_DECISIONS.md',
     'contracts/BASELINE.md',
     'contracts/API_CATALOG.md',
+    'contracts/session-rbac.md',
     'database/SCHEMA_PLAN.md',
+    'scripts/bootstrap-admin.ps1',
     'docs/architecture/database/ERD_VA_NGHIEP_VU.md'
 )
 foreach ($relativePath in $requiredFiles) {
@@ -88,6 +93,19 @@ if (Test-Path -LiteralPath $apiWrapper) {
 }
 else {
     Write-Host 'Backend chưa được khởi tạo; bỏ qua Maven test.'
+}
+
+if ($WithDatabase) {
+    Write-Host 'Kiểm tra ràng buộc database...'
+    $sqlcmd = (Get-Command sqlcmd -ErrorAction Stop).Source
+    $databaseTests = @(
+        'database\tests\001_catalog_warehouse_constraints.sql',
+        'database\tests\002_auth_constraints.sql'
+    )
+    foreach ($testFile in $databaseTests) {
+        & $sqlcmd -S $SqlServer -E -C -b -d BlueStock -i (Join-Path $root $testFile)
+        if ($LASTEXITCODE -ne 0) { throw "Database test thất bại: $testFile" }
+    }
 }
 
 Write-Host 'Baseline verification passed.'

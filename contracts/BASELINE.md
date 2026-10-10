@@ -4,6 +4,9 @@
 > Owner: Cần chốt  
 > Reviewer frontend/backend/database: Cần chốt
 
+Quy ước nền tảng `DEC-001` đến `DEC-010` đã được chốt cho nhánh BE tại [ADR 0003](../docs/architecture/adr/0003-be-platform-contract.md). Tài liệu này vẫn là Draft vì request/response chi tiết và reviewer chưa hoàn tất.
+Quy tắc ghi sổ, FEFO, sức chứa và định giá tồn dùng [ADR 0004](../docs/architecture/adr/0004-stock-policies.md).
+
 Tài liệu này khóa những điểm mà nhiều workstream cùng sử dụng. Nó không thay thế contract chi tiết của từng endpoint. Mọi mục ghi `Cần chốt` phải được giải quyết trước khi đổi trạng thái sang `Accepted`.
 
 ## 1. Quy ước đặt tên
@@ -36,14 +39,14 @@ Không bắt buộc tên vật lý SQL giống hệt Java/JSON. Mapping phải x
 ## 2. Kiểu dữ liệu và biểu diễn JSON
 
 - Ngày dùng chuỗi ISO `yyyy-MM-dd`.
-- Thời điểm dùng ISO-8601 có offset; cách lưu UTC/local trong SQL: **Cần chốt**.
-- Tiền và số lượng thập phân truyền dưới dạng JSON number; Java dùng `BigDecimal`, SQL dùng `DECIMAL`, không dùng `double/FLOAT`.
+- Thời điểm lưu UTC trong SQL `DATETIME2(3)`, API trả ISO-8601 với `Z`; ngày nghiệp vụ theo `Asia/Bangkok`.
+- Tiền và số lượng thập phân truyền dưới dạng JSON number; Java dùng `BigDecimal`, SQL dùng `DECIMAL`, không dùng `double/FLOAT`. Tiền dùng `DECIMAL(19,4)`.
 - Mã nghiệp vụ là string, không để frontend suy ra từ khóa tăng tự động.
 - Giá trị không có dữ liệu dùng `null` khi contract cho phép; không thay bằng chuỗi rỗng.
 
 ## 3. Trạng thái chứng từ
 
-Đề xuất enum dùng chung:
+Enum dùng chung cho nhánh BE:
 
 | Giá trị | Ý nghĩa | Cho phép sửa |
 | --- | --- | --- |
@@ -60,13 +63,13 @@ NHAP ──hoàn tất──> DA_HOAN_THANH
 
 - Hoàn tất cùng một chứng từ lần thứ hai phải trả lỗi và không thay đổi tồn.
 - Không sửa/xóa chứng từ `DA_HOAN_THANH`; điều chỉnh qua nghiệp vụ đảo/điều chỉnh được chấp nhận.
-- Có cần trạng thái `CHO_DUYET` hay không: **Cần chốt**.
+- Không dùng trạng thái `CHO_DUYET` trong baseline; quyền hoàn tất được kiểm tra tại API.
 
 ## 4. Quy ước HTTP
 
 ### Endpoint mẫu
 
-Các đường dẫn dưới đây là đề xuất để chốt, chưa phải contract `Accepted`:
+Các đường dẫn dưới đây theo quy ước kebab-case đã chốt; payload từng endpoint vẫn là Draft:
 
 ```text
 POST   /api/auth/dang-nhap
@@ -80,7 +83,9 @@ POST   /api/phieu-kiem-ke/{maPhieuKiemKe}/hoan-tat
 POST   /api/phieu-tra-hang/{maPhieuTraHang}/hoan-tat
 ```
 
-Tên resource hiện được ghi `/api/sanpham` trong frontend baseline. Nhóm cần chọn `/api/sanpham` hoặc `/api/san-pham`, sau đó cập nhật đồng thời contract, adapter frontend và tài liệu. Khuyến nghị dùng kebab-case.
+Frontend baseline hiện ghi `/api/sanpham`; adapter phải chuyển sang `/api/san-pham` khi nối API thật.
+
+Xác thực ứng dụng dùng session cookie `HttpOnly`, CSRF token cho thao tác ghi và CORS credentials với origin được cấu hình chính xác.
 
 ### Phân trang
 
@@ -126,7 +131,7 @@ Response đề xuất:
 | `403` | Đã đăng nhập nhưng không có quyền |
 | `404` | Không tìm thấy tài nguyên |
 | `409` | Mã trùng, trạng thái xung đột, hoàn tất lặp hoặc không đủ tồn |
-| `422` | Dữ liệu đúng cú pháp nhưng vi phạm validation nghiệp vụ; có sử dụng hay không: **Cần chốt** |
+| `422` | Dữ liệu đúng cú pháp nhưng vi phạm validation nghiệp vụ gắn với field |
 | `500` | Lỗi ngoài dự kiến; không trả stack trace/SQL cho client |
 
 ## 5. Public interface giữa các module
@@ -180,7 +185,7 @@ Quy ước chung:
 - Kiểm tra trạng thái trong cùng transaction.
 - Khóa dòng tồn phù hợp trước bước đọc-kiểm tra-cập nhật.
 - Không trả message SQL thô làm mã lỗi công khai.
-- Cơ chế trả mã lỗi/output/result set: **Cần chốt**.
+- Thành công trả result set có mã chứng từ, trạng thái và thời điểm hoàn tất; lỗi dùng `THROW` số ổn định trong dải `51000–51999` để JDBC ánh xạ thành mã lỗi API.
 
 ## 7. Quy tắc thay đổi contract
 
@@ -193,10 +198,10 @@ Quy ước chung:
 ## 8. Checklist để chuyển sang Accepted
 
 - [ ] Chốt owner/reviewer.
-- [ ] Chốt URL style và sửa tài liệu frontend tương ứng.
-- [ ] Chốt lưu/hiển thị thời gian.
-- [ ] Chốt có/không `CHO_DUYET`.
-- [ ] Chốt dùng `409` hay `422` cho từng lỗi nghiệp vụ.
-- [ ] Chốt cơ chế trả lỗi từ stored procedure sang Spring.
+- [x] Chốt URL style và ghi nhận việc adapter frontend cần đổi khi nối API.
+- [x] Chốt lưu/hiển thị thời gian.
+- [x] Chốt không dùng `CHO_DUYET` cho baseline.
+- [x] Chốt quy tắc dùng `409` và `422`.
+- [x] Chốt cơ chế trả lỗi từ stored procedure sang Spring.
 - [ ] Thay interface minh họa bằng chữ ký Java đã compile trong project.
 - [ ] Viết contract chi tiết cho Session/RBAC và sản phẩm trước tiên.

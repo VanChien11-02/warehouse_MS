@@ -20,6 +20,9 @@ $wrapper = Join-Path $apiRoot 'mvnw.cmd'
 if (-not (Test-Path -LiteralPath $wrapper)) {
     throw 'Backend chưa được khởi tạo. Hoàn thành backlog BE-01 và thêm Maven Wrapper trước.'
 }
+if ([string]::IsNullOrWhiteSpace($env:SPRING_DATASOURCE_URL)) {
+    throw 'Thiếu SPRING_DATASOURCE_URL. Xem services/api/README.md để cấu hình SQL Server.'
+}
 
 Push-Location $apiRoot
 try {

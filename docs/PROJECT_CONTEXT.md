@@ -18,9 +18,9 @@ Bốn vai trò dự kiến:
 | Thành phần | Hiện trạng | Nguồn |
 | --- | --- | --- |
 | Frontend | Baseline HTML/CSS/Vanilla JavaScript chạy bằng static server, đang dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
-| Backend | Chưa khởi tạo Spring Boot/Maven Wrapper | [`../services/api/README.md`](../services/api/README.md) |
-| Database | Có ERD và kế hoạch, chưa có `init.sql`/schema thực thi | [`../database/README.md`](../database/README.md) |
-| API contract | Có baseline Draft, endpoint chi tiết chưa Accepted | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
+| Backend | Có Spring Boot/Maven Wrapper, health và session API; API nghiệp vụ chưa có | [`../services/api/README.md`](../services/api/README.md) |
+| Database | Có `init.sql` dựng chín bảng identity/danh mục/cấu trúc kho; chứng từ và tồn kho chưa có | [`../database/README.md`](../database/README.md) |
+| API contract | Baseline Draft; contract session đã chốt cho nhánh BE, nghiệp vụ còn thiếu | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
 | Phân công | Có đề xuất bốn workstream, còn chờ nhóm xác nhận | [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md) |
 
 Không mô tả phần chưa được tạo như thể đã chạy được. Khi hiện trạng thay đổi, cập nhật bảng này trong cùng PR.
@@ -104,9 +104,9 @@ Tài liệu có nhãn `Draft`, `Cần chốt` hoặc `Proposed` không được 
 | Làm transaction kho | Business rules, ERD, contract procedure và test strategy |
 | Chia việc/merge | Workstreams, TEAM, backlog và tài liệu quyết định còn mở |
 
-## Các điểm chưa được phép tự suy đoán
+## Các quyết định triển khai
 
-Những điểm như URL chính thức, kiểu xác thực, timezone lưu trữ, precision tiền, sinh mã, trạng thái `CHO_DUYET`, mã lỗi procedure và nhánh tích hợp vẫn cần nhóm chốt. Danh sách tập trung nằm trong [`project/governance/OPEN_DECISIONS.md`](project/governance/OPEN_DECISIONS.md).
+Quy ước URL, xác thực, thời gian, precision tiền, sinh mã, trạng thái chứng từ và mã lỗi procedure đã được chốt cho nhánh BE tại [`architecture/adr/0003-be-platform-contract.md`](architecture/adr/0003-be-platform-contract.md). Quy tắc tồn kho nằm tại [`architecture/adr/0004-stock-policies.md`](architecture/adr/0004-stock-policies.md). Các quyết định tích hợp còn mở được theo dõi trong [`project/governance/OPEN_DECISIONS.md`](project/governance/OPEN_DECISIONS.md).
 
 ## Lệnh hiện dùng được
 
@@ -116,4 +116,4 @@ pwsh -File scripts/dev.ps1 -Target web
 pwsh -File scripts/verify.ps1
 ```
 
-Backend chỉ chạy được sau backlog `BE-01`; database chỉ dựng được sau `DB-01` và khi có `database/init.sql`.
+Backend hiện có thể chạy khi cấu hình kết nối SQL Server theo `services/api/README.md`; database mới dựng được identity, danh mục và cấu trúc kho bằng `database/init.sql`.

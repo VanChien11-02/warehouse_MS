@@ -275,8 +275,10 @@ erDiagram
 - `HanSuDung >= NgaySanXuat` khi cả hai ngày có giá trị.
 - Tồn kho không được âm. Mọi thao tác đọc-kiểm tra-cập nhật tồn phải nằm trong một transaction và khóa đúng dòng tồn kho.
 - Tổng số lượng các lô tạo từ một dòng nhập không được vượt `CT_PHIEU_NHAP.SoLuong`.
-- Xuất hàng chỉ được chọn lô còn hạn và nên ưu tiên FEFO (hạn dùng gần nhất xuất trước).
-- Đối tác chỉ nhận sản phẩm đã khai báo trong `DOI_TAC_SAN_PHAM` nếu nhóm quyết định áp dụng danh mục hợp đồng.
+- Xuất hàng chỉ được chọn lô chưa hết hạn; lô có hạn gần nhất được gợi ý trước, lô không có hạn dùng đứng sau.
+- Khi hoàn tất nhập/xuất, nhà cung cấp và đối tác nhận hàng phải liên kết với sản phẩm tương ứng trong bảng mapping.
+- `SucChua` tính theo số đơn vị tính gốc; tồn dương cùng vị trí phải có cùng `MaDVT` và không vượt sức chứa.
+- Nếu loại sản phẩm có yêu cầu bảo quản, loại khu vực của vị trí nhận hàng phải trùng yêu cầu đó.
 - Vị trí nguồn và vị trí đích của một dòng chuyển kho phải khác nhau; lượng chuyển không vượt tồn tại vị trí nguồn; không vượt sức chứa vị trí đích.
 - Số lượng trả cộng dồn theo phiếu xuất và lô không được vượt số lượng đã xuất.
 - Chỉ phiếu ở trạng thái nháp được sửa/xóa. Phiếu đã hoàn thành không xóa vật lý; nếu cần đảo nghiệp vụ phải lập chứng từ điều chỉnh/hoàn trả.

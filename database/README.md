@@ -2,6 +2,19 @@
 
 Thư mục này chứa toàn bộ script T-SQL có thể dựng lại database từ đầu và các đối tượng phục vụ rubric.
 
+Hiện `init.sql` tạo chín bảng nền tảng cho identity, danh mục sản phẩm và cấu trúc kho. Bốn role ứng dụng được seed; chưa có tài khoản. Các bảng chứng từ, tồn kho và dữ liệu mẫu sẽ được bổ sung theo từng module.
+
+## Chạy schema nền tảng
+
+Từ thư mục gốc repository, dùng SQL Server có Windows Authentication và `sqlcmd`:
+
+```powershell
+sqlcmd -S localhost -E -C -b -i database/init.sql
+pwsh -File scripts/verify.ps1 -WithDatabase
+```
+
+`init.sql` tạo database `BlueStock` và dừng nếu tên này đã tồn tại; script không xóa hoặc ghi đè database cũ. Khi dùng SQL Server ở máy khác, thay `localhost` bằng tên instance tương ứng.
+
 ## Cấu trúc mục tiêu
 
 ```text

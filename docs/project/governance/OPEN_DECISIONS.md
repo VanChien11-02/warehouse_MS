@@ -4,33 +4,37 @@ Tài liệu này ngăn thành viên tự chọn khác nhau trên từng branch. 
 
 Trạng thái: `Open`, `Accepted`, `Deferred` hoặc `Rejected`.
 
+`DEC-001` đến `DEC-010` được chốt cho nhánh triển khai BE theo quyền kỹ thuật được giao ngày 2026-10-05 tại [ADR 0003](../../architecture/adr/0003-be-platform-contract.md). Việc tích hợp vào nhánh chung vẫn cần review của repository; trạng thái này không ghi nhận sự phê duyệt của chủ repository.
+
+`DEC-011` đến `DEC-018` được chốt cùng phạm vi tại [ADR 0004](../../architecture/adr/0004-stock-policies.md).
+
 ## Quyết định P0 trước khi build backend/database
 
 | ID | Quyết định cần chốt | Đề xuất hiện tại | Ảnh hưởng | Owner | Trạng thái |
 | --- | --- | --- | --- | --- | --- |
-| DEC-001 | URL resource dùng `/sanpham` hay `/san-pham` | Dùng kebab-case `/san-pham` | Frontend adapter, controller, contract | Cần chốt | Open |
-| DEC-002 | Có trạng thái `CHO_DUYET` hay chỉ `NHAP/DA_HOAN_THANH/DA_HUY` | Giữ ba trạng thái cho baseline | Schema, quyền, workflow, test | Cần chốt | Open |
-| DEC-003 | Cách lưu thời điểm | Lưu UTC, trả ISO-8601 có offset; ngày nghiệp vụ theo Asia/Bangkok | SQL type, Jackson, báo cáo | Cần chốt | Open |
-| DEC-004 | `409` hay `422` cho validation nghiệp vụ | `409` cho conflict trạng thái/tồn; `422` cho field business validation | Error handler và client | Cần chốt | Open |
-| DEC-005 | Procedure trả lỗi bằng gì | Mã lỗi ổn định + `THROW`, adapter ánh xạ sang domain error | T-SQL/JDBC/API | Cần chốt | Open |
-| DEC-006 | Tên database và schema mặc định | `BlueStock`, schema `dbo` cho baseline | Script/config/demo | Cần chốt | Open |
-| DEC-007 | Quy tắc sinh mã nghiệp vụ | Server/database sinh hoặc client nhập theo từng danh mục; không dùng ngẫu nhiên hỗn hợp | Schema, DTO, UX | Cần chốt | Open |
-| DEC-008 | Precision tiền | `DECIMAL(19,4)` hoặc precision khác được dùng thống nhất | Schema, BigDecimal, báo cáo | Cần chốt | Open |
-| DEC-009 | Cơ chế đăng nhập ứng dụng | Session cookie hoặc JWT; chưa chọn | Security, frontend storage, CORS | TV4 + nhóm | Open |
-| DEC-010 | Runner database chuẩn | `sqlcmd`/SSMS SQLCMD mode hoặc script PowerShell | `init.sql`, CI, hướng dẫn demo | TV1/TV2 + nhóm | Open |
+| DEC-001 | URL resource dùng `/sanpham` hay `/san-pham` | Dùng kebab-case `/san-pham` | Frontend adapter, controller, contract | Nhánh BE | Accepted |
+| DEC-002 | Có trạng thái `CHO_DUYET` hay chỉ `NHAP/DA_HOAN_THANH/DA_HUY` | Giữ ba trạng thái cho baseline | Schema, quyền, workflow, test | Nhánh BE | Accepted |
+| DEC-003 | Cách lưu thời điểm | Lưu UTC, trả ISO-8601 với `Z`; ngày nghiệp vụ theo Asia/Bangkok | SQL type, Jackson, báo cáo | Nhánh BE | Accepted |
+| DEC-004 | `409` hay `422` cho validation nghiệp vụ | `409` cho conflict trạng thái/tồn; `422` cho field business validation | Error handler và client | Nhánh BE | Accepted |
+| DEC-005 | Procedure trả lỗi bằng gì | `THROW` số `51000–51999`, JDBC ánh xạ mã lỗi | T-SQL/JDBC/API | Nhánh BE | Accepted |
+| DEC-006 | Tên database và schema mặc định | `BlueStock`, schema `dbo` cho baseline | Script/config/demo | Nhánh BE | Accepted |
+| DEC-007 | Quy tắc sinh mã nghiệp vụ | Client nhập mã danh mục; server sinh mã chứng từ/lô bằng sequence | Schema, DTO, UX | Nhánh BE | Accepted |
+| DEC-008 | Precision tiền | `DECIMAL(19,4)`/`BigDecimal` | Schema, BigDecimal, báo cáo | Nhánh BE | Accepted |
+| DEC-009 | Cơ chế đăng nhập ứng dụng | Session cookie `HttpOnly` và CSRF token | Security, frontend storage, CORS | Nhánh BE | Accepted |
+| DEC-010 | Runner database chuẩn | `sqlcmd -b` từ root repository; SSMS SQLCMD mode | `init.sql`, CI, hướng dẫn demo | Nhánh BE | Accepted |
 
 ## Quyết định nghiệp vụ cần chốt trước module liên quan
 
 | ID | Quyết định cần chốt | Đề xuất hiện tại | Cần trước | Trạng thái |
 | --- | --- | --- | --- | --- |
-| DEC-011 | Có bắt buộc nhà cung cấp/đối tác liên kết sản phẩm không | Bật cho luồng hoàn tất, cho phép quản lý mapping ở danh mục | INB-01, OUT-01 | Open |
-| DEC-012 | Đơn vị của `SucChua` | Tổng số đơn vị sản phẩm tại vị trí hoặc đơn vị thể tích/khối lượng | LOC-01, TRF-01 | Open |
-| DEC-013 | Tương thích loại bảo quản | Enum/mapping nào quyết định vị trí nhận được sản phẩm | LOC-01, INB-01 | Open |
-| DEC-014 | Lô không có hạn sử dụng trong FEFO | Xếp sau lô có hạn còn hiệu lực | OUT-01 | Open |
-| DEC-015 | Ai được hoàn tất từng chứng từ | QuanLyKho và quyền cụ thể của NhanVienKho | SEC-01 và mọi transaction | Open |
-| DEC-016 | Chính sách vị trí hàng hư hỏng khi trả | Chỉ vị trí cách ly/hư hỏng | RET-01 | Open |
-| DEC-017 | Nguồn giá tính giá trị tồn | Giá nhập thực tế theo lô hoặc phương pháp khác | REP-01 | Open |
-| DEC-018 | Ngưỡng/lý do chênh lệch kiểm kê | Mọi chênh lệch phải có lý do | CNT-01 | Open |
+| DEC-011 | Có bắt buộc nhà cung cấp/đối tác liên kết sản phẩm không | Bắt buộc khi hoàn tất phiếu | INB-01, OUT-01 | Accepted |
+| DEC-012 | Đơn vị của `SucChua` | Số lượng đơn vị tính gốc; một vị trí chỉ giữ tồn dương cùng `MaDVT` | LOC-01, TRF-01 | Accepted |
+| DEC-013 | Tương thích loại bảo quản | Yêu cầu của loại sản phẩm phải trùng loại khu vực nếu có giá trị | LOC-01, INB-01 | Accepted |
+| DEC-014 | Lô không có hạn sử dụng trong FEFO | Xếp sau lô có hạn còn hiệu lực; lô hết hạn không xuất | OUT-01 | Accepted |
+| DEC-015 | Ai được hoàn tất từng chứng từ | Chỉ `QuanLyKho` hoàn tất; role khác theo ADR 0004 | SEC-01 và mọi transaction | Accepted |
+| DEC-016 | Chính sách vị trí hàng hư hỏng khi trả | Chỉ vị trí `Hư hỏng`, loại khỏi tồn khả dụng | RET-01 | Accepted |
+| DEC-017 | Nguồn giá tính giá trị tồn | Đơn giá nhập thực tế của dòng tạo lô | REP-01 | Accepted |
+| DEC-018 | Ngưỡng/lý do chênh lệch kiểm kê | Mọi chênh lệch khác 0 phải có lý do | CNT-01 | Accepted |
 
 ## Quyết định phát triển và tích hợp
 
@@ -56,4 +60,5 @@ Khi một mục được chốt:
 
 | ID | Kết quả | Người/ngày | Tài liệu nguồn |
 | --- | --- | --- | --- |
-| - | Chưa có quyết định mới được ghi nhận | - | - |
+| DEC-001–010 | Quy ước nền tảng cho nhánh triển khai BE | Nhánh BE / 2026-10-05 | [ADR 0003](../../architecture/adr/0003-be-platform-contract.md) |
+| DEC-011–018 | Quy tắc kho cho nhánh triển khai BE | Nhánh BE / 2026-10-05 | [ADR 0004](../../architecture/adr/0004-stock-policies.md) |

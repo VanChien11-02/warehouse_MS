@@ -6,7 +6,7 @@
 
 - Frontend baseline đã có dashboard, CRUD sản phẩm bằng dữ liệu mẫu, lập phiếu xuất và khung báo cáo.
 - ERD và danh sách nghiệp vụ đã được chuẩn hóa ở mức thiết kế.
-- Backend Spring Boot và bộ script SQL Server chưa được khởi tạo.
+- Backend đã có Spring Boot, Maven Wrapper, health và session API; API nghiệp vụ chưa triển khai. SQL Server hiện có `init.sql` cho chín bảng identity, danh mục và cấu trúc kho, chưa phải schema đầy đủ.
 - Thư mục `references/` chỉ dùng tham khảo cách tổ chức; không phải nguồn yêu cầu của dự án này.
 
 ## Công nghệ thống nhất
@@ -30,7 +30,7 @@ Cài đặt:
 - Git 2.40 trở lên.
 - PowerShell 7.
 - Node.js 22 LTS hoặc mới hơn; CI tương lai sẽ chốt Node.js 22.
-- JDK 21 hoặc mới hơn; mã nguồn backend nhắm Java 21.
+- JDK 21 hoặc mới hơn, với `JAVA_HOME` trỏ tới JDK; mã nguồn backend nhắm Java 21.
 - SQL Server 2022 Developer/Express và công cụ quản trị SQL.
 
 ### 2. Clone và tạo nhánh
@@ -56,7 +56,7 @@ pwsh -File scripts/dev.ps1 -Target web
 
 Mở `http://127.0.0.1:5174`.
 
-Khi backend đã được khởi tạo, chạy ở terminal khác:
+Sau khi cấu hình kết nối SQL Server theo [`services/api/README.md`](services/api/README.md), chạy ở terminal khác:
 
 ```powershell
 pwsh -File scripts/dev.ps1 -Target api

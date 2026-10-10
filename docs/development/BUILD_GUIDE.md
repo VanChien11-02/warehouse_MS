@@ -9,7 +9,7 @@ Tài liệu này mô tả hiện trạng chạy được và thứ tự kỹ thu
 | Git | 2.40 trở lên |
 | PowerShell | 7 trở lên |
 | Node.js | 22 trở lên (`.nvmrc`) |
-| JDK | 21 trở lên |
+| JDK | 21 trở lên; `JAVA_HOME` trỏ tới JDK |
 | SQL Server | 2022 Developer hoặc Express |
 | SQL client | SSMS hoặc Azure Data Studio |
 
@@ -37,28 +37,27 @@ Cổng kiểm tra root:
 pwsh -File scripts/verify.ps1
 ```
 
-Hiện tại backend chưa có Maven Wrapper và database chưa có `init.sql`; hai lệnh build đó chưa thể chạy cho đến khi hoàn thành `BE-01` và `DB-01`.
+Backend đã có Maven Wrapper, health/session endpoint và test nhưng chưa có API nghiệp vụ. Database đã có `init.sql` dựng chín bảng identity/danh mục/cấu trúc kho; các bảng và object nghiệp vụ còn lại thuộc `DB-01` chưa hoàn tất.
 
-## 3. Cấu hình local dự kiến
+## 3. Cấu hình local
 
-Khi backend được khởi tạo, dùng biến môi trường hoặc profile local không commit secret. Tên chuẩn đề xuất theo Spring Boot:
+Dùng biến môi trường cho kết nối SQL Server; không commit secret:
 
 ```text
 SPRING_DATASOURCE_URL
 SPRING_DATASOURCE_USERNAME
 SPRING_DATASOURCE_PASSWORD
-SPRING_PROFILES_ACTIVE=local
 ```
 
 Repository chỉ được chứa `.env.example` hoặc `application-*.example.*` với giá trị giả. Không commit password, token hoặc connection string thật.
 
-Các điểm cần nhóm chốt trước khi viết cấu hình thật:
+Mẫu biến môi trường nằm tại [`../../services/api/.env.example`](../../services/api/.env.example); Spring Boot không tự nạp file này. Gán các biến trong terminal trước khi chạy API. `GET /api/health` kiểm tra tiến trình, còn `GET /actuator/health` phản ánh cả kết nối DB.
 
-- tên database và schema mặc định;
-- cơ chế xác thực ứng dụng;
-- origin CORS ngoài `http://127.0.0.1:5174`;
-- chiến lược chạy SQL script: `sqlcmd`, SSMS SQLCMD mode hoặc runner khác;
-- có dùng migration tool sau baseline hay không.
+JDBC cần SQL Server bật TCP/IP và lắng nghe cổng trong `SPRING_DATASOURCE_URL` (mẫu dùng 1433). Bật TCP/IP bằng SQL Server Configuration Manager, khởi động lại instance rồi kiểm tra `Test-NetConnection 127.0.0.1 -Port 1433`. `sqlcmd -E` trên cùng máy có thể dùng shared memory dù TCP/IP đang tắt, nên kết quả test SQL không thay thế kiểm tra kết nối JDBC. Tạo SQL login cục bộ với quyền trên `BlueStock`, đặt username/password qua biến môi trường; không ghi chúng vào repository.
+
+Sau khi dựng database, chạy `pwsh -File scripts/bootstrap-admin.ps1` đúng một lần khi bảng tài khoản còn trống. Lệnh yêu cầu mật khẩu tại terminal, lưu BCrypt hash và khởi động API. Dừng tiến trình bootstrap rồi chạy `pwsh -File scripts/dev.ps1 -Target api` với cấu hình JDBC thông thường.
+
+Database `BlueStock`/`dbo`, session cookie và runner `sqlcmd` đã được quyết định tại ADR 0003. CORS cho frontend và migration tool sau baseline sẽ được quyết định khi triển khai phần tương ứng.
 
 ## 4. Thứ tự kỹ thuật tối thiểu
 
@@ -108,11 +107,11 @@ Làm các lát dọc nhỏ, mỗi lát có schema + backend + contract + UI/test
 
 ## 5. Lệnh mục tiêu sau khi khởi tạo đủ
 
-Database, cú pháp cuối cùng phụ thuộc runner được nhóm chọn:
+Database hiện có thể dựng phần nền tảng từ root repository bằng `sqlcmd`:
 
 ```powershell
-# Ví dụ định hướng, chưa phải lệnh Accepted
-sqlcmd -S <server> -d <database> -E -i database/init.sql
+sqlcmd -S localhost -E -C -b -i database/init.sql
+pwsh -File scripts/verify.ps1 -WithDatabase
 ```
 
 Backend:
@@ -134,7 +133,7 @@ Full gate:
 pwsh -File scripts/verify.ps1
 ```
 
-Không ghi lệnh ví dụ SQL ở trên là “đã test” cho đến khi server/database/runner thật được chốt và lệnh chạy thành công.
+`init.sql` chỉ nhận database sạch và dừng nếu `BlueStock` đã tồn tại. Khi dùng instance khác, thay `localhost` bằng địa chỉ phù hợp.
 
 ## 6. Seed và tài khoản demo
 
