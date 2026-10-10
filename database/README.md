@@ -41,6 +41,8 @@ Sau migration 011, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock
 
 Sau migration 013, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/014_count_discrepancy_view.sql` để tạo/cập nhật `vw_ChenhLechKiemKe`. View chỉ lấy dòng chênh lệch từ phiếu đã hoàn tất; test 016 kiểm tra kết quả sau điều chỉnh.
 
+Sau migration 014, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/015_return.sql` để tạo hai bảng trả hàng và sequence. Sau đó chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/016_return_completion.sql` để tạo/cập nhật `sp_HoanTatTraHang`. Test 017 và 018 kiểm tra ràng buộc, giới hạn trả, vị trí hàng hư hỏng và rollback khi lỗi ghi sổ.
+
 ## Cấu trúc mục tiêu
 
 ```text
