@@ -51,11 +51,11 @@ CRUD không cho phép xóa dữ liệu đã được chứng từ tham chiếu. 
 | --- | --- | --- | --- |
 | `GET` | `/api/phieu-nhap` | Danh sách/lọc phiếu | Nhân viên kho trở lên; Kế toán đọc |
 | `POST` | `/api/phieu-nhap` | Tạo phiếu nháp | NhanVienKho/QuanLyKho |
-| `GET` | `/api/phieu-nhap/{maPhieuNhap}` | Chi tiết phiếu | Theo role |
+| `GET` | `/api/phieu-nhap/{maPhieuNhap}` | Chi tiết phiếu theo [`inbound-completion.md`](inbound-completion.md) | Theo role |
 | `PUT` | `/api/phieu-nhap/{maPhieuNhap}` | Sửa header/dòng khi còn nháp | NhanVienKho/QuanLyKho |
-| `POST` | `/api/phieu-nhap/{maPhieuNhap}/hoan-tat` | Tạo lô, put-away, tăng tồn | Quyền hoàn tất cần chốt |
+| `POST` | `/api/phieu-nhap/{maPhieuNhap}/hoan-tat` | Tạo lô, put-away, tăng tồn theo [`inbound-completion.md`](inbound-completion.md) | QuanLyKho |
 | `POST` | `/api/phieu-nhap/{maPhieuNhap}/huy` | Hủy phiếu nháp | Quyền cần chốt |
-| `GET` | `/api/ton-kho` | Lọc theo kho/vị trí/sản phẩm/lô/hạn | Authenticated theo role |
+| `GET` | `/api/ton-kho` | Lọc theo kho/vị trí/sản phẩm/lô/hạn theo [`inventory-query.md`](inventory-query.md) | Bốn role |
 | `GET` | `/api/lo-hang` | Tra cứu lô và hạn dùng | Authenticated theo role |
 
 Payload hoàn tất nhập phải chỉ ra cách phân bổ lô vào vị trí nếu thông tin đó chưa nằm trong phiếu. Hình thức payload cụ thể cần contract riêng.
