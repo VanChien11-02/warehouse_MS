@@ -91,6 +91,8 @@ API `/api/phieu-tra-hang` có danh sách, tạo/sửa/hủy nháp từ phiếu x
 
 Khi database chưa có tài khoản, từ root chạy `pwsh -File scripts/bootstrap-admin.ps1` sau khi đặt biến kết nối JDBC. Lệnh hỏi mật khẩu admin (ít nhất 12 ký tự), tạo tài khoản `admin` với mã `NV0001`/`TK0001` và khởi động API. Dừng tiến trình sau khi tạo xong, rồi chạy `scripts/dev.ps1 -Target api` bình thường. Có thể đổi tên đăng nhập bằng `-Username`; lệnh từ chối chạy lại nếu đã có tài khoản. Mật khẩu không được ghi vào file.
 
+Bản demo Compose dùng `APP_BOOTSTRAP_ADMIN_IF_EMPTY=true` để bỏ qua bootstrap khi đã có tài khoản, giúp khởi động lại với volume cũ. Khi chạy thủ công, giá trị mặc định là `false`, nên bootstrap vẫn từ chối database đã có tài khoản. Xem [`../../docs/development/DOCKER_DEMO.md`](../../docs/development/DOCKER_DEMO.md).
+
 Không commit connection string thật hoặc mật khẩu SQL Server.
 
 Từ root, `pwsh -File scripts/verify.ps1 -WithDatabase -WithConcurrency` kiểm tra thêm 23 script SQL và tranh chấp hai session. Cần bật SQL Server TCP/IP để chạy API qua JDBC. Các test SQL bằng `sqlcmd -E` có thể đạt qua shared memory ngay cả khi TCP/IP chưa bật.

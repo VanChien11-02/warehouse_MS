@@ -6,6 +6,7 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 
 - [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md): briefing ngắn về mục tiêu, hiện trạng, invariant, nguồn sự thật và đường đọc theo công việc.
 - [`development/BUILD_GUIDE.md`](development/BUILD_GUIDE.md): môi trường, lệnh đang chạy được, thứ tự kỹ thuật và checklist build sạch.
+- [`development/DOCKER_DEMO.md`](development/DOCKER_DEMO.md): dựng SQL Server 2022, API và web bằng Docker Compose để demo trên máy khác.
 - [`project/governance/OPEN_DECISIONS.md`](project/governance/OPEN_DECISIONS.md): các điểm chưa được phép tự suy đoán trên từng branch.
 
 ## Kiến trúc và dữ liệu
@@ -21,6 +22,7 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 - [`architecture/adr/0004-stock-policies.md`](architecture/adr/0004-stock-policies.md): quy tắc ghi sổ và định giá tồn kho cho nhánh triển khai backend.
 - [`architecture/adr/0005-outbound-fefo-enforcement.md`](architecture/adr/0005-outbound-fefo-enforcement.md): kiểm tra thứ tự FEFO tại transaction hoàn tất xuất.
 - [`architecture/adr/0006-transfer-posting.md`](architecture/adr/0006-transfer-posting.md): khóa và ghi sổ chuyển kho.
+- [`architecture/adr/0007-compose-demo.md`](architecture/adr/0007-compose-demo.md): môi trường demo SQL Server/API/web bằng Compose.
 
 ## Quản lý dự án
 

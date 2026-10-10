@@ -18,17 +18,20 @@ public class BootstrapAdminRunner implements ApplicationRunner {
     private final PasswordEncoder encoder;
     private final String username;
     private final String password;
+    private final boolean ifEmpty;
 
     public BootstrapAdminRunner(
         JdbcTemplate jdbc,
         PasswordEncoder encoder,
         @Value("${APP_BOOTSTRAP_ADMIN_USERNAME:admin}") String username,
-        @Value("${APP_BOOTSTRAP_ADMIN_PASSWORD:}") String password
+        @Value("${APP_BOOTSTRAP_ADMIN_PASSWORD:}") String password,
+        @Value("${APP_BOOTSTRAP_ADMIN_IF_EMPTY:false}") boolean ifEmpty
     ) {
         this.jdbc = jdbc;
         this.encoder = encoder;
         this.username = username;
         this.password = password;
+        this.ifEmpty = ifEmpty;
     }
 
     @Override
@@ -40,6 +43,9 @@ public class BootstrapAdminRunner implements ApplicationRunner {
         Integer count = jdbc.queryForObject(
             "SELECT COUNT(*) FROM dbo.TAI_KHOAN WITH (UPDLOCK, HOLDLOCK)", Integer.class);
         if (count == null || count != 0) {
+            if (ifEmpty && count != null && count > 0) {
+                return;
+            }
             throw new IllegalStateException("Bootstrap admin is allowed only when no accounts exist");
         }
         jdbc.update("""
