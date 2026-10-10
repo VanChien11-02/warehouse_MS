@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class OutboundServiceTest {
@@ -78,5 +79,26 @@ class OutboundServiceTest {
         assertEquals(0, suggestion.soLuongThieu());
         assertEquals(3, suggestion.phanBo().get(0).soLuong());
         assertEquals(2, suggestion.phanBo().get(1).soLuong());
+    }
+
+    @Test
+    void completedOutboundCannotBeEdited() {
+        when(repository.lockedStatus("PX0001")).thenReturn(Optional.of("DA_HOAN_THANH"));
+        var error = assertThrows(OutboundException.class,
+            () -> service.update("PX0001", "DT0001", null,
+                List.of(new LineData("LO0001", "VT0001", 1, BigDecimal.ONE))));
+        assertEquals("OUTBOUND_NOT_DRAFT", error.code());
+        verify(repository).lockedStatus("PX0001");
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void cancelDraftPreservesDocumentAndChangesStatus() {
+        when(repository.lockedStatus("PX0001")).thenReturn(Optional.of("NHAP"));
+        when(repository.findByCode("PX0001")).thenReturn(Optional.of(new OutboundModels.OutboundView(
+            "PX0001", null, "DT0001", "Đối tác", "NV0001", "DA_HUY",
+            null, null, List.of())));
+        assertEquals("DA_HUY", service.cancel("px0001").trangThai());
+        verify(repository).cancel("PX0001");
     }
 }

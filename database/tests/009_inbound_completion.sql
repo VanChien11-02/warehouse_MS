@@ -44,6 +44,10 @@ BEGIN TRY
     IF (SELECT SUM(ton.SoLuongTon) FROM dbo.TON_KHO ton
         JOIN dbo.LO_HANG lo ON lo.MaLo = ton.MaLo WHERE lo.MaPN = 'TST901') <> 6
         THROW 51903, N'Tồn sau nhập không đúng.', 1;
+    IF (SELECT COUNT(*) FROM dbo.BIEN_DONG_TON_KHO
+        WHERE MaChungTu = 'TST901' AND LoaiNghiepVu = N'NHAP'
+          AND SoLuongThayDoi = 6) <> 1
+        THROW 51910, N'Nhập chưa ghi một biến động tồn.', 1;
 
     BEGIN TRY
         EXEC dbo.sp_HoanTatPhieuNhap @MaPN = 'TST901',
@@ -84,10 +88,14 @@ BEGIN TRY
     BEGIN CATCH
         IF ERROR_NUMBER() <> 51108 THROW;
     END CATCH;
+    IF EXISTS (SELECT 1 FROM dbo.BIEN_DONG_TON_KHO
+        WHERE MaChungTu IN ('TST902', 'TST903', 'TST904'))
+        THROW 51911, N'Phiếu nhập thất bại đã ghi biến động.', 1;
 
     BEGIN TRANSACTION;
     DELETE ton FROM dbo.TON_KHO ton JOIN dbo.LO_HANG lo ON lo.MaLo = ton.MaLo
         WHERE lo.MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
+    DELETE FROM dbo.BIEN_DONG_TON_KHO WHERE MaChungTu IN ('TST901', 'TST902', 'TST903', 'TST904');
     DELETE FROM dbo.LO_HANG WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
     DELETE FROM dbo.CT_PHIEU_NHAP WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
     DELETE FROM dbo.PHIEU_NHAP WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
@@ -108,6 +116,7 @@ BEGIN CATCH
     BEGIN TRANSACTION;
     DELETE ton FROM dbo.TON_KHO ton JOIN dbo.LO_HANG lo ON lo.MaLo = ton.MaLo
         WHERE lo.MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
+    DELETE FROM dbo.BIEN_DONG_TON_KHO WHERE MaChungTu IN ('TST901', 'TST902', 'TST903', 'TST904');
     DELETE FROM dbo.LO_HANG WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
     DELETE FROM dbo.CT_PHIEU_NHAP WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');
     DELETE FROM dbo.PHIEU_NHAP WHERE MaPN IN ('TST901', 'TST902', 'TST903', 'TST904');

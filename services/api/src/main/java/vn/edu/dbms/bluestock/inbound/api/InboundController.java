@@ -17,13 +17,16 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.dbms.bluestock.auth.infrastructure.AccountPrincipal;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.AllocationData;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundView;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundPage;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineData;
 import vn.edu.dbms.bluestock.inbound.application.InboundService;
 
@@ -34,6 +37,14 @@ public class InboundController {
 
     public InboundController(InboundService service) {
         this.service = service;
+    }
+
+    @GetMapping
+    public InboundPage list(@RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String trangThai,
+        @RequestParam(required = false) String maNhaCungCap) {
+        return service.list(page, size, trangThai, maNhaCungCap);
     }
 
     @GetMapping("/{maPhieuNhap}")
@@ -50,6 +61,18 @@ public class InboundController {
             body.ghiChu(), body.chiTiet().stream().map(LineRequest::data).toList());
         return ResponseEntity.created(URI.create("/api/phieu-nhap/" + created.maPhieuNhap()))
             .body(created);
+    }
+
+    @PutMapping("/{maPhieuNhap}")
+    public InboundView update(@PathVariable String maPhieuNhap,
+        @Valid @RequestBody CreateInboundRequest body) {
+        return service.update(maPhieuNhap, body.maNhaCungCap(), body.ghiChu(),
+            body.chiTiet().stream().map(LineRequest::data).toList());
+    }
+
+    @PostMapping("/{maPhieuNhap}/huy")
+    public InboundView cancel(@PathVariable String maPhieuNhap) {
+        return service.cancel(maPhieuNhap);
     }
 
     @PostMapping("/{maPhieuNhap}/hoan-tat")

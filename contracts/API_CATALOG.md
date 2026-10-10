@@ -89,7 +89,7 @@ Mỗi resource cần contract riêng cho header/detail, trạng thái, quyền, 
 | Method | Route dự kiến | Bộ lọc chính | Role |
 | --- | --- | --- | --- |
 | `GET` | `/api/bao-cao/ton-kho` | kho, vị trí, sản phẩm, lô, ngày hết hạn | QuanLyKho/KeToan; role khác giới hạn |
-| `GET` | `/api/bao-cao/nhap-xuat` | từ ngày, đến ngày, sản phẩm/kho | QuanLyKho/KeToan |
+| `GET` | `/api/bao-cao/nhap-xuat` | từ ngày, đến ngày, sản phẩm/kho theo [`reporting.md`](reporting.md) | Admin/QuanLyKho/KeToan |
 | `GET` | `/api/bao-cao/lo-sap-het-han` | số ngày, kho | QuanLyKho/NhanVienKho |
 | `GET` | `/api/bao-cao/chenh-lech-kiem-ke` | kỳ/kho/vị trí | QuanLyKho/KeToan |
 

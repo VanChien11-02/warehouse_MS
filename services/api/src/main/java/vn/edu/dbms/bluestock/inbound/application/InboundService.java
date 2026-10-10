@@ -14,6 +14,7 @@ import vn.edu.dbms.bluestock.inbound.application.InboundException.Kind;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.AllocationData;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundView;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundPage;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineData;
 import vn.edu.dbms.bluestock.inbound.infrastructure.InboundJdbcRepository;
 import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
@@ -34,23 +35,25 @@ public class InboundService {
             new InboundException(Kind.NOT_FOUND, "INBOUND_NOT_FOUND", "Không tìm thấy phiếu nhập"));
     }
 
+    @Transactional(readOnly = true)
+    public InboundPage list(int page, int size, String status, String supplierCode) {
+        if (page < 0 || page > 1_000_000 || size < 1 || size > 100) {
+            throw new InboundException(Kind.VALIDATION, "INVALID_PAGINATION",
+                "page hoặc size không hợp lệ");
+        }
+        String normalizedStatus = status == null ? null : status.trim().toUpperCase(Locale.ROOT);
+        if (normalizedStatus != null && !List.of("NHAP", "DA_HOAN_THANH", "DA_HUY").contains(normalizedStatus)) {
+            throw new InboundException(Kind.VALIDATION, "INVALID_STATUS", "Trạng thái không hợp lệ");
+        }
+        return repository.findPage(page, size, normalizedStatus,
+            supplierCode == null ? null : normalizeCode(supplierCode));
+    }
+
     @Transactional
     public InboundView create(String supplierCode, String employeeCode, String note, List<LineData> lines) {
         String normalizedSupplier = normalizeCode(supplierCode);
         String normalizedEmployee = normalizeCode(employeeCode);
-        if (lines == null || lines.isEmpty()) {
-            throw new InboundException(Kind.VALIDATION, "LINES_REQUIRED", "Phiếu nhập cần ít nhất một dòng");
-        }
-        var normalizedLines = new java.util.ArrayList<LineData>();
-        var productCodes = new HashSet<String>();
-        for (LineData line : lines) {
-            String productCode = normalizeCode(line.maSanPham());
-            if (!productCodes.add(productCode)) {
-                throw new InboundException(Kind.VALIDATION, "DUPLICATE_PRODUCT",
-                    "Một sản phẩm chỉ có một dòng trên phiếu nhập");
-            }
-            normalizedLines.add(new LineData(productCode, line.soLuong(), line.donGiaNhap()));
-        }
+        List<LineData> normalizedLines = normalizeLines(lines);
         int number = repository.nextCodeNumber();
         if (number > 9999) {
             throw new InboundException(Kind.CONFLICT, "INBOUND_CODE_EXHAUSTED",
@@ -65,6 +68,56 @@ public class InboundService {
                 "Nhà cung cấp, nhân viên hoặc sản phẩm không tồn tại");
         }
         return get(code);
+    }
+
+    @Transactional
+    public InboundView update(String code, String supplierCode, String note, List<LineData> lines) {
+        String normalizedCode = normalizeCode(code);
+        String normalizedSupplier = normalizeCode(supplierCode);
+        List<LineData> normalizedLines = normalizeLines(lines);
+        requireDraft(normalizedCode);
+        try {
+            repository.updateHeader(normalizedCode, normalizedSupplier, optionalText(note));
+            repository.replaceLines(normalizedCode, normalizedLines);
+        } catch (DataIntegrityViolationException exception) {
+            throw new InboundException(Kind.VALIDATION, "INVALID_REFERENCE",
+                "Nhà cung cấp hoặc sản phẩm không tồn tại");
+        }
+        return get(normalizedCode);
+    }
+
+    @Transactional
+    public InboundView cancel(String code) {
+        String normalizedCode = normalizeCode(code);
+        requireDraft(normalizedCode);
+        repository.cancel(normalizedCode);
+        return get(normalizedCode);
+    }
+
+    private void requireDraft(String code) {
+        String status = repository.lockedStatus(code).orElseThrow(() ->
+            new InboundException(Kind.NOT_FOUND, "INBOUND_NOT_FOUND", "Không tìm thấy phiếu nhập"));
+        if (!"NHAP".equals(status)) {
+            throw new InboundException(Kind.CONFLICT, "INBOUND_NOT_DRAFT",
+                "Phiếu nhập không còn ở trạng thái nháp");
+        }
+    }
+
+    private static List<LineData> normalizeLines(List<LineData> lines) {
+        if (lines == null || lines.isEmpty()) {
+            throw new InboundException(Kind.VALIDATION, "LINES_REQUIRED", "Phiếu nhập cần ít nhất một dòng");
+        }
+        var normalized = new java.util.ArrayList<LineData>();
+        var products = new HashSet<String>();
+        for (LineData line : lines) {
+            String productCode = normalizeCode(line.maSanPham());
+            if (!products.add(productCode)) {
+                throw new InboundException(Kind.VALIDATION, "DUPLICATE_PRODUCT",
+                    "Một sản phẩm chỉ có một dòng trên phiếu nhập");
+            }
+            normalized.add(new LineData(productCode, line.soLuong(), line.donGiaNhap()));
+        }
+        return normalized;
     }
 
     public CompletionView complete(String code, List<AllocationData> allocations) {

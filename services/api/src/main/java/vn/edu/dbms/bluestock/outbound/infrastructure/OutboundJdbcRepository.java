@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,6 +13,8 @@ import vn.edu.dbms.bluestock.outbound.application.OutboundModels.CompletionView;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.LineData;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.LineView;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.OutboundView;
+import vn.edu.dbms.bluestock.outbound.application.OutboundModels.OutboundSummary;
+import vn.edu.dbms.bluestock.outbound.application.OutboundModels.OutboundPage;
 
 @Repository
 public class OutboundJdbcRepository {
@@ -38,6 +41,59 @@ public class OutboundJdbcRepository {
             INSERT INTO dbo.CT_PHIEU_XUAT (MaPX, MaLo, MaViTri, SoLuong, DonGiaXuat)
             VALUES (?, ?, ?, ?, ?)
             """, code, line.maLo(), line.maViTri(), line.soLuong(), line.donGiaXuat());
+    }
+
+    public OutboundPage findPage(int page, int size, String status, String recipient) {
+        var clauses = new ArrayList<String>();
+        var args = new ArrayList<Object>();
+        if (status != null) {
+            clauses.add("px.TrangThai = ?");
+            args.add(status);
+        }
+        if (recipient != null) {
+            clauses.add("px.MaDTNH = ?");
+            args.add(recipient);
+        }
+        String where = clauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", clauses) + " ";
+        Long count = jdbc.queryForObject("SELECT COUNT_BIG(*) FROM dbo.PHIEU_XUAT px " + where,
+            Long.class, args.toArray());
+        args.add(page * size);
+        args.add(size);
+        List<OutboundSummary> items = jdbc.query("""
+            SELECT px.MaPX, px.NgayXuat, px.MaDTNH, dt.TenDoiTac, px.MaNV,
+                   px.TrangThai, px.GhiChu, px.NgayHoanTat
+            FROM dbo.PHIEU_XUAT px
+            JOIN dbo.DOI_TAC_NHAN_HANG dt ON dt.MaDTNH = px.MaDTNH
+            """ + where + "ORDER BY px.NgayXuat DESC, px.MaPX DESC "
+            + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY", (row, index) ->
+                new OutboundSummary(row.getString("MaPX").trim(),
+                    utc(row.getObject("NgayXuat", LocalDateTime.class)),
+                    row.getString("MaDTNH").trim(), row.getString("TenDoiTac"),
+                    row.getString("MaNV").trim(), row.getString("TrangThai"),
+                    row.getString("GhiChu"), utc(row.getObject("NgayHoanTat", LocalDateTime.class))),
+            args.toArray());
+        long total = count == null ? 0 : count;
+        return new OutboundPage(items, page, size, total, (total + size - 1) / size);
+    }
+
+    public Optional<String> lockedStatus(String code) {
+        return jdbc.queryForList("""
+            SELECT TrangThai FROM dbo.PHIEU_XUAT WITH (UPDLOCK, HOLDLOCK) WHERE MaPX = ?
+            """, String.class, code).stream().findFirst();
+    }
+
+    public void updateHeader(String code, String recipient, String note) {
+        jdbc.update("UPDATE dbo.PHIEU_XUAT SET MaDTNH = ?, GhiChu = ? WHERE MaPX = ?",
+            recipient, note, code);
+    }
+
+    public void replaceLines(String code, List<LineData> lines) {
+        jdbc.update("DELETE FROM dbo.CT_PHIEU_XUAT WHERE MaPX = ?", code);
+        for (LineData line : lines) insertLine(code, line);
+    }
+
+    public void cancel(String code) {
+        jdbc.update("UPDATE dbo.PHIEU_XUAT SET TrangThai = N'DA_HUY' WHERE MaPX = ?", code);
     }
 
     public Optional<OutboundView> findByCode(String code) {

@@ -16,6 +16,7 @@ import vn.edu.dbms.bluestock.outbound.application.OutboundModels.FefoAllocation;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.FefoSuggestion;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.LineData;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.OutboundView;
+import vn.edu.dbms.bluestock.outbound.application.OutboundModels.OutboundPage;
 import vn.edu.dbms.bluestock.outbound.infrastructure.OutboundJdbcRepository;
 import vn.edu.dbms.bluestock.inventory.application.AvailableStockQuery;
 import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
@@ -37,24 +38,25 @@ public class OutboundService {
             new OutboundException(Kind.NOT_FOUND, "OUTBOUND_NOT_FOUND", "Không tìm thấy phiếu xuất"));
     }
 
+    @Transactional(readOnly = true)
+    public OutboundPage list(int page, int size, String status, String recipientCode) {
+        if (page < 0 || page > 1_000_000 || size < 1 || size > 100) {
+            throw new OutboundException(Kind.VALIDATION, "INVALID_PAGINATION",
+                "page hoặc size không hợp lệ");
+        }
+        String normalizedStatus = status == null ? null : status.trim().toUpperCase(Locale.ROOT);
+        if (normalizedStatus != null && !List.of("NHAP", "DA_HOAN_THANH", "DA_HUY").contains(normalizedStatus)) {
+            throw new OutboundException(Kind.VALIDATION, "INVALID_STATUS", "Trạng thái không hợp lệ");
+        }
+        return repository.findPage(page, size, normalizedStatus,
+            recipientCode == null ? null : normalizeCode(recipientCode));
+    }
+
     @Transactional
     public OutboundView create(String recipientCode, String employeeCode, String note, List<LineData> lines) {
         String normalizedRecipient = normalizeCode(recipientCode);
         String normalizedEmployee = normalizeCode(employeeCode);
-        if (lines == null || lines.isEmpty()) {
-            throw new OutboundException(Kind.VALIDATION, "LINES_REQUIRED", "Phiếu xuất cần ít nhất một dòng");
-        }
-        var normalizedLines = new java.util.ArrayList<LineData>();
-        var sources = new HashSet<String>();
-        for (LineData line : lines) {
-            String lot = normalizeCode(line.maLo());
-            String position = normalizeCode(line.maViTri());
-            if (!sources.add(lot + ":" + position)) {
-                throw new OutboundException(Kind.VALIDATION, "DUPLICATE_STOCK_SOURCE",
-                    "Một cặp lô/vị trí chỉ có một dòng trên phiếu xuất");
-            }
-            normalizedLines.add(new LineData(lot, position, line.soLuong(), line.donGiaXuat()));
-        }
+        List<LineData> normalizedLines = normalizeLines(lines);
         int number = repository.nextCodeNumber();
         if (number > 9999) {
             throw new OutboundException(Kind.CONFLICT, "OUTBOUND_CODE_EXHAUSTED",
@@ -69,6 +71,57 @@ public class OutboundService {
                 "Đối tác, nhân viên, lô hoặc vị trí không tồn tại");
         }
         return get(code);
+    }
+
+    @Transactional
+    public OutboundView update(String code, String recipientCode, String note, List<LineData> lines) {
+        String normalizedCode = normalizeCode(code);
+        String normalizedRecipient = normalizeCode(recipientCode);
+        List<LineData> normalizedLines = normalizeLines(lines);
+        requireDraft(normalizedCode);
+        try {
+            repository.updateHeader(normalizedCode, normalizedRecipient, optionalText(note));
+            repository.replaceLines(normalizedCode, normalizedLines);
+        } catch (DataIntegrityViolationException exception) {
+            throw new OutboundException(Kind.VALIDATION, "INVALID_REFERENCE",
+                "Đối tác, lô hoặc vị trí không tồn tại");
+        }
+        return get(normalizedCode);
+    }
+
+    @Transactional
+    public OutboundView cancel(String code) {
+        String normalizedCode = normalizeCode(code);
+        requireDraft(normalizedCode);
+        repository.cancel(normalizedCode);
+        return get(normalizedCode);
+    }
+
+    private void requireDraft(String code) {
+        String status = repository.lockedStatus(code).orElseThrow(() ->
+            new OutboundException(Kind.NOT_FOUND, "OUTBOUND_NOT_FOUND", "Không tìm thấy phiếu xuất"));
+        if (!"NHAP".equals(status)) {
+            throw new OutboundException(Kind.CONFLICT, "OUTBOUND_NOT_DRAFT",
+                "Phiếu xuất không còn ở trạng thái nháp");
+        }
+    }
+
+    private static List<LineData> normalizeLines(List<LineData> lines) {
+        if (lines == null || lines.isEmpty()) {
+            throw new OutboundException(Kind.VALIDATION, "LINES_REQUIRED", "Phiếu xuất cần ít nhất một dòng");
+        }
+        var normalized = new ArrayList<LineData>();
+        var sources = new HashSet<String>();
+        for (LineData line : lines) {
+            String lot = normalizeCode(line.maLo());
+            String position = normalizeCode(line.maViTri());
+            if (!sources.add(lot + ":" + position)) {
+                throw new OutboundException(Kind.VALIDATION, "DUPLICATE_STOCK_SOURCE",
+                    "Một cặp lô/vị trí chỉ có một dòng trên phiếu xuất");
+            }
+            normalized.add(new LineData(lot, position, line.soLuong(), line.donGiaXuat()));
+        }
+        return normalized;
     }
 
     public CompletionView complete(String code) {

@@ -1,6 +1,6 @@
 # Spring Boot API
 
-Module backend của hệ thống kho. Bộ khung hiện có Spring Boot 3.5.16, Maven Wrapper, cấu hình SQL Server, health/session endpoint, CRUD danh mục sản phẩm/cấu trúc kho, API nhập/xuất và tra cứu tồn.
+Module backend của hệ thống kho. Bộ khung hiện có Spring Boot 3.5.16, Maven Wrapper, cấu hình SQL Server, health/session endpoint, CRUD danh mục/đối tác/cấu trúc kho, API nhập/xuất và tra cứu tồn.
 
 ## Công nghệ cố định
 
@@ -65,15 +65,19 @@ API `/api/san-pham` hỗ trợ danh sách phân trang/tìm kiếm, chi tiết, t
 
 API `/api/loai-san-pham` và `/api/don-vi-tinh` hỗ trợ CRUD, phân trang/tìm kiếm theo [`contracts/loai-don-vi-tinh.md`](../../contracts/loai-don-vi-tinh.md). Có thể tạo hai dữ liệu này qua API trước khi tạo sản phẩm; không cần seed SQL nếu thử luồng danh mục từ đầu.
 
-API `/api/kho`, `/api/khu-vuc` và `/api/vi-tri` hỗ trợ CRUD, phân trang/tìm kiếm và lọc theo kho/khu vực theo [`contracts/warehouse-location.md`](../../contracts/warehouse-location.md). Kiểm tra sức chứa và bảo quản khi ghi sổ tồn thuộc procedure nghiệp vụ; chưa có giao dịch kho.
+API `/api/kho`, `/api/khu-vuc` và `/api/vi-tri` hỗ trợ CRUD, phân trang/tìm kiếm và lọc theo kho/khu vực theo [`contracts/warehouse-location.md`](../../contracts/warehouse-location.md). Kiểm tra sức chứa và bảo quản khi ghi sổ tồn thuộc procedure nghiệp vụ.
 
-API `/api/phieu-nhap` đã có tạo nháp, xem chi tiết và hoàn tất theo [`contracts/inbound-completion.md`](../../contracts/inbound-completion.md). Java tạo nháp trong transaction; hoàn tất gọi `sp_HoanTatPhieuNhap` để procedure tự khóa/ghi sổ trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần có nhà cung cấp và mapping sản phẩm trong database trước khi hoàn tất; partner API và các route nhập còn lại chưa có.
+API `/api/nha-cung-cap` và `/api/doi-tac-nhan-hang` hỗ trợ CRUD, danh sách sản phẩm liên kết và gán/bỏ liên kết theo [`contracts/partner.md`](../../contracts/partner.md). Các liên kết được kiểm tra lại tại thời điểm hoàn tất phiếu.
+
+API `/api/phieu-nhap` đã có danh sách, tạo/sửa/hủy nháp, xem chi tiết và hoàn tất theo [`contracts/inbound-completion.md`](../../contracts/inbound-completion.md). Java tạo/sửa/hủy nháp trong transaction; hoàn tất gọi `sp_HoanTatPhieuNhap` để procedure tự khóa/ghi sổ trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần tạo nhà cung cấp và mapping sản phẩm trước khi hoàn tất.
 
 API `GET /api/ton-kho` đọc `vw_TonKhoChiTiet`, hỗ trợ lọc/phân trang và chỉ lấy tồn khả dụng theo [`contracts/inventory-query.md`](../../contracts/inventory-query.md). Chưa có API ghi tồn trực tiếp; xuất kho vẫn phải kiểm tra lại trong transaction.
 
-API `/api/phieu-xuat` đã có tạo nháp, xem chi tiết và hoàn tất theo [`contracts/outbound-fefo-completion.md`](../../contracts/outbound-fefo-completion.md). Procedure kiểm tra FEFO và trừ tồn trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần có đối tác nhận và mapping sản phẩm trong database; partner API và các route xuất còn lại chưa có.
+API `/api/phieu-xuat` đã có danh sách, tạo/sửa/hủy nháp, xem chi tiết và hoàn tất theo [`contracts/outbound-fefo-completion.md`](../../contracts/outbound-fefo-completion.md). Procedure kiểm tra FEFO và trừ tồn trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần tạo đối tác nhận và mapping sản phẩm trước khi hoàn tất.
 
 `GET /api/phieu-xuat/{maPhieuXuat}/goi-y-fefo` đề xuất lô/vị trí cho một sản phẩm và số lượng, trả phần thiếu nếu tồn không đủ. Gợi ý không giữ chỗ; lúc hoàn tất procedure kiểm tra FEFO và tồn lần nữa.
+
+`GET /api/bao-cao/nhap-xuat` trả báo cáo theo kỳ, kho và sản phẩm từ sổ biến động đã ghi cùng transaction nhập/xuất; đơn giá lấy từ phiếu nhập của lô theo [`contracts/reporting.md`](../../contracts/reporting.md). Chưa có các báo cáo hạn dùng và chênh lệch kiểm kê.
 
 Khi database chưa có tài khoản, từ root chạy `pwsh -File scripts/bootstrap-admin.ps1` sau khi đặt biến kết nối JDBC. Lệnh hỏi mật khẩu admin (ít nhất 12 ký tự), tạo tài khoản `admin` với mã `NV0001`/`TK0001` và khởi động API. Dừng tiến trình sau khi tạo xong, rồi chạy `scripts/dev.ps1 -Target api` bình thường. Có thể đổi tên đăng nhập bằng `-Username`; lệnh từ chối chạy lại nếu đã có tài khoản. Mật khẩu không được ghi vào file.
 

@@ -100,6 +100,10 @@ BEGIN
             THROW 51208, N'Tồn kho thay đổi trước khi ghi sổ.', 1;
 
         DECLARE @NgayHoanTat DATETIME2(3) = SYSUTCDATETIME();
+        INSERT INTO dbo.BIEN_DONG_TON_KHO
+            (LoaiNghiepVu, MaChungTu, MaViTri, MaLo, SoLuongThayDoi, NgayGhiSo)
+        SELECT N'XUAT', @MaPX, ct.MaViTri, ct.MaLo, -ct.SoLuong, @NgayHoanTat
+        FROM dbo.CT_PHIEU_XUAT ct WHERE ct.MaPX = @MaPX;
         UPDATE dbo.PHIEU_XUAT
         SET TrangThai = N'DA_HOAN_THANH', NgayHoanTat = @NgayHoanTat
         WHERE MaPX = @MaPX;

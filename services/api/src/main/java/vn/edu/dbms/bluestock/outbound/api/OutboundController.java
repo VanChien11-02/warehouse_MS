@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +26,7 @@ import vn.edu.dbms.bluestock.outbound.application.OutboundModels.CompletionView;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.FefoSuggestion;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.LineData;
 import vn.edu.dbms.bluestock.outbound.application.OutboundModels.OutboundView;
+import vn.edu.dbms.bluestock.outbound.application.OutboundModels.OutboundPage;
 import vn.edu.dbms.bluestock.outbound.application.OutboundService;
 
 @RestController
@@ -34,6 +36,14 @@ public class OutboundController {
 
     public OutboundController(OutboundService service) {
         this.service = service;
+    }
+
+    @GetMapping
+    public OutboundPage list(@RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String trangThai,
+        @RequestParam(required = false) String maDoiTacNhanHang) {
+        return service.list(page, size, trangThai, maDoiTacNhanHang);
     }
 
     @GetMapping("/{maPhieuXuat}")
@@ -57,6 +67,18 @@ public class OutboundController {
             body.ghiChu(), body.chiTiet().stream().map(LineRequest::data).toList());
         return ResponseEntity.created(URI.create("/api/phieu-xuat/" + created.maPhieuXuat()))
             .body(created);
+    }
+
+    @PutMapping("/{maPhieuXuat}")
+    public OutboundView update(@PathVariable String maPhieuXuat,
+        @Valid @RequestBody CreateOutboundRequest body) {
+        return service.update(maPhieuXuat, body.maDoiTacNhanHang(), body.ghiChu(),
+            body.chiTiet().stream().map(LineRequest::data).toList());
+    }
+
+    @PostMapping("/{maPhieuXuat}/huy")
+    public OutboundView cancel(@PathVariable String maPhieuXuat) {
+        return service.cancel(maPhieuXuat);
     }
 
     @PostMapping("/{maPhieuXuat}/hoan-tat")
