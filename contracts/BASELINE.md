@@ -204,4 +204,4 @@ Quy ước chung:
 - [x] Chốt quy tắc dùng `409` và `422`.
 - [x] Chốt cơ chế trả lỗi từ stored procedure sang Spring.
 - [ ] Thay interface minh họa bằng chữ ký Java đã compile trong project.
-- [ ] Viết contract chi tiết cho Session/RBAC và sản phẩm trước tiên.
+- [x] Viết contract chi tiết cho Session/RBAC và sản phẩm trước tiên.
