@@ -79,8 +79,9 @@ public class TransferJdbcRepository {
         for (LineData line : lines) insertLine(code, line);
     }
 
-    public void cancel(String code) {
-        jdbc.update("UPDATE dbo.PHIEU_CHUYEN_KHO SET TrangThai = N'DA_HUY' WHERE MaPCK = ?", code);
+    public int cancel(String code) {
+        return jdbc.update("UPDATE dbo.PHIEU_CHUYEN_KHO SET TrangThai = N'DA_HUY' "
+            + "WHERE MaPCK = ? AND TrangThai = N'NHAP'", code);
     }
 
     public Optional<TransferView> findByCode(String code) {

@@ -39,3 +39,5 @@ Sửa vị trí chỉ gồm `tenViTri`. Tên bắt buộc, tối đa 255 ký t�
 Lỗi dùng envelope chung: `404 WAREHOUSE_NOT_FOUND`/`AREA_NOT_FOUND`/`POSITION_NOT_FOUND`; `409 WAREHOUSE_CODE_EXISTS`, `WAREHOUSE_NAME_EXISTS`, `WAREHOUSE_IN_USE`, `AREA_CODE_EXISTS`, `AREA_NAME_EXISTS`, `AREA_IN_USE`, `POSITION_CODE_EXISTS`, `POSITION_NAME_EXISTS`, `POSITION_IN_USE`; `422 INVALID_WAREHOUSE`, `INVALID_AREA`, `INVALID_CODE`, `INVALID_PAGINATION`, `INVALID_QUERY`, `VALIDATION_FAILED`; `401` khi chưa đăng nhập, `403` khi thiếu quyền hoặc CSRF.
 
 Khi ghi sổ tồn, procedure phải kiểm tra sức chứa và loại bảo quản trong cùng transaction theo ADR 0004; CRUD cấu trúc không tự quyết định số tồn.
+
+Trigger `trg_ViTriKho_BaoVeTon` bảo vệ cả thao tác SQL trực tiếp: vị trí có tồn dương không được chuyển khu vực hoặc đổi loại; sức chứa mới không được thấp hơn tổng tồn hiện có. Trigger xử lý cập nhật nhiều vị trí trong một lệnh và rollback cả lệnh nếu một vị trí vi phạm. API CRUD chỉ cho sửa tên vị trí.

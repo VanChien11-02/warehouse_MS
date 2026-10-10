@@ -14,6 +14,7 @@ import vn.edu.dbms.bluestock.auth.infrastructure.SecurityConfig;
 import vn.edu.dbms.bluestock.platform.api.ApiExceptionHandler;
 import vn.edu.dbms.bluestock.reporting.application.ReportingModels.MovementReportPage;
 import vn.edu.dbms.bluestock.reporting.application.ReportingModels.CountDiscrepancyPage;
+import vn.edu.dbms.bluestock.reporting.application.ReportingModels.ExpiringLotPage;
 import vn.edu.dbms.bluestock.reporting.application.ReportingService;
 
 import static org.mockito.Mockito.when;
@@ -75,6 +76,24 @@ class ReportingControllerTest {
     void warehouseStaffCannotReadCountDiscrepancies() throws Exception {
         mvc.perform(get("/api/bao-cao/chenh-lech-kiem-ke")
                 .param("tuNgay", "2026-10-07").param("denNgay", "2026-10-07"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_NVKHO")
+    void warehouseStaffCanReadExpiringLots() throws Exception {
+        when(service.expiringLots(7, "KHO001", 0, 20))
+            .thenReturn(new ExpiringLotPage(7, List.of(), 0, 20, 0, 0));
+        mvc.perform(get("/api/bao-cao/lo-sap-het-han")
+                .param("soNgay", "7").param("maKho", "KHO001"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.soNgay").value(7));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_KETOAN")
+    void accountantCannotReadOperationalExpiryReport() throws Exception {
+        mvc.perform(get("/api/bao-cao/lo-sap-het-han"))
             .andExpect(status().isForbidden());
     }
 }

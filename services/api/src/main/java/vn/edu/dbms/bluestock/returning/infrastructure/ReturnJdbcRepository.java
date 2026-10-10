@@ -63,8 +63,9 @@ public class ReturnJdbcRepository {
         for (LineData line : lines) insertLine(code, line);
     }
 
-    public void cancel(String code) {
-        jdbc.update("UPDATE dbo.PHIEU_TRA_HANG SET TrangThai = N'DA_HUY' WHERE MaPTH = ?", code);
+    public int cancel(String code) {
+        return jdbc.update("UPDATE dbo.PHIEU_TRA_HANG SET TrangThai = N'DA_HUY' "
+            + "WHERE MaPTH = ? AND TrangThai = N'NHAP'", code);
     }
 
     public ReturnPage findPage(int page, int size, String status, String outbound) {

@@ -25,4 +25,11 @@ public final class ReportingModels {
     public record CountDiscrepancyPage(LocalDate tuNgay, LocalDate denNgay,
         List<CountDiscrepancyRow> items, int page, int size,
         long totalElements, long totalPages) {}
+
+    public record ExpiringLotRow(String maKho, String tenKho, String maViTri,
+        String tenViTri, String maLo, String maSanPham, String tenSanPham,
+        int soLuongTon, LocalDate hanSuDung, int soNgayConLai) {}
+
+    public record ExpiringLotPage(int soNgay, List<ExpiringLotRow> items,
+        int page, int size, long totalElements, long totalPages) {}
 }

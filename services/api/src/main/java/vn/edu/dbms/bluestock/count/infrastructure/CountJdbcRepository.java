@@ -100,8 +100,9 @@ public class CountJdbcRepository {
             """, code, lot, actual, reason);
     }
 
-    public void cancel(String code) {
-        jdbc.update("UPDATE dbo.PHIEU_KIEM_KE SET TrangThai = N'DA_HUY' WHERE MaPKK = ?", code);
+    public int cancel(String code) {
+        return jdbc.update("UPDATE dbo.PHIEU_KIEM_KE SET TrangThai = N'DA_HUY' "
+            + "WHERE MaPKK = ? AND TrangThai = N'NHAP'", code);
     }
 
     public CountPage findPage(int page, int size, String status, String position) {

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.dbms.bluestock.reporting.application.ReportingModels.MovementReportPage;
 import vn.edu.dbms.bluestock.reporting.application.ReportingModels.CountDiscrepancyPage;
+import vn.edu.dbms.bluestock.reporting.application.ReportingModels.ExpiringLotPage;
 import vn.edu.dbms.bluestock.reporting.application.ReportingService;
 
 @RestController
@@ -39,5 +40,14 @@ public class ReportingController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size) {
         return service.countDiscrepancies(tuNgay, denNgay, maKho, maViTri, page, size);
+    }
+
+    @GetMapping("/lo-sap-het-han")
+    public ExpiringLotPage expiringLots(
+        @RequestParam(defaultValue = "30") int soNgay,
+        @RequestParam(required = false) String maKho,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size) {
+        return service.expiringLots(soNgay, maKho, page, size);
     }
 }

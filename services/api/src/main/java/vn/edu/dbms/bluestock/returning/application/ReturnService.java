@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
 import vn.edu.dbms.bluestock.returning.application.ReturnException.Kind;
 import vn.edu.dbms.bluestock.returning.application.ReturnModels.CompletionView;
@@ -19,9 +21,11 @@ import vn.edu.dbms.bluestock.returning.infrastructure.ReturnJdbcRepository;
 @Service
 public class ReturnService {
     private final ReturnJdbcRepository repository;
+    private final AuditTrail audit;
 
-    public ReturnService(ReturnJdbcRepository repository) {
+    public ReturnService(ReturnJdbcRepository repository, AuditTrail audit) {
         this.repository = repository;
+        this.audit = audit;
     }
 
     @Transactional(readOnly = true)
@@ -85,10 +89,15 @@ public class ReturnService {
     }
 
     @Transactional
-    public ReturnView cancel(String code) {
+    public ReturnView cancel(String code, String actorAccount) {
         String normalizedCode = normalizeCode(code);
         requireDraft(normalizedCode);
-        repository.cancel(normalizedCode);
+        if (repository.cancel(normalizedCode) != 1) {
+            throw new ReturnException(Kind.CONFLICT, "RETURN_NOT_DRAFT",
+                "Phiếu trả không còn ở trạng thái nháp");
+        }
+        audit.record(normalizeCode(actorAccount), "CANCEL", "PHIEU_TRA_HANG", normalizedCode,
+            Map.of("trangThai", "NHAP"), Map.of("trangThai", "DA_HUY"));
         return get(normalizedCode);
     }
 

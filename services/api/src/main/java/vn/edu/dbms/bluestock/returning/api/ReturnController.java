@@ -64,8 +64,9 @@ public class ReturnController {
     }
 
     @PostMapping("/{maPhieuTraHang}/huy")
-    public ReturnView cancel(@PathVariable String maPhieuTraHang) {
-        return service.cancel(maPhieuTraHang);
+    public ReturnView cancel(@PathVariable String maPhieuTraHang,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        return service.cancel(maPhieuTraHang, principal.maTaiKhoan());
     }
 
     @PostMapping("/{maPhieuTraHang}/hoan-tat")

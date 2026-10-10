@@ -34,6 +34,9 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 ## Kiểm thử
 
 - [`testing/README.md`](testing/README.md): chiến lược test và bằng chứng cần lưu.
+- [`testing/CONCURRENCY.md`](testing/CONCURRENCY.md): kịch bản hai session xuất cạnh tranh cùng tồn.
+- [`testing/API_SMOKE.md`](testing/API_SMOKE.md): kịch bản Postman nhập → tồn → xuất FEFO → báo cáo trên dữ liệu demo.
+- [`testing/LOCAL_EVIDENCE.md`](testing/LOCAL_EVIDENCE.md): lệnh, kết quả và giới hạn kiểm chứng local gần nhất.
 
 ## Yêu cầu và hợp đồng
 
@@ -51,6 +54,7 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 - [`../contracts/inventory-query.md`](../contracts/inventory-query.md): tra cứu tồn khả dụng theo lô/vị trí và nguồn giá nhập.
 - [`../contracts/outbound-fefo-completion.md`](../contracts/outbound-fefo-completion.md): schema, procedure và API tạo/xem/hoàn tất xuất.
 - [`../contracts/reporting.md`](../contracts/reporting.md): báo cáo nhập–xuất–tồn theo kỳ và kho/sản phẩm.
+- [`../contracts/expiry-report.md`](../contracts/expiry-report.md): báo cáo lô sắp hết hạn theo tồn khả dụng.
 - [`../contracts/transfer.md`](../contracts/transfer.md): schema phiếu chuyển vị trí và quy tắc ghi sổ.
 - [`../database/SCHEMA_PLAN.md`](../database/SCHEMA_PLAN.md): kế hoạch physical schema, object SQL và test database.
 

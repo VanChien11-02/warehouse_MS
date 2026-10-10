@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
+import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 import vn.edu.dbms.bluestock.transfer.application.TransferModels.LineData;
 import vn.edu.dbms.bluestock.transfer.infrastructure.TransferJdbcRepository;
 
@@ -14,10 +15,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class TransferServiceTest {
     private final TransferJdbcRepository repository = mock(TransferJdbcRepository.class);
-    private final TransferService service = new TransferService(repository);
+    private final AuditTrail audit = mock(AuditTrail.class);
+    private final TransferService service = new TransferService(repository, audit);
 
     @Test
     void sameSourceAndDestinationIsRejectedBeforeWriting() {
@@ -61,10 +64,22 @@ class TransferServiceTest {
     @Test
     void cancelDraftPreservesDocumentAndChangesStatus() {
         when(repository.lockedStatus("PC0001")).thenReturn(Optional.of("NHAP"));
+        when(repository.cancel("PC0001")).thenReturn(1);
         when(repository.findByCode("PC0001")).thenReturn(Optional.of(
             new TransferModels.TransferView("PC0001", null, "NV0001", "DA_HUY",
                 null, null, List.of())));
-        assertEquals("DA_HUY", service.cancel("pc0001").trangThai());
+        assertEquals("DA_HUY", service.cancel("pc0001", "tk0001").trangThai());
         verify(repository).cancel("PC0001");
+        verify(audit).record("TK0001", "CANCEL", "PHIEU_CHUYEN_KHO", "PC0001",
+            java.util.Map.of("trangThai", "NHAP"), java.util.Map.of("trangThai", "DA_HUY"));
+    }
+
+    @Test
+    void failedCancellationDoesNotWriteAudit() {
+        when(repository.lockedStatus("PC0001")).thenReturn(Optional.of("NHAP"));
+        var error = assertThrows(TransferException.class,
+            () -> service.cancel("PC0001", "TK0001"));
+        assertEquals("TRANSFER_NOT_DRAFT", error.code());
+        verifyNoInteractions(audit);
     }
 }

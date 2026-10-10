@@ -60,8 +60,9 @@ public class CountController {
     }
 
     @PostMapping("/{maPhieuKiemKe}/huy")
-    public CountView cancel(@PathVariable String maPhieuKiemKe) {
-        return service.cancel(maPhieuKiemKe);
+    public CountView cancel(@PathVariable String maPhieuKiemKe,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        return service.cancel(maPhieuKiemKe, principal.maTaiKhoan());
     }
 
     @PostMapping("/{maPhieuKiemKe}/hoan-tat")

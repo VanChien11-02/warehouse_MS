@@ -1,7 +1,10 @@
 [CmdletBinding()]
 param(
     [switch] $WithDatabase,
-    [string] $SqlServer = 'localhost'
+    [switch] $WithConcurrency,
+    [string] $SqlServer = 'localhost',
+    [ValidatePattern('^[A-Za-z][A-Za-z0-9_]{0,127}$')]
+    [string] $DatabaseName = 'BlueStock'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -31,6 +34,7 @@ $requiredFiles = @(
     'contracts/san-pham.md',
     'database/SCHEMA_PLAN.md',
     'database/seed/catalog_demo.sql',
+    'database/seed/demo.sql',
     'scripts/bootstrap-admin.ps1',
     'docs/architecture/database/ERD_VA_NGHIEP_VU.md'
 )
@@ -43,8 +47,10 @@ foreach ($relativePath in $requiredFiles) {
 
 Write-Host '2/4 Kiểm tra JavaScript frontend...'
 $node = (Get-Command node -ErrorAction Stop).Source
-& $node --check (Join-Path $root 'apps\web\app.js')
-if ($LASTEXITCODE -ne 0) { throw 'JavaScript frontend không hợp lệ.' }
+foreach ($scriptFile in @('app.js', 'core\navigation.js', 'data\demo.js')) {
+    & $node --check (Join-Path $root 'apps\web' $scriptFile)
+    if ($LASTEXITCODE -ne 0) { throw "JavaScript frontend không hợp lệ: $scriptFile" }
+}
 & $node --check (Join-Path $root 'scripts\serve-web.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Static server script không hợp lệ.' }
 
@@ -119,12 +125,23 @@ if ($WithDatabase) {
         'database\tests\016_inventory_count_completion.sql',
         'database\tests\017_return_constraints.sql',
         'database\tests\018_return_completion.sql',
-        'database\tests\019_audit_constraints.sql'
+        'database\tests\019_audit_constraints.sql',
+        'database\tests\020_inventory_functions_views.sql',
+        'database\tests\021_position_stock_guard.sql',
+        'database\tests\022_application_roles.sql',
+        'database\tests\023_inventory_indexes.sql'
     )
     foreach ($testFile in $databaseTests) {
-        & $sqlcmd -S $SqlServer -E -C -b -d BlueStock -i (Join-Path $root $testFile)
+        & $sqlcmd -S $SqlServer -E -C -b -d $DatabaseName -i (Join-Path $root $testFile)
         if ($LASTEXITCODE -ne 0) { throw "Database test thất bại: $testFile" }
     }
+}
+
+if ($WithConcurrency) {
+    if (-not $WithDatabase) { throw 'Dùng -WithConcurrency cùng -WithDatabase.' }
+    & pwsh -File (Join-Path $root 'scripts\verify-concurrency.ps1') `
+        -SqlServer $SqlServer -DatabaseName $DatabaseName
+    if ($LASTEXITCODE -ne 0) { throw 'Concurrency test thất bại.' }
 }
 
 Write-Host 'Baseline verification passed.'

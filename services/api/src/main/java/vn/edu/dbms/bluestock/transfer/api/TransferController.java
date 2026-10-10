@@ -63,8 +63,9 @@ public class TransferController {
     }
 
     @PostMapping("/{maPhieuChuyen}/huy")
-    public TransferView cancel(@PathVariable String maPhieuChuyen) {
-        return service.cancel(maPhieuChuyen);
+    public TransferView cancel(@PathVariable String maPhieuChuyen,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        return service.cancel(maPhieuChuyen, principal.maTaiKhoan());
     }
 
     @PostMapping("/{maPhieuChuyen}/hoan-tat")

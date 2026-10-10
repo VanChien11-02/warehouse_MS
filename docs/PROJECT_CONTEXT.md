@@ -17,10 +17,10 @@ Bốn vai trò dự kiến:
 
 | Thành phần | Hiện trạng | Nguồn |
 | --- | --- | --- |
-| Frontend | Baseline HTML/CSS/Vanilla JavaScript chạy bằng static server, đang dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
-| Backend | Có Spring Boot/Maven Wrapper, health/session API, CRUD danh mục/đối tác/cấu trúc kho, nhập/xuất/chuyển/kiểm kê/trả hàng, tra cứu tồn và báo cáo nhập–xuất–tồn/chênh lệch kiểm kê; audit và một số báo cáo chưa có | [`../services/api/README.md`](../services/api/README.md) |
-| Database | Có `init.sql` dựng 26 bảng gồm sổ biến động tồn, năm procedure hoàn tất nhập/xuất/chuyển/kiểm kê/trả và các view tồn/báo cáo; audit và một số object rubric chưa có | [`../database/README.md`](../database/README.md) |
-| API contract | Baseline Draft; contract session và danh mục sản phẩm đã chốt cho nhánh BE, nghiệp vụ kho còn thiếu | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
+| Frontend | Baseline HTML/CSS/Vanilla JavaScript chạy bằng static server với dữ liệu demo; chưa gọi API thật | [`../apps/web/README.md`](../apps/web/README.md) |
+| Backend | Spring Boot/Maven Wrapper, session/RBAC, CRUD nền tảng, năm luồng chứng từ, tra cứu tồn, báo cáo nhập–xuất–tồn/chênh lệch/hạn dùng và audit | [`../services/api/README.md`](../services/api/README.md) |
+| Database | `init.sql` dựng 27 bảng, năm procedure hoàn tất, năm function, bảy view, trigger, index và bốn database role; seed demo riêng | [`../database/README.md`](../database/README.md) |
+| API contract | Baseline tổng thể còn Draft; các contract chi tiết cho API đã triển khai nằm trong `contracts/` | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
 | Phân công | Có đề xuất bốn workstream, còn chờ nhóm xác nhận | [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md) |
 
 Không mô tả phần chưa được tạo như thể đã chạy được. Khi hiện trạng thay đổi, cập nhật bảng này trong cùng PR.
@@ -116,4 +116,4 @@ pwsh -File scripts/dev.ps1 -Target web
 pwsh -File scripts/verify.ps1
 ```
 
-Backend hiện có thể chạy khi cấu hình kết nối SQL Server theo `services/api/README.md`; database mới dựng được identity, danh mục và cấu trúc kho bằng `database/init.sql`.
+Database sạch dựng bằng `database/init.sql`, dữ liệu giả qua `database/seed/demo.sql`. Test Java, SQL và tranh chấp hai session đã đạt trên SQL Server 2025 Express. Chạy API cần SQL Server bật TCP/IP và cấu hình JDBC theo [`../services/api/README.md`](../services/api/README.md); E2E HTTP và SQL Server 2022 chưa được xác nhận trên máy hiện tại.

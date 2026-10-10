@@ -59,6 +59,14 @@ class InboundControllerTest {
     }
 
     @Test
+    void warehouseStaffCanCancelDraft() throws Exception {
+        when(service.cancel("PN0001", "TK0001")).thenReturn(inbound());
+        mvc.perform(post("/api/phieu-nhap/PN0001/huy")
+                .with(csrf()).with(user(principal("NVKHO"))))
+            .andExpect(status().isOk());
+    }
+
+    @Test
     @WithMockUser(authorities = "ROLE_NVKHO")
     void warehouseStaffCanUpdateDraft() throws Exception {
         when(service.update(eq("PN0001"), eq("NCC001"), eq(null), any()))

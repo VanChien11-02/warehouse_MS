@@ -76,6 +76,14 @@ class CountControllerTest {
     }
 
     @Test
+    void staffCanCancelDraft() throws Exception {
+        when(service.cancel("KK0001", "TK0001")).thenReturn(count());
+        mvc.perform(post("/api/phieu-kiem-ke/KK0001/huy")
+                .with(csrf()).with(user(principal("NVKHO"))))
+            .andExpect(status().isOk());
+    }
+
+    @Test
     @WithMockUser(authorities = "ROLE_QLKHO")
     void managerCanComplete() throws Exception {
         when(service.complete("KK0001", "TK0001")).thenReturn(new CompletionView("KK0001",

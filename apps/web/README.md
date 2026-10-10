@@ -25,9 +25,11 @@ Mở `http://127.0.0.1:5174`.
 
 - `index.html`: app shell, các màn hình nghiệp vụ và biểu mẫu.
 - `styles.css`: design tokens, trạng thái và bố cục responsive.
-- `app.js`: điều hướng theo vai trò, dữ liệu demo, bảng/phân trang và tương tác biểu mẫu.
+- `app.js`: khởi tạo giao diện, bảng/phân trang và tương tác biểu mẫu.
+- `core/navigation.js`: cấu hình vai trò demo, menu và tiêu đề màn hình.
+- `data/demo.js`: dữ liệu giả của danh mục, tồn, kiểm kê và báo cáo.
 
-Ba file hiện tại là baseline chạy được nhưng chưa phải ranh giới phù hợp để bốn người sửa song song. Backlog `GOV-03` sẽ tách dần JavaScript/CSS theo `core` và bốn feature trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md), đồng thời giữ nguyên hành vi và không đổi framework.
+JavaScript đã tách cấu hình điều hướng và dữ liệu mẫu khỏi điểm vào. Logic tương tác và CSS vẫn tập trung trong hai file lớn; backlog `GOV-03` cần tiếp tục tách theo feature trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md), giữ hành vi hiện có và không đổi framework.
 
 ## Ngôn ngữ giao diện
 
@@ -35,25 +37,9 @@ Giao diện dùng phong cách editorial tiết chế lấy cảm hứng từ tra
 
 ## Kết nối Spring Boot
 
-Mở `app.js` và đổi:
+`app.js` hiện dùng toàn bộ dữ liệu mẫu. Biến `USE_DUMMY_DATA` chưa điều khiển một adapter API; đổi biến này không kết nối giao diện với backend. Luồng chứng từ/form demo không gửi HTTP. Backend có các route thật và payload trong [`../../contracts/`](../../contracts/), ví dụ `/api/san-pham`, `/api/phieu-nhap`, `/api/ton-kho`, `/api/phieu-xuat`. Dùng HTTP client theo contract để thử backend cho đến khi `FE-02` hoàn thành.
 
-```js
-const USE_DUMMY_DATA = false;
-```
-
-API mặc định: `http://localhost:8080/api`.
-
-Endpoint đã chuẩn bị:
-
-- `GET /api/sanpham`
-- `POST /api/sanpham`
-- `PUT /api/sanpham/{maSP}`
-- `DELETE /api/sanpham/{maSP}`
-- `GET /api/baocao/tonkho`
-
-Backend cần cấu hình CORS đúng origin frontend. Khi có API contract chính thức, tên field và lỗi phải theo `contracts/`, không tự suy đoán ở UI.
-
-Các URL trên phản ánh adapter baseline hiện tại. URL chính thức chỉ được đổi sau khi nhóm chốt [`../../contracts/BASELINE.md`](../../contracts/BASELINE.md) và cập nhật adapter, backend, test cùng tài liệu trong một thay đổi thống nhất.
+Khi nối giao diện, dùng origin `http://127.0.0.1:5174` khớp cấu hình CORS mặc định của API, xử lý session cookie/CSRF và loading/error/empty state. Tách dữ liệu mẫu và HTTP sau một adapter theo [`../../docs/project/governance/BACKLOG.md`](../../docs/project/governance/BACKLOG.md); không đổi URL rải rác trong form.
 
 Danh sách resource/endpoint dự kiến nằm trong [`../../contracts/API_CATALOG.md`](../../contracts/API_CATALOG.md). Frontend không tự thêm field hoặc route chưa có contract được review.
 
