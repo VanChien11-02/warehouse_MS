@@ -2,7 +2,7 @@
 
 Thư mục này chứa toàn bộ script T-SQL có thể dựng lại database từ đầu và các đối tượng phục vụ rubric.
 
-Hiện `init.sql` tạo 17 bảng đến phiếu nhập, lô và tồn kho. Bốn role ứng dụng được seed; chưa có tài khoản. Procedure ghi sổ nhập và bảng chứng từ xuất/kiểm soát kho sẽ được bổ sung theo từng module.
+Hiện `init.sql` tạo 19 bảng đến phiếu xuất. Bốn role ứng dụng được seed; chưa có tài khoản. Procedure nhập và view tồn đã có; procedure xuất và các bảng kiểm soát kho sẽ được bổ sung theo từng module.
 
 ## Chạy schema nền tảng
 
@@ -24,6 +24,10 @@ Sau migration đối tác, database local cũ cần chạy tiếp một lần `s
 Sau migration 002, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/003_inbound_completion.sql` để tạo/cập nhật procedure hoàn tất nhập. Migration 003 có thể chạy lại khi procedure đổi. Database dựng mới bằng `init.sql` đã có procedure này.
 
 Sau migration 003, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/004_inventory_view.sql` để tạo/cập nhật `vw_TonKhoChiTiet`. View chỉ hiển thị tồn từ phiếu nhập đã hoàn tất, giữ khóa truy vết vị trí/lô/phiếu và đơn giá nhập thực tế. Database dựng mới bằng `init.sql` đã có view.
+
+Sau migration 004, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/005_outbound.sql` để thêm phiếu xuất, dòng xuất và sequence. Database dựng mới bằng `init.sql` đã có các object này.
+
+Sau migration 005, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/006_outbound_completion.sql` để tạo/cập nhật procedure hoàn tất xuất. Test `database/tests/012_outbound_completion.sql` chứng minh FEFO, trừ tồn, thiếu mapping, thiếu tồn và chống hoàn tất lặp; migration 006 có thể chạy lại.
 
 ## Cấu trúc mục tiêu
 

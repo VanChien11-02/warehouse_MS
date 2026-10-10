@@ -1,12 +1,10 @@
 package vn.edu.dbms.bluestock.inbound.infrastructure;
 
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
@@ -74,17 +72,6 @@ public class InboundJdbcRepository {
             (row, index) -> new CompletionView(row.getString("maPhieuNhap").trim(),
                 row.getString("trangThai"), utc(row.getObject("ngayHoanTat", LocalDateTime.class))),
             code, allocationsJson);
-    }
-
-    public static int sqlErrorNumber(DataAccessException exception) {
-        Throwable cause = exception;
-        while (cause != null) {
-            if (cause instanceof SQLException sqlException && sqlException.getErrorCode() != 0) {
-                return sqlException.getErrorCode();
-            }
-            cause = cause.getCause();
-        }
-        return 0;
     }
 
     private static OffsetDateTime utc(LocalDateTime value) {
