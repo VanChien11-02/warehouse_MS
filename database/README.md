@@ -43,6 +43,18 @@ Sau migration 013, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database
 
 Sau migration 014, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/015_return.sql` để tạo hai bảng trả hàng và sequence. Sau đó chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/016_return_completion.sql` để tạo/cập nhật `sp_HoanTatTraHang`. Test 017 và 018 kiểm tra ràng buộc, giới hạn trả, vị trí hàng hư hỏng và rollback khi lỗi ghi sổ.
 
+Sau migration 016, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/017_audit.sql` để tạo bảng/index nhật ký thao tác. Test 019 kiểm tra FK, JSON check và index.
+
+Sau migration 017, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/018_inbound_audit.sql` để cập nhật `sp_HoanTatPhieuNhap` nhận actor tùy chọn và ghi audit cùng transaction. Test 009 kiểm tra actor được ghi khi gọi với `@MaTK`.
+
+Sau migration 018, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/019_outbound_audit.sql` để cập nhật `sp_HoanTatPhieuXuat` nhận actor tùy chọn. Test 012 kiểm tra actor audit cùng ghi sổ xuất.
+
+Sau migration 019, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/020_transfer_audit.sql` để cập nhật `sp_HoanTatChuyenKho` nhận actor tùy chọn. Test 014 kiểm tra actor audit cùng ghi sổ chuyển.
+
+Sau migration 020, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/021_count_audit.sql` để cập nhật `sp_HoanTatKiemKe` nhận actor tùy chọn. Test 016 kiểm tra actor audit cùng điều chỉnh tồn.
+
+Sau migration 021, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/022_return_audit.sql` để cập nhật `sp_HoanTatTraHang` nhận actor tùy chọn. Test 018 kiểm tra actor audit cùng ghi sổ trả hàng.
+
 ## Cấu trúc mục tiêu
 
 ```text

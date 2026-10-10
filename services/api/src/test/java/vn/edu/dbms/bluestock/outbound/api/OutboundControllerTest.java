@@ -106,9 +106,10 @@ class OutboundControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_QLKHO")
     void managerCanCompleteOutbound() throws Exception {
-        when(service.complete("PX0001")).thenReturn(new CompletionView("PX0001",
+        when(service.complete("PX0001", "TK0001")).thenReturn(new CompletionView("PX0001",
             "DA_HOAN_THANH", OffsetDateTime.parse("2026-10-07T00:00:00Z")));
-        mvc.perform(post("/api/phieu-xuat/PX0001/hoan-tat").with(csrf()))
+        mvc.perform(post("/api/phieu-xuat/PX0001/hoan-tat").with(csrf())
+                .with(user(principal("QLKHO"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.trangThai").value("DA_HOAN_THANH"));
     }

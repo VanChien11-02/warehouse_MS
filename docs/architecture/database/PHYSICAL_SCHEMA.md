@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 26 bảng đã có trong `database/schema/`; năm procedure hoàn tất nhập/xuất/chuyển/kiểm kê/trả đã có, audit chưa triển khai.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 27 bảng đã có trong `database/schema/`; năm procedure hoàn tất nhập/xuất/chuyển/kiểm kê/trả và bảng audit đã có.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
@@ -32,6 +32,7 @@ Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 | `CT_KIEM_KE` | `(MaPKK, MaLo)` | `MaPKK`, `MaLo` | Lưu số tồn hệ thống tại lúc tạo snapshot và số đếm thực tế không âm; lý do chênh lệch kiểm tra khi hoàn tất |
 | `PHIEU_TRA_HANG` | `MaPTH CHAR(6)` | `MaPX`, `MaNV` | Tham chiếu phiếu xuất gốc; trạng thái nháp/hoàn tất/hủy; thời điểm UTC |
 | `CT_PHIEU_TRA_HANG` | `(MaPTH, MaLo)` | `MaPTH`, `MaLo`, `MaViTri` | Số lượng dương; tình trạng `Tốt`/`Hư hỏng`; đích lưu trữ cụ thể |
+| `LICH_SU_THAO_TAC` | `MaLichSu BIGINT IDENTITY` | `MaTK` | Actor, thời gian UTC, hành động và mã bản ghi; JSON trước/sau hợp lệ, không chứa thông tin xác thực |
 
 Tên và mô tả dùng `NVARCHAR` để lưu tiếng Việt; mã dùng `CHAR(6)` theo tài liệu nguồn. `MoTa` dùng `NVARCHAR(1000)` thay cho kiểu `TEXT` cũ. Giá mặc định bằng 0 khi không cung cấp, nhưng giá nhập/xuất thực tế nằm trên dòng chứng từ.
 
@@ -67,3 +68,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `SEQ_PHIEU_TRA_HANG` cấp mã `TH0001`; phiếu trả gắn phiếu xuất và mỗi dòng gắn lô/vị trí đích, theo [`contracts/returning.md`](../../../contracts/returning.md).
 
 `sp_HoanTatTraHang` khóa phiếu xuất gốc để không thể chốt song song vượt tổng lượng xuất, kiểm tra tình trạng/vị trí/sức chứa rồi tăng tồn và ghi sổ `TRA_HANG` trong cùng transaction. Test xác nhận trả tốt/hỏng, giới hạn cộng dồn, vị trí hỏng, chốt lặp và rollback khi lỗi ghi sổ muộn.
+
+`LICH_SU_THAO_TAC` dùng index thời gian/tài khoản và chỉ nhận JSON trước/sau hợp lệ theo [`contracts/audit.md`](../../../contracts/audit.md). Thao tác API sẽ ghi actor cùng transaction; script SQL trực tiếp không giả mạo actor.

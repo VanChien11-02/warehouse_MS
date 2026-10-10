@@ -130,11 +130,11 @@ public class OutboundJdbcRepository {
             header.trangThai(), header.ghiChu(), header.ngayHoanTat(), lines));
     }
 
-    public CompletionView complete(String code, LocalDate businessDate) {
-        return jdbc.queryForObject("EXEC dbo.sp_HoanTatPhieuXuat @MaPX = ?, @NgayNghiepVu = ?",
+    public CompletionView complete(String code, LocalDate businessDate, String actorAccount) {
+        return jdbc.queryForObject("EXEC dbo.sp_HoanTatPhieuXuat @MaPX = ?, @NgayNghiepVu = ?, @MaTK = ?",
             (row, index) -> new CompletionView(row.getString("maPhieuXuat").trim(),
                 row.getString("trangThai"), utc(row.getObject("ngayHoanTat", LocalDateTime.class))),
-            code, businessDate);
+            code, businessDate, actorAccount);
     }
 
     private static OffsetDateTime utc(LocalDateTime value) {

@@ -1,6 +1,6 @@
 # Kế hoạch physical schema SQL Server
 
-> Trạng thái: **Draft cho DB-01**. Schema phiếu kiểm kê và trả hàng đã có; procedure trả hàng và audit vẫn cần triển khai.
+> Trạng thái: **Draft cho DB-01**. 27 bảng gồm audit và năm procedure hoàn tất đã có; phần security, function, trigger, đo index và rebuild sạch còn cần kiểm chứng.
 
 ## Mục tiêu
 

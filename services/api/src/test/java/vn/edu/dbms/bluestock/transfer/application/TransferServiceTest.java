@@ -38,11 +38,11 @@ class TransferServiceTest {
 
     @Test
     void insufficientStockFromProcedureBecomesConflict() {
-        when(repository.complete("PC0001")).thenThrow(
+        when(repository.complete("PC0001", "TK0001")).thenThrow(
             new DataIntegrityViolationException("posting failed",
                 new SQLException("stock", "S0001", 51306)));
         TransferException error = assertThrows(TransferException.class,
-            () -> service.complete("pc0001"));
+            () -> service.complete("pc0001", "TK0001"));
         assertEquals("INSUFFICIENT_STOCK", error.code());
         assertEquals(TransferException.Kind.CONFLICT, error.kind());
     }

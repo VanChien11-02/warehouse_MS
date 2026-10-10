@@ -2,6 +2,7 @@ SET NOCOUNT ON;
 SET XACT_ABORT OFF;
 
 DECLARE @CleanupSql NVARCHAR(MAX) = N'
+    DELETE FROM dbo.LICH_SU_THAO_TAC WHERE MaTK = ''TST161'';
     DELETE FROM dbo.BIEN_DONG_TON_KHO WHERE MaChungTu IN (''TST161'', ''TST162'', ''TST163'', ''TST164'', ''TST165'');
     DELETE FROM dbo.CT_KIEM_KE WHERE MaPKK IN (''TST161'', ''TST162'', ''TST163'', ''TST164'');
     DELETE FROM dbo.PHIEU_KIEM_KE WHERE MaPKK IN (''TST161'', ''TST162'', ''TST163'', ''TST164'');
@@ -17,6 +18,7 @@ DECLARE @CleanupSql NVARCHAR(MAX) = N'
     DELETE FROM dbo.KHU_VUC WHERE MaKhuVuc = ''TST161'';
     DELETE FROM dbo.KHO WHERE MaKho = ''TST161'';
     DELETE FROM dbo.NHA_CUNG_CAP WHERE MaNCC = ''TST161'';
+    DELETE FROM dbo.TAI_KHOAN WHERE MaTK = ''TST161'';
     DELETE FROM dbo.NHAN_VIEN WHERE MaNV = ''TST161'';
 ';
 
@@ -24,6 +26,9 @@ BEGIN TRY
     BEGIN TRANSACTION;
     INSERT INTO dbo.NHAN_VIEN (MaNV, TenNV, NgayVaoLam)
         VALUES ('TST161', N'Nhân viên kiểm kê', '2026-01-01');
+    INSERT INTO dbo.TAI_KHOAN (MaTK, MaNV, MaRole, TenTK, MatKhauHash)
+        VALUES ('TST161', 'TST161', 'QLKHO', N'test.count.audit',
+            '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
     INSERT INTO dbo.NHA_CUNG_CAP (MaNCC, TenNCC)
         VALUES ('TST161', N'Nhà cung cấp kiểm kê');
     INSERT INTO dbo.LOAI_SAN_PHAM (MaLoai, TenLoai, YeuCauBaoQuan)
@@ -84,7 +89,7 @@ BEGIN TRY
     END CATCH;
     UPDATE dbo.TON_KHO SET SoLuongTon = 6 WHERE MaViTri = 'TST161' AND MaLo = @MaLo;
 
-    EXEC dbo.sp_HoanTatKiemKe @MaPKK = 'TST163';
+    EXEC dbo.sp_HoanTatKiemKe @MaPKK = 'TST163', @MaTK = 'TST161';
     IF (SELECT SoLuongTon FROM dbo.TON_KHO WHERE MaViTri = 'TST161' AND MaLo = @MaLo) <> 4
         THROW 51997, N'Điều chỉnh tồn sai.', 1;
     IF (SELECT SoLuongThayDoi FROM dbo.BIEN_DONG_TON_KHO
@@ -93,6 +98,10 @@ BEGIN TRY
     IF (SELECT ChenhLech FROM dbo.vw_ChenhLechKiemKe
         WHERE MaPKK = 'TST163' AND MaLo = @MaLo) <> -2
         THROW 52002, N'Báo cáo chênh lệch kiểm kê sai.', 1;
+    IF (SELECT COUNT(*) FROM dbo.LICH_SU_THAO_TAC
+        WHERE MaTK = 'TST161' AND TenBang = N'PHIEU_KIEM_KE'
+          AND MaBanGhi = 'TST163' AND HanhDong = N'COMPLETE') <> 1
+        THROW 52043, N'Hoàn tất kiểm kê chưa ghi actor audit.', 1;
     BEGIN TRY
         EXEC dbo.sp_HoanTatKiemKe @MaPKK = 'TST163';
         THROW 51999, N'Phiếu kiểm kê được ghi hai lần.', 1;

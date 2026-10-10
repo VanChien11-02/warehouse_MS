@@ -68,8 +68,9 @@ public class TransferController {
     }
 
     @PostMapping("/{maPhieuChuyen}/hoan-tat")
-    public CompletionView complete(@PathVariable String maPhieuChuyen) {
-        return service.complete(maPhieuChuyen);
+    public CompletionView complete(@PathVariable String maPhieuChuyen,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        return service.complete(maPhieuChuyen, principal.maTaiKhoan());
     }
 
     public record CreateTransferRequest(@Size(max = 1000) String ghiChu,

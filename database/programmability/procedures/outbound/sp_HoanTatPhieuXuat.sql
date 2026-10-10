@@ -1,6 +1,7 @@
 CREATE OR ALTER PROCEDURE dbo.sp_HoanTatPhieuXuat
     @MaPX CHAR(6),
-    @NgayNghiepVu DATE
+    @NgayNghiepVu DATE,
+    @MaTK CHAR(6) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -107,6 +108,12 @@ BEGIN
         UPDATE dbo.PHIEU_XUAT
         SET TrangThai = N'DA_HOAN_THANH', NgayHoanTat = @NgayHoanTat
         WHERE MaPX = @MaPX;
+
+        IF @MaTK IS NOT NULL
+            INSERT INTO dbo.LICH_SU_THAO_TAC
+                (MaTK, HanhDong, TenBang, MaBanGhi, DuLieuCu, DuLieuMoi)
+            VALUES (@MaTK, N'COMPLETE', N'PHIEU_XUAT', @MaPX,
+                N'{"trangThai":"NHAP"}', N'{"trangThai":"DA_HOAN_THANH"}');
 
         COMMIT TRANSACTION;
         SELECT RTRIM(@MaPX) AS maPhieuXuat, N'DA_HOAN_THANH' AS trangThai,

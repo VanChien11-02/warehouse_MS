@@ -49,20 +49,20 @@ class OutboundServiceTest {
 
     @Test
     void fefoErrorFromProcedureBecomesConflict() {
-        when(repository.complete(eq("PX0001"), any(LocalDate.class))).thenThrow(
+        when(repository.complete(eq("PX0001"), any(LocalDate.class), eq("TK0001"))).thenThrow(
             new DataIntegrityViolationException("posting failed",
                 new SQLException("fefo", "S0001", 51209)));
-        var error = assertThrows(OutboundException.class, () -> service.complete("PX0001"));
+        var error = assertThrows(OutboundException.class, () -> service.complete("PX0001", "TK0001"));
         assertEquals("FEFO_VIOLATION", error.code());
         assertEquals(OutboundException.Kind.CONFLICT, error.kind());
     }
 
     @Test
     void missingOutboundFromProcedureBecomesNotFound() {
-        when(repository.complete(eq("PX9999"), any(LocalDate.class))).thenThrow(
+        when(repository.complete(eq("PX9999"), any(LocalDate.class), eq("TK0001"))).thenThrow(
             new DataIntegrityViolationException("posting failed",
                 new SQLException("missing", "S0001", 51201)));
-        var error = assertThrows(OutboundException.class, () -> service.complete("PX9999"));
+        var error = assertThrows(OutboundException.class, () -> service.complete("PX9999", "TK0001"));
         assertEquals("OUTBOUND_NOT_FOUND", error.code());
     }
 

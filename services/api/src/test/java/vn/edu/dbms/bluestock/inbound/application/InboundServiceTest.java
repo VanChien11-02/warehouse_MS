@@ -50,33 +50,33 @@ class InboundServiceTest {
 
     @Test
     void capacityErrorFromProcedureBecomesConflict() {
-        when(repository.complete(eq("PN0001"), any())).thenThrow(
+        when(repository.complete(eq("PN0001"), any(), eq("TK0001"))).thenThrow(
             new DataIntegrityViolationException("posting failed",
                 new SQLException("capacity", "S0001", 51112)));
         var error = assertThrows(InboundException.class,
             () -> service.complete("PN0001", List.of(
-                new AllocationData("SP0001", "VT0001", 2, null, null))));
+                new AllocationData("SP0001", "VT0001", 2, null, null)), "TK0001"));
         assertEquals("CAPACITY_EXCEEDED", error.code());
         assertEquals(InboundException.Kind.CONFLICT, error.kind());
     }
 
     @Test
     void missingInboundFromProcedureBecomesNotFound() {
-        when(repository.complete(eq("PN9999"), any())).thenThrow(
+        when(repository.complete(eq("PN9999"), any(), eq("TK0001"))).thenThrow(
             new DataIntegrityViolationException("posting failed",
                 new SQLException("missing", "S0001", 51101)));
         var error = assertThrows(InboundException.class,
             () -> service.complete("PN9999", List.of(
-                new AllocationData("SP0001", "VT0001", 2, LocalDate.of(2026, 1, 1), null))));
+                new AllocationData("SP0001", "VT0001", 2, LocalDate.of(2026, 1, 1), null)), "TK0001"));
         assertEquals("INBOUND_NOT_FOUND", error.code());
     }
 
     @Test
     void serializesBusinessDatesAsIsoStringsForProcedure() {
         service.complete("PN0001", List.of(new AllocationData("SP0001", "VT0001", 2,
-            LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31))));
+            LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31))), "TK0001");
         var json = ArgumentCaptor.forClass(String.class);
-        verify(repository).complete(eq("PN0001"), json.capture());
+        verify(repository).complete(eq("PN0001"), json.capture(), eq("TK0001"));
         assertTrue(json.getValue().contains("\"ngaySanXuat\":\"2026-01-01\""));
         assertTrue(json.getValue().contains("\"hanSuDung\":\"2026-12-31\""));
     }

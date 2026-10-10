@@ -65,8 +65,9 @@ public class CountController {
     }
 
     @PostMapping("/{maPhieuKiemKe}/hoan-tat")
-    public CompletionView complete(@PathVariable String maPhieuKiemKe) {
-        return service.complete(maPhieuKiemKe);
+    public CompletionView complete(@PathVariable String maPhieuKiemKe,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        return service.complete(maPhieuKiemKe, principal.maTaiKhoan());
     }
 
     public record CreateCountRequest(@NotBlank String maViTri,
