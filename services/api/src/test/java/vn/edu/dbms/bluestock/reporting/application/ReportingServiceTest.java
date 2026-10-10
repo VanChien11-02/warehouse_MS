@@ -34,4 +34,15 @@ class ReportingServiceTest {
         assertEquals("INVALID_DATE_RANGE", error.code());
         verifyNoInteractions(repository);
     }
+
+    @Test
+    void countDiscrepancyUsesCompletionDateInBusinessZone() {
+        service.countDiscrepancies(LocalDate.of(2026, 10, 1),
+            LocalDate.of(2026, 10, 2), "kho001", "vt0001", 0, 20);
+        verify(repository).countDiscrepancies(LocalDate.of(2026, 10, 1),
+            LocalDate.of(2026, 10, 2),
+            LocalDateTime.of(2026, 9, 30, 17, 0),
+            LocalDateTime.of(2026, 10, 2, 17, 0),
+            "KHO001", "VT0001", 0, 20);
+    }
 }

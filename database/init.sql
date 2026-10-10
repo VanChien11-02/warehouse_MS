@@ -35,6 +35,9 @@ BEGIN TRANSACTION;
 :r database/schema/020_phieu_chuyen_kho.sql
 :r database/schema/021_ct_phieu_chuyen_kho.sql
 :r database/schema/022_transfer_sequence.sql
+:r database/schema/023_phieu_kiem_ke.sql
+:r database/schema/024_ct_kiem_ke.sql
+:r database/schema/025_count_sequence.sql
 COMMIT TRANSACTION;
 GO
 :r database/programmability/procedures/inbound/sp_HoanTatPhieuNhap.sql
@@ -42,3 +45,5 @@ GO
 :r database/programmability/procedures/outbound/sp_HoanTatPhieuXuat.sql
 :r database/programmability/views/vw_BienDongTonKhoChiTiet.sql
 :r database/programmability/procedures/transfer/sp_HoanTatChuyenKho.sql
+:r database/programmability/procedures/count/sp_HoanTatKiemKe.sql
+:r database/programmability/views/vw_ChenhLechKiemKe.sql

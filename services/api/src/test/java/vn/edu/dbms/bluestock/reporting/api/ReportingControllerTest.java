@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.dbms.bluestock.auth.infrastructure.SecurityConfig;
 import vn.edu.dbms.bluestock.platform.api.ApiExceptionHandler;
 import vn.edu.dbms.bluestock.reporting.application.ReportingModels.MovementReportPage;
+import vn.edu.dbms.bluestock.reporting.application.ReportingModels.CountDiscrepancyPage;
 import vn.edu.dbms.bluestock.reporting.application.ReportingService;
 
 import static org.mockito.Mockito.when;
@@ -54,5 +55,26 @@ class ReportingControllerTest {
         mvc.perform(get("/api/bao-cao/nhap-xuat")
                 .param("tuNgay", "07-10-2026").param("denNgay", "2026-10-07"))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_KETOAN")
+    void accountantCanReadCountDiscrepancies() throws Exception {
+        LocalDate date = LocalDate.of(2026, 10, 7);
+        when(service.countDiscrepancies(date, date, null, "VT0001", 0, 20))
+            .thenReturn(new CountDiscrepancyPage(date, date, List.of(), 0, 20, 0, 0));
+        mvc.perform(get("/api/bao-cao/chenh-lech-kiem-ke")
+                .param("tuNgay", "2026-10-07").param("denNgay", "2026-10-07")
+                .param("maViTri", "VT0001"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items").isEmpty());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_NVKHO")
+    void warehouseStaffCannotReadCountDiscrepancies() throws Exception {
+        mvc.perform(get("/api/bao-cao/chenh-lech-kiem-ke")
+                .param("tuNgay", "2026-10-07").param("denNgay", "2026-10-07"))
+            .andExpect(status().isForbidden());
     }
 }

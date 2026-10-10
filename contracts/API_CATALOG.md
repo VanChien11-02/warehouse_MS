@@ -79,7 +79,7 @@ Gợi ý FEFO không giữ chỗ tồn vĩnh viễn. Khi hoàn tất phải ki�
 | Resource | Route chính | Hành vi đặc biệt |
 | --- | --- | --- |
 | Phiếu chuyển | `/api/phieu-chuyen` | CRUD nháp, `/{id}/hoan-tat`, `/{id}/huy` |
-| Phiếu kiểm kê | `/api/phieu-kiem-ke` | Tạo snapshot, nhập thực tế, `/{id}/hoan-tat` |
+| Phiếu kiểm kê | `/api/phieu-kiem-ke` | Tạo snapshot, nhập thực tế, chốt/hủy theo [`inventory-count.md`](inventory-count.md) |
 | Phiếu trả hàng | `/api/phieu-tra-hang` | Tạo từ phiếu xuất, kiểm tra giới hạn trả, `/{id}/hoan-tat` |
 
 Mỗi resource cần contract riêng cho header/detail, trạng thái, quyền, validation và lỗi transaction.
@@ -91,7 +91,7 @@ Mỗi resource cần contract riêng cho header/detail, trạng thái, quyền, 
 | `GET` | `/api/bao-cao/ton-kho` | kho, vị trí, sản phẩm, lô, ngày hết hạn | QuanLyKho/KeToan; role khác giới hạn |
 | `GET` | `/api/bao-cao/nhap-xuat` | từ ngày, đến ngày, sản phẩm/kho theo [`reporting.md`](reporting.md) | Admin/QuanLyKho/KeToan |
 | `GET` | `/api/bao-cao/lo-sap-het-han` | số ngày, kho | QuanLyKho/NhanVienKho |
-| `GET` | `/api/bao-cao/chenh-lech-kiem-ke` | kỳ/kho/vị trí | QuanLyKho/KeToan |
+| `GET` | `/api/bao-cao/chenh-lech-kiem-ke` | kỳ/kho/vị trí theo [`count-discrepancy-report.md`](count-discrepancy-report.md) | Admin/QuanLyKho/KeToan |
 
 Nguồn giá và boundary thời gian phải được chốt trước báo cáo giá trị.
 

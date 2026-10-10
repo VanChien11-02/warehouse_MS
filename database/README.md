@@ -37,6 +37,10 @@ Sau migration 009, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock
 
 Sau migration 010, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/011_transfer_completion.sql` để tạo/cập nhật `sp_HoanTatChuyenKho`. Test `database/tests/014_transfer_completion.sql` chứng minh hai phía biến động, lỗi thiếu tồn/sức chứa/bảo quản, chống hoàn tất lặp và rollback khi lỗi ở bước ghi sổ. Migration 011 có thể chạy lại.
 
+Sau migration 011, chạy một lần `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/012_inventory_count.sql` để tạo hai bảng kiểm kê và sequence. Sau đó chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/013_inventory_count_posting.sql` để tạo/cập nhật `sp_HoanTatKiemKe`. Test `database/tests/015_inventory_count_constraints.sql` và `016_inventory_count_completion.sql` kiểm tra schema, lỗi nghiệp vụ, chống chốt lặp và rollback khi ghi sổ thất bại.
+
+Sau migration 013, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/014_count_discrepancy_view.sql` để tạo/cập nhật `vw_ChenhLechKiemKe`. View chỉ lấy dòng chênh lệch từ phiếu đã hoàn tất; test 016 kiểm tra kết quả sau điều chỉnh.
+
 ## Cấu trúc mục tiêu
 
 ```text
