@@ -19,7 +19,7 @@ Các thay đổi đáng chú ý của dự án được ghi tại đây.
 
 ### Changed
 
-- Tách cấu hình điều hướng và dữ liệu mẫu frontend thành module JavaScript riêng; giao diện vẫn dùng dữ liệu demo.
+- Tách cấu hình điều hướng và dữ liệu mẫu frontend thành module JavaScript riêng; thêm chế độ API cho CRUD sản phẩm bằng session/CSRF.
 - Chuyển frontend baseline vào `apps/web`.
 - Chuyển ERD, PDF nguồn và tài liệu quản trị vào `docs`.
 - Chuyển project bán lẻ tham khảo vào `references/retail-management` và đánh dấu chỉ dùng tham khảo.

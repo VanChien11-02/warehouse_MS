@@ -4,7 +4,7 @@
 
 ## Trạng thái hiện tại
 
-- Frontend baseline có dashboard, form chứng từ và báo cáo bằng dữ liệu mẫu; chưa kết nối với API thật.
+- Frontend baseline có dashboard và các form demo; chế độ API hỗ trợ CRUD sản phẩm, phiếu nhập/xuất một dòng, tra cứu tồn kho và báo cáo nhập–xuất–tồn.
 - Backend có session/RBAC, quản trị tài khoản, CRUD danh mục/kho/đối tác, năm luồng chứng từ, tra cứu tồn, báo cáo và audit.
 - `database/init.sql` dựng 27 bảng, năm procedure hoàn tất chứng từ, năm function, bảy view, trigger, index và bốn database role. Seed demo tách khỏi schema và không chứa tài khoản hay mật khẩu.
 - Các test Java, SQL và tranh chấp hai session đã chạy trên SQL Server 2025 Express; kết nối JDBC/HTTP với SQL Server local và SQL Server 2022 còn cần kiểm chứng.
@@ -63,7 +63,7 @@ pwsh -File scripts/bootstrap-admin.ps1
 pwsh -File scripts/dev.ps1 -Target api
 ```
 
-Chạy `pwsh -File scripts/dev.ps1 -Target web` ở terminal khác và mở `http://127.0.0.1:5174`. Frontend hiện dùng dữ liệu mẫu; dùng API theo [`services/api/README.md`](services/api/README.md) để thử nghiệp vụ thật.
+Chạy `pwsh -File scripts/dev.ps1 -Target web` ở terminal khác và mở `http://127.0.0.1:5174`. Giao diện mặc định dùng dữ liệu mẫu; mở `?mode=api#products` để dùng các màn hình đã nối API theo [`apps/web/README.md`](apps/web/README.md).
 
 ### 4. Kiểm tra trước khi bàn giao
 

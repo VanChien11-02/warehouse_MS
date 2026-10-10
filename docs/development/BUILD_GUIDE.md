@@ -37,7 +37,7 @@ Cổng kiểm tra root:
 pwsh -File scripts/verify.ps1
 ```
 
-Backend đã có session/RBAC, CRUD danh mục/kho/đối tác, năm luồng chứng từ, tồn, báo cáo và audit. `database/init.sql` dựng 27 bảng cùng procedure, function, view, trigger, index và bốn database role. Frontend static vẫn dùng dữ liệu mẫu và chưa gọi API thật.
+Backend đã có session/RBAC, CRUD danh mục/kho/đối tác, năm luồng chứng từ, tồn, báo cáo và audit. `database/init.sql` dựng 27 bảng cùng procedure, function, view, trigger, index và bốn database role. Frontend có chế độ API cho sản phẩm, phiếu nhập/xuất một dòng, tra cứu tồn và báo cáo nhập–xuất–tồn; các màn hình khác vẫn dùng dữ liệu mẫu.
 
 ## 3. Cấu hình local
 
@@ -73,7 +73,7 @@ Sau khi dựng database, chạy `pwsh -File scripts/bootstrap-admin.ps1` đúng 
 
 Seed `database/seed/demo.sql` tạo danh mục, đối tác, kho/vị trí và phiếu nhập đã hoàn tất với ba lô, 40 đơn vị tồn; có thể chạy lại mà không ghi sổ hai lần. Seed không tạo tài khoản hoặc mật khẩu. Nếu chỉ cần danh mục trống để thử CRUD, dùng `database/seed/catalog_demo.sql` thay cho seed đầy đủ.
 
-Database `BlueStock`/`dbo`, session cookie và runner `sqlcmd` theo ADR 0003. Origin frontend mặc định trong API là `http://127.0.0.1:5174`; có thể đổi bằng `APP_WEB_ORIGIN`. Frontend hiện chưa có API adapter tương thích contract.
+Database `BlueStock`/`dbo`, session cookie và runner `sqlcmd` theo ADR 0003. Origin frontend mặc định trong API là `http://127.0.0.1:5174`; có thể đổi bằng `APP_WEB_ORIGIN`. Frontend dùng adapter theo contract cho sản phẩm, phiếu nhập/xuất, tồn kho và báo cáo nhập–xuất–tồn.
 
 ## 4. Dựng database sạch và seed
 
@@ -103,7 +103,9 @@ Mở frontend static ở terminal khác:
 pwsh -File scripts/dev.ps1 -Target web
 ```
 
-Giao diện hiện trình bày dữ liệu mẫu; để thử API thật, dùng HTTP client theo contract. Không dùng form demo làm bằng chứng E2E backend.
+Giao diện mặc định trình bày dữ liệu mẫu. Mở `http://127.0.0.1:5174/?mode=api#products` để thử CRUD sản phẩm, `?mode=api#inbound`/`#outbound` để thử phiếu một dòng, `?mode=api#inventory` để tra cứu tồn hoặc `?mode=api#reports` để xem báo cáo với session thật. Chuyển kho, kiểm kê, trả hàng và phiếu nhiều dòng cần HTTP client theo contract. Không dùng form demo làm bằng chứng E2E backend.
+
+Nếu port 5174 hoặc 8080 đã có ứng dụng khác sử dụng, chạy web bằng `pwsh -File scripts/dev.ps1 -Target web -Port 5176`, đặt `APP_WEB_ORIGIN=http://127.0.0.1:5176` và `SERVER_PORT=8082` trong terminal API, rồi mở `http://127.0.0.1:5176/?mode=api&apiPort=8082#products`. Origin phải khớp chính xác để cookie session và CORS hoạt động.
 
 Trước khi bàn giao, chạy hai cổng kiểm tra:
 

@@ -1359,6 +1359,12 @@ td a {
   padding: 18px 20px 20px;
 }
 
+.live-document-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding: 0 20px 20px;
+}
+
 .four-columns {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
@@ -1640,6 +1646,42 @@ td a {
   background: var(--paper);
   box-shadow: var(--shadow-float);
   animation: editor-in 230ms var(--ease-out);
+}
+
+.list-message {
+  padding: 12px 18px;
+  color: var(--ink-soft);
+}
+
+.login-dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 26px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+}
+
+.login-dialog::backdrop {
+  background: rgba(13, 35, 30, 0.58);
+}
+
+.login-dialog form {
+  display: grid;
+  gap: 16px;
+}
+
+.login-dialog h2,
+.login-dialog p {
+  margin: 0;
+}
+
+.login-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 @keyframes editor-in {
