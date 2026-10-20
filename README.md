@@ -4,9 +4,10 @@
 
 ## Trạng thái hiện tại
 
-- Frontend baseline đã có dashboard, CRUD sản phẩm bằng dữ liệu mẫu, lập phiếu xuất và khung báo cáo.
-- ERD và danh sách nghiệp vụ đã được chuẩn hóa ở mức thiết kế.
-- Backend đã có Spring Boot, Maven Wrapper, health và session API; API nghiệp vụ chưa triển khai. SQL Server hiện có `init.sql` cho chín bảng identity, danh mục và cấu trúc kho, chưa phải schema đầy đủ.
+- Frontend baseline có dashboard và các form demo; chế độ API hỗ trợ CRUD sản phẩm, phiếu nhập/xuất một dòng, tra cứu tồn kho và báo cáo nhập–xuất–tồn.
+- Backend có session/RBAC, quản trị tài khoản, CRUD danh mục/kho/đối tác, năm luồng chứng từ, tra cứu tồn, báo cáo và audit.
+- `database/init.sql` dựng 27 bảng, năm procedure hoàn tất chứng từ, năm function, bảy view, trigger, index và bốn database role. Seed demo tách khỏi schema và không chứa tài khoản hay mật khẩu.
+- Các test Java, SQL và tranh chấp hai session đã chạy trên SQL Server 2025 Express; kết nối JDBC/HTTP với SQL Server local và SQL Server 2022 còn cần kiểm chứng.
 - Thư mục `references/` chỉ dùng tham khảo cách tổ chức; không phải nguồn yêu cầu của dự án này.
 
 ## Công nghệ thống nhất
@@ -51,21 +52,24 @@ Khi nhóm chấp nhận mô hình bốn workstream, owner tạo `workstream/<pha
 
 ```powershell
 pwsh -File scripts/setup.ps1
-pwsh -File scripts/dev.ps1 -Target web
+sqlcmd -S localhost -E -C -b -i database/init.sql
+sqlcmd -S localhost -E -C -b -d BlueStock -i database/seed/demo.sql
 ```
 
-Mở `http://127.0.0.1:5174`.
-
-Sau khi cấu hình kết nối SQL Server theo [`services/api/README.md`](services/api/README.md), chạy ở terminal khác:
+Sau khi bật TCP/IP cho SQL Server và cấu hình JDBC theo [hướng dẫn build](docs/development/BUILD_GUIDE.md), tạo Admin một lần. Lệnh bootstrap sẽ khởi động API; dừng tiến trình đó rồi chạy API bình thường:
 
 ```powershell
+pwsh -File scripts/bootstrap-admin.ps1
 pwsh -File scripts/dev.ps1 -Target api
 ```
+
+Chạy `pwsh -File scripts/dev.ps1 -Target web` ở terminal khác và mở `http://127.0.0.1:5174`. Giao diện mặc định dùng dữ liệu mẫu; mở `?mode=api#products` để dùng các màn hình đã nối API theo [`apps/web/README.md`](apps/web/README.md).
 
 ### 4. Kiểm tra trước khi bàn giao
 
 ```powershell
 pwsh -File scripts/verify.ps1
+pwsh -File scripts/verify.ps1 -WithDatabase -WithConcurrency
 ```
 
 ## Cấu trúc repository

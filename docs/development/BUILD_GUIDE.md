@@ -1,6 +1,8 @@
 # Hướng dẫn build và khởi tạo dự án
 
-Tài liệu này mô tả hiện trạng chạy được và thứ tự kỹ thuật để hoàn thiện hệ thống. Đây không phải lịch sprint; các workstream có thể phát triển song song bằng contract/stub.
+Tài liệu này hướng dẫn dựng database sạch, chạy API và kiểm tra từng lớp. Contract tổng thể vẫn ở trạng thái Draft; xem backlog để biết các hạng mục cần nhóm review.
+
+Nếu muốn dựng cả SQL Server 2022, API và web bằng một lệnh, xem [`DOCKER_DEMO.md`](DOCKER_DEMO.md). Hướng dẫn bên dưới dành cho cài đặt trực tiếp trên máy.
 
 ## 1. Yêu cầu môi trường
 
@@ -10,7 +12,7 @@ Tài liệu này mô tả hiện trạng chạy được và thứ tự kỹ thu
 | PowerShell | 7 trở lên |
 | Node.js | 22 trở lên (`.nvmrc`) |
 | JDK | 21 trở lên; `JAVA_HOME` trỏ tới JDK |
-| SQL Server | 2022 Developer hoặc Express |
+| SQL Server | 2022 Developer hoặc Express (mục tiêu dự án) |
 | SQL client | SSMS hoặc Azure Data Studio |
 
 Kiểm tra môi trường:
@@ -37,7 +39,7 @@ Cổng kiểm tra root:
 pwsh -File scripts/verify.ps1
 ```
 
-Backend đã có Maven Wrapper, health/session endpoint và test nhưng chưa có API nghiệp vụ. Database đã có `init.sql` dựng chín bảng identity/danh mục/cấu trúc kho; các bảng và object nghiệp vụ còn lại thuộc `DB-01` chưa hoàn tất.
+Backend đã có session/RBAC, CRUD danh mục/kho/đối tác, năm luồng chứng từ, tồn, báo cáo và audit. `database/init.sql` dựng 27 bảng cùng procedure, function, view, trigger, index và bốn database role. Frontend có chế độ API cho sản phẩm, phiếu nhập/xuất một dòng, tra cứu tồn và báo cáo nhập–xuất–tồn; các màn hình khác vẫn dùng dữ liệu mẫu.
 
 ## 3. Cấu hình local
 
@@ -55,99 +57,66 @@ Mẫu biến môi trường nằm tại [`../../services/api/.env.example`](../.
 
 JDBC cần SQL Server bật TCP/IP và lắng nghe cổng trong `SPRING_DATASOURCE_URL` (mẫu dùng 1433). Bật TCP/IP bằng SQL Server Configuration Manager, khởi động lại instance rồi kiểm tra `Test-NetConnection 127.0.0.1 -Port 1433`. `sqlcmd -E` trên cùng máy có thể dùng shared memory dù TCP/IP đang tắt, nên kết quả test SQL không thay thế kiểm tra kết nối JDBC. Tạo SQL login cục bộ với quyền trên `BlueStock`, đặt username/password qua biến môi trường; không ghi chúng vào repository.
 
-Sau khi dựng database, chạy `pwsh -File scripts/bootstrap-admin.ps1` đúng một lần khi bảng tài khoản còn trống. Lệnh yêu cầu mật khẩu tại terminal, lưu BCrypt hash và khởi động API. Dừng tiến trình bootstrap rồi chạy `pwsh -File scripts/dev.ps1 -Target api` với cấu hình JDBC thông thường.
+Nếu instance chỉ cho Windows Authentication, bật chế độ SQL Server and Windows Authentication trong cấu hình instance rồi khởi động lại dịch vụ. Có thể dùng login SQL có sẵn hoặc tạo login kỹ thuật riêng cho bản demo trong SSMS. Trên database demo, gán user của login đó vào `db_owner` để API chạy các use case; đây là quyền của kết nối kỹ thuật, không thay cho bốn role ứng dụng. Bốn role SQL dùng khi truy cập database trực tiếp được mô tả trong [`../../database/security/README.md`](../../database/security/README.md). Giữ mật khẩu login ngoài repository và không dùng tài khoản demo cho dữ liệu thật.
 
-Database `BlueStock`/`dbo`, session cookie và runner `sqlcmd` đã được quyết định tại ADR 0003. CORS cho frontend và migration tool sau baseline sẽ được quyết định khi triển khai phần tương ứng.
+Ví dụ chạy trong SSMS sau khi thay mật khẩu giữ riêng ở máy:
 
-## 4. Thứ tự kỹ thuật tối thiểu
+```sql
+CREATE LOGIN [bluestock_api_local] WITH PASSWORD = '<mat-khau-rieng-du-manh>';
+GO
+USE [BlueStock];
+CREATE USER [bluestock_api_local] FOR LOGIN [bluestock_api_local];
+ALTER ROLE [db_owner] ADD MEMBER [bluestock_api_local];
+```
 
-### Bước A - Khóa context và contract
+Đặt `SPRING_DATASOURCE_USERNAME=bluestock_api_local` và `SPRING_DATASOURCE_PASSWORD` bằng mật khẩu vừa tạo trong terminal chạy API. Nếu login/user đã có, dùng tài khoản hiện tại thay vì chạy lại lệnh `CREATE`.
 
-- Giải quyết các mục P0 trong [`../project/governance/OPEN_DECISIONS.md`](../project/governance/OPEN_DECISIONS.md).
-- Chuyển [`../../contracts/BASELINE.md`](../../contracts/BASELINE.md) sang `Accepted` khi đủ điều kiện.
-- Chốt owner/reviewer và tạo branch workstream từ cùng commit.
+Sau khi dựng database, chạy `pwsh -File scripts/bootstrap-admin.ps1` đúng một lần khi bảng tài khoản còn trống. Lệnh yêu cầu mật khẩu tại terminal, lưu BCrypt hash và khởi động API. Dừng tiến trình bootstrap rồi chạy `pwsh -File scripts/dev.ps1 -Target api` với cùng cấu hình JDBC.
 
-### Bước B - Database baseline
+Seed `database/seed/demo.sql` tạo danh mục, đối tác, kho/vị trí và phiếu nhập đã hoàn tất với ba lô, 40 đơn vị tồn; có thể chạy lại mà không ghi sổ hai lần. Seed không tạo tài khoản hoặc mật khẩu. Nếu chỉ cần danh mục trống để thử CRUD, dùng `database/seed/catalog_demo.sql` thay cho seed đầy đủ.
 
-- Tạo thư mục/object theo [`../../database/SCHEMA_PLAN.md`](../../database/SCHEMA_PLAN.md).
-- Viết `database/init.sql` dựng database sạch theo đúng thứ tự.
-- Thêm seed giả tối thiểu cho role, tài khoản demo, danh mục, kho/vị trí và đối tác.
-- Thêm test constraint và test script chạy lại từ database sạch.
+Database `BlueStock`/`dbo`, session cookie và runner `sqlcmd` theo ADR 0003. Origin frontend mặc định trong API là `http://127.0.0.1:5174`; có thể đổi bằng `APP_WEB_ORIGIN`. Frontend dùng adapter theo contract cho sản phẩm, phiếu nhập/xuất, tồn kho và báo cáo nhập–xuất–tồn.
 
-### Bước C - Spring Boot shell
+## 4. Dựng database sạch và seed
 
-- Tạo Maven project Java 21 + Spring Boot 3.x và commit Maven Wrapper.
-- Thêm dependencies: Web, Validation, Security, JDBC, JPA, SQL Server driver và test phù hợp.
-- Thêm health endpoint, error envelope, pagination và cấu hình mẫu không chứa secret.
-- Tạo package-by-feature theo module catalog.
-- Nối `mvnw.cmd test` vào `scripts/verify.ps1` nếu chưa được tự động phát hiện.
-
-### Bước D - Vertical slices nền tảng
-
-Làm các lát dọc nhỏ, mỗi lát có schema + backend + contract + UI/test:
-
-1. Session/RBAC và current user.
-2. Sản phẩm/đơn vị tính/loại sản phẩm.
-3. Kho/khu vực/vị trí.
-4. Nhà cung cấp/đối tác.
-
-### Bước E - Luồng kho cốt lõi
-
-1. Phiếu nhập nháp → hoàn tất → lô → put-away → tồn.
-2. Tra cứu tồn theo sản phẩm/lô/vị trí.
-3. Phiếu xuất → gợi ý FEFO → hoàn tất → trừ tồn.
-4. Báo cáo nhập-xuất-tồn.
-
-### Bước F - Kiểm soát và hoàn thiện
-
-- Chuyển kho.
-- Kiểm kê/điều chỉnh.
-- Trả hàng.
-- Audit, concurrency, index/performance và kịch bản demo.
-
-## 5. Lệnh mục tiêu sau khi khởi tạo đủ
-
-Database hiện có thể dựng phần nền tảng từ root repository bằng `sqlcmd`:
+Từ root repository, trên SQL Server chưa có database `BlueStock`:
 
 ```powershell
 sqlcmd -S localhost -E -C -b -i database/init.sql
-pwsh -File scripts/verify.ps1 -WithDatabase
+sqlcmd -S localhost -E -C -b -d BlueStock -i database/seed/demo.sql
 ```
 
-Backend:
+`init.sql` dừng nếu `BlueStock` đã tồn tại; không xóa database cũ. `demo.sql` có thể chạy lại. Nếu dùng tên instance khác, thay `localhost`. Xem [`../../database/README.md`](../../database/README.md) để nâng cấp database local cũ bằng migration.
+
+## 5. Chạy API và kiểm tra
+
+Sau khi đặt các biến JDBC ở mục 3, chạy bootstrap ở terminal riêng. Khi thấy API khởi động, dừng tiến trình đó và chạy lại bình thường:
 
 ```powershell
-services\api\mvnw.cmd test
-services\api\mvnw.cmd spring-boot:run
+pwsh -File scripts/bootstrap-admin.ps1
+pwsh -File scripts/dev.ps1 -Target api
 ```
 
-Frontend:
+Kiểm tra `GET http://127.0.0.1:8080/api/health` và `GET http://127.0.0.1:8080/actuator/health`. Endpoint thứ hai phải phản ánh kết nối database. Quy trình đăng nhập, CSRF và quyền nằm ở [`../../contracts/session-rbac.md`](../../contracts/session-rbac.md). Tài khoản cho ba role còn lại được Admin tạo qua [`../../contracts/identity-admin.md`](../../contracts/identity-admin.md). Kịch bản Postman nhập → tồn → xuất FEFO → báo cáo nằm ở [`../testing/API_SMOKE.md`](../testing/API_SMOKE.md).
+
+Mở frontend static ở terminal khác:
 
 ```powershell
 pwsh -File scripts/dev.ps1 -Target web
 ```
 
-Full gate:
+Giao diện mặc định trình bày dữ liệu mẫu. Mở `http://127.0.0.1:5174/?mode=api#products` để thử CRUD sản phẩm, `?mode=api#inbound`/`#outbound` để thử phiếu một dòng, `?mode=api#inventory` để tra cứu tồn hoặc `?mode=api#reports` để xem báo cáo với session thật. Chuyển kho, kiểm kê, trả hàng và phiếu nhiều dòng cần HTTP client theo contract. Không dùng form demo làm bằng chứng E2E backend.
+
+Nếu port 5174 hoặc 8080 đã có ứng dụng khác sử dụng, chạy web bằng `pwsh -File scripts/dev.ps1 -Target web -Port 5176`, đặt `APP_WEB_ORIGIN=http://127.0.0.1:5176` và `SERVER_PORT=8082` trong terminal API, rồi mở `http://127.0.0.1:5176/?mode=api&apiPort=8082#products`. Origin phải khớp chính xác để cookie session và CORS hoạt động.
+
+Trước khi bàn giao, chạy hai cổng kiểm tra:
 
 ```powershell
 pwsh -File scripts/verify.ps1
+pwsh -File scripts/verify.ps1 -WithDatabase -WithConcurrency
 ```
 
-`init.sql` chỉ nhận database sạch và dừng nếu `BlueStock` đã tồn tại. Khi dùng instance khác, thay `localhost` bằng địa chỉ phù hợp.
-
-## 6. Seed và tài khoản demo
-
-Seed cần đủ cho một kịch bản demo nhưng không chứa dữ liệu thật:
-
-- bốn role;
-- ít nhất một tài khoản giả cho mỗi role;
-- mật khẩu demo được hash và password rõ chỉ ghi trong hướng dẫn demo cục bộ, không dùng lại ở môi trường thật;
-- loại sản phẩm, đơn vị tính và vài sản phẩm;
-- nhà cung cấp, đối tác nhận hàng;
-- một kho, nhiều khu vực/vị trí;
-- lô có hạn dùng khác nhau để chứng minh FEFO.
-
-Giá trị tài khoản/password demo cụ thể: **Cần chốt**.
+`verify.ps1` mặc định chỉ chạy kiểm tra file, JavaScript, liên kết Markdown và test Java. Tham số `-WithDatabase` chạy thêm 23 script SQL trên database được chọn; `-WithConcurrency` thêm bài tranh chấp hai session. Có thể dùng `-DatabaseName <ten_database>` cho database thử riêng. Cổng này không thay thế E2E HTTP hay xác nhận trên SQL Server 2022.
 
 ## 7. Checklist build sạch
 

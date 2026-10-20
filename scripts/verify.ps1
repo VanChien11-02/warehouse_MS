@@ -1,7 +1,12 @@
 [CmdletBinding()]
 param(
     [switch] $WithDatabase,
-    [string] $SqlServer = 'localhost'
+    [switch] $WithConcurrency,
+    [string] $SqlServer = 'localhost',
+    [ValidatePattern('^[A-Za-z][A-Za-z0-9_]{0,127}$')]
+    [string] $SqlUser = '',
+    [ValidatePattern('^[A-Za-z][A-Za-z0-9_]{0,127}$')]
+    [string] $DatabaseName = 'BlueStock'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,7 +33,10 @@ $requiredFiles = @(
     'contracts/BASELINE.md',
     'contracts/API_CATALOG.md',
     'contracts/session-rbac.md',
+    'contracts/san-pham.md',
     'database/SCHEMA_PLAN.md',
+    'database/seed/catalog_demo.sql',
+    'database/seed/demo.sql',
     'scripts/bootstrap-admin.ps1',
     'docs/architecture/database/ERD_VA_NGHIEP_VU.md'
 )
@@ -41,8 +49,24 @@ foreach ($relativePath in $requiredFiles) {
 
 Write-Host '2/4 Kiểm tra JavaScript frontend...'
 $node = (Get-Command node -ErrorAction Stop).Source
-& $node --check (Join-Path $root 'apps\web\app.js')
-if ($LASTEXITCODE -ne 0) { throw 'JavaScript frontend không hợp lệ.' }
+foreach ($scriptFile in @('app.js', 'core\navigation.js', 'core\api-client.js',
+        'data\demo.js', 'data\product-api.js', 'data\inventory-api.js', 'data\report-api.js',
+        'data\document-api.js',
+        'features\live-products.js', 'features\live-inventory.js', 'features\live-report.js',
+        'features\live-documents.js')) {
+    & $node --check (Join-Path $root 'apps\web' $scriptFile)
+    if ($LASTEXITCODE -ne 0) { throw "JavaScript frontend không hợp lệ: $scriptFile" }
+}
+& $node --test (Join-Path $root 'apps\web\core\api-client.test.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Frontend API client test thất bại.' }
+& $node --test (Join-Path $root 'apps\web\data\product-api.test.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Frontend product adapter test thất bại.' }
+& $node --test (Join-Path $root 'apps\web\data\inventory-api.test.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Frontend inventory adapter test thất bại.' }
+& $node --test (Join-Path $root 'apps\web\data\report-api.test.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Frontend report adapter test thất bại.' }
+& $node --test (Join-Path $root 'apps\web\data\document-api.test.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Frontend document adapter test thất bại.' }
 & $node --check (Join-Path $root 'scripts\serve-web.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Static server script không hợp lệ.' }
 
@@ -98,14 +122,46 @@ else {
 if ($WithDatabase) {
     Write-Host 'Kiểm tra ràng buộc database...'
     $sqlcmd = (Get-Command sqlcmd -ErrorAction Stop).Source
+    if ($SqlUser -and [string]::IsNullOrWhiteSpace($env:SQLCMDPASSWORD)) {
+        throw 'Đặt SQLCMDPASSWORD trong terminal khi dùng -SqlUser.'
+    }
+    $sqlAuth = if ($SqlUser) { @('-U', $SqlUser) } else { @('-E') }
     $databaseTests = @(
         'database\tests\001_catalog_warehouse_constraints.sql',
-        'database\tests\002_auth_constraints.sql'
+        'database\tests\002_auth_constraints.sql',
+        'database\tests\003_product_crud.sql',
+        'database\tests\004_catalog_reference_crud.sql',
+        'database\tests\005_warehouse_area_crud.sql',
+        'database\tests\006_position_crud.sql',
+        'database\tests\007_partner_constraints.sql',
+        'database\tests\008_inbound_inventory_constraints.sql',
+        'database\tests\009_inbound_completion.sql',
+        'database\tests\010_inventory_view.sql',
+        'database\tests\011_outbound_constraints.sql',
+        'database\tests\012_outbound_completion.sql',
+        'database\tests\013_transfer_constraints.sql',
+        'database\tests\014_transfer_completion.sql',
+        'database\tests\015_inventory_count_constraints.sql',
+        'database\tests\016_inventory_count_completion.sql',
+        'database\tests\017_return_constraints.sql',
+        'database\tests\018_return_completion.sql',
+        'database\tests\019_audit_constraints.sql',
+        'database\tests\020_inventory_functions_views.sql',
+        'database\tests\021_position_stock_guard.sql',
+        'database\tests\022_application_roles.sql',
+        'database\tests\023_inventory_indexes.sql'
     )
     foreach ($testFile in $databaseTests) {
-        & $sqlcmd -S $SqlServer -E -C -b -d BlueStock -i (Join-Path $root $testFile)
+        & $sqlcmd -S $SqlServer @sqlAuth -C -b -f i:65001 -d $DatabaseName -i (Join-Path $root $testFile)
         if ($LASTEXITCODE -ne 0) { throw "Database test thất bại: $testFile" }
     }
+}
+
+if ($WithConcurrency) {
+    if (-not $WithDatabase) { throw 'Dùng -WithConcurrency cùng -WithDatabase.' }
+    & pwsh -File (Join-Path $root 'scripts\verify-concurrency.ps1') `
+        -SqlServer $SqlServer -SqlUser $SqlUser -DatabaseName $DatabaseName
+    if ($LASTEXITCODE -ne 0) { throw 'Concurrency test thất bại.' }
 }
 
 Write-Host 'Baseline verification passed.'

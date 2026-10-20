@@ -6,6 +6,7 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 
 - [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md): briefing ngắn về mục tiêu, hiện trạng, invariant, nguồn sự thật và đường đọc theo công việc.
 - [`development/BUILD_GUIDE.md`](development/BUILD_GUIDE.md): môi trường, lệnh đang chạy được, thứ tự kỹ thuật và checklist build sạch.
+- [`development/DOCKER_DEMO.md`](development/DOCKER_DEMO.md): dựng SQL Server 2022, API và web bằng Docker Compose để demo trên máy khác.
 - [`project/governance/OPEN_DECISIONS.md`](project/governance/OPEN_DECISIONS.md): các điểm chưa được phép tự suy đoán trên từng branch.
 
 ## Kiến trúc và dữ liệu
@@ -19,6 +20,9 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 - [`architecture/adr/0002-technology-stack.md`](architecture/adr/0002-technology-stack.md): quyết định công nghệ frontend/backend/database.
 - [`architecture/adr/0003-be-platform-contract.md`](architecture/adr/0003-be-platform-contract.md): quy ước nền tảng đã chốt cho nhánh triển khai backend.
 - [`architecture/adr/0004-stock-policies.md`](architecture/adr/0004-stock-policies.md): quy tắc ghi sổ và định giá tồn kho cho nhánh triển khai backend.
+- [`architecture/adr/0005-outbound-fefo-enforcement.md`](architecture/adr/0005-outbound-fefo-enforcement.md): kiểm tra thứ tự FEFO tại transaction hoàn tất xuất.
+- [`architecture/adr/0006-transfer-posting.md`](architecture/adr/0006-transfer-posting.md): khóa và ghi sổ chuyển kho.
+- [`architecture/adr/0007-compose-demo.md`](architecture/adr/0007-compose-demo.md): môi trường demo SQL Server/API/web bằng Compose.
 
 ## Quản lý dự án
 
@@ -32,6 +36,9 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 ## Kiểm thử
 
 - [`testing/README.md`](testing/README.md): chiến lược test và bằng chứng cần lưu.
+- [`testing/CONCURRENCY.md`](testing/CONCURRENCY.md): kịch bản hai session xuất cạnh tranh cùng tồn.
+- [`testing/API_SMOKE.md`](testing/API_SMOKE.md): kịch bản Postman nhập → tồn → xuất FEFO → báo cáo trên dữ liệu demo.
+- [`testing/LOCAL_EVIDENCE.md`](testing/LOCAL_EVIDENCE.md): lệnh, kết quả và giới hạn kiểm chứng local gần nhất.
 
 ## Yêu cầu và hợp đồng
 
@@ -39,6 +46,18 @@ GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Mark
 - [`../contracts/BASELINE.md`](../contracts/BASELINE.md): quy ước contract chung đang ở trạng thái Draft.
 - [`../contracts/API_CATALOG.md`](../contracts/API_CATALOG.md): inventory endpoint dự kiến và thứ tự viết contract chi tiết.
 - [`../contracts/session-rbac.md`](../contracts/session-rbac.md): session, CSRF, payload đăng nhập và mã role cho nhánh BE.
+- [`../contracts/identity-admin.md`](../contracts/identity-admin.md): quản trị nhân viên, tài khoản, role và reset mật khẩu.
+- [`../contracts/audit.md`](../contracts/audit.md): bảng và API nhật ký thao tác.
+- [`../contracts/san-pham.md`](../contracts/san-pham.md): CRUD, tìm kiếm, phân trang và quyền của sản phẩm.
+- [`../contracts/loai-don-vi-tinh.md`](../contracts/loai-don-vi-tinh.md): CRUD, tìm kiếm và quyền của loại sản phẩm và đơn vị tính.
+- [`../contracts/warehouse-location.md`](../contracts/warehouse-location.md): CRUD và quyền của cấu trúc kho.
+- [`../contracts/partner.md`](../contracts/partner.md): schema nhà cung cấp, đối tác nhận và mapping sản phẩm.
+- [`../contracts/inbound-completion.md`](../contracts/inbound-completion.md): schema, procedure và API tạo/xem/hoàn tất nhập.
+- [`../contracts/inventory-query.md`](../contracts/inventory-query.md): tra cứu tồn khả dụng theo lô/vị trí và nguồn giá nhập.
+- [`../contracts/outbound-fefo-completion.md`](../contracts/outbound-fefo-completion.md): schema, procedure và API tạo/xem/hoàn tất xuất.
+- [`../contracts/reporting.md`](../contracts/reporting.md): báo cáo nhập–xuất–tồn theo kỳ và kho/sản phẩm.
+- [`../contracts/expiry-report.md`](../contracts/expiry-report.md): báo cáo lô sắp hết hạn theo tồn khả dụng.
+- [`../contracts/transfer.md`](../contracts/transfer.md): schema phiếu chuyển vị trí và quy tắc ghi sổ.
 - [`../database/SCHEMA_PLAN.md`](../database/SCHEMA_PLAN.md): kế hoạch physical schema, object SQL và test database.
 
 ## Tài liệu nguồn

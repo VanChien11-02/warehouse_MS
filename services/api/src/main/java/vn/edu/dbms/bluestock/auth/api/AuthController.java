@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -14,10 +15,12 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.dbms.bluestock.auth.application.AuthApplicationService;
+import vn.edu.dbms.bluestock.auth.application.PasswordChangeService;
 import vn.edu.dbms.bluestock.auth.infrastructure.AccountPrincipal;
 
 @RestController
@@ -25,10 +28,13 @@ import vn.edu.dbms.bluestock.auth.infrastructure.AccountPrincipal;
 public class AuthController {
     private final AuthApplicationService authService;
     private final SecurityContextRepository contextRepository;
+    private final PasswordChangeService passwordChangeService;
 
-    public AuthController(AuthApplicationService authService, SecurityContextRepository contextRepository) {
+    public AuthController(AuthApplicationService authService, SecurityContextRepository contextRepository,
+        PasswordChangeService passwordChangeService) {
         this.authService = authService;
         this.contextRepository = contextRepository;
+        this.passwordChangeService = passwordChangeService;
     }
 
     @GetMapping("/csrf")
@@ -66,7 +72,17 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/doi-mat-khau")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest body,
+        @AuthenticationPrincipal AccountPrincipal principal) {
+        passwordChangeService.change(principal.maTaiKhoan(), body.matKhauCu(), body.matKhauMoi());
+        return ResponseEntity.noContent().build();
+    }
+
     public record LoginRequest(@NotBlank String tenTaiKhoan, @NotBlank String matKhau) {}
+
+    public record ChangePasswordRequest(@NotBlank String matKhauCu,
+        @NotBlank @Size(min = 12, max = 72) String matKhauMoi) {}
 
     public record AuthUserResponse(
         String maTaiKhoan,

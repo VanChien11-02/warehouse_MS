@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+sqlcmd=/opt/mssql-tools18/bin/sqlcmd
+
+if [[ ! "${APP_DB_PASSWORD:-}" =~ ^[A-Za-z0-9@#%+=._!-]{12,64}$ ]]; then
+  echo 'APP_DB_PASSWORD must have 12-64 letters, digits or @#%+=._!- characters.' >&2
+  exit 1
+fi
+
+database_state=$("$sqlcmd" -S db -U sa -C -b -h -1 -W \
+  -Q "SET NOCOUNT ON; SELECT CASE WHEN DB_ID(N'BlueStock') IS NULL THEN 'missing' ELSE 'present' END;")
+database_state=$(printf '%s' "$database_state" | tr -d '\r')
+
+if [[ "$database_state" == 'missing' ]]; then
+  "$sqlcmd" -S db -U sa -C -b -i database/init.sql
+elif [[ "$database_state" == 'present' ]]; then
+  "$sqlcmd" -S db -U sa -C -b -d BlueStock -Q \
+    "IF OBJECT_ID(N'dbo.sp_HoanTatTraHang', N'P') IS NULL THROW 51000, N'BlueStock schema is incomplete.', 1;"
+else
+  echo 'Cannot determine BlueStock database state.' >&2
+  exit 1
+fi
+
+"$sqlcmd" -S db -U sa -C -b -d BlueStock -i database/seed/demo.sql
+"$sqlcmd" -S db -U sa -C -b -i database/docker-app-login.sql

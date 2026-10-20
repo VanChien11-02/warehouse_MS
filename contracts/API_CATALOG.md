@@ -1,6 +1,6 @@
 # Danh mục API dự kiến
 
-> Trạng thái: **Draft**. File này là inventory để không bỏ sót hoặc đặt endpoint trùng nhau. Request/response chi tiết phải nằm trong contract riêng hoặc OpenAPI sau khi nhóm chốt baseline.
+> Trạng thái: **Draft**. File này giữ cả route đã triển khai và ý tưởng chưa triển khai; không dùng bảng bên dưới làm danh sách endpoint chạy được. Request/response và quyền của route đã triển khai nằm trong contract chi tiết.
 
 ## Quy ước chung
 
@@ -22,9 +22,9 @@
 | `POST` | `/api/auth/dang-xuat` | Kết thúc phiên | Authenticated | SEC-01 |
 | `GET` | `/api/auth/me` | Thông tin user/role hiện tại | Authenticated | SEC-01 |
 | `PUT` | `/api/auth/doi-mat-khau` | Đổi mật khẩu của user hiện tại | Authenticated | SEC-01 |
-| `GET/POST/PUT` | `/api/nhan-vien` | Danh sách/tạo/cập nhật nhân viên | Admin; quyền quản lý cần chốt | SEC-01 |
-| `GET/POST/PUT` | `/api/tai-khoan` | Quản lý tài khoản, role và trạng thái | Admin | SEC-01 |
-| `GET` | `/api/audit` | Tra cứu nhật ký | Admin/QuanLyKho giới hạn | AUD-01 |
+| `GET/POST/PUT` | `/api/nhan-vien` | Danh sách/tạo/cập nhật theo [`identity-admin.md`](identity-admin.md) | Admin | SEC-01 |
+| `GET/POST/PUT` | `/api/tai-khoan` | Quản lý tài khoản, role, trạng thái và reset mật khẩu theo [`identity-admin.md`](identity-admin.md) | Admin | SEC-01 |
+| `GET` | `/api/audit` | Tra cứu nhật ký theo [`audit.md`](audit.md) | Admin | AUD-01 |
 
 Không thiết kế endpoint trả password hash hoặc dữ liệu xác thực nội bộ.
 
@@ -34,16 +34,16 @@ Payload và role của các endpoint session đã triển khai nằm trong [`ses
 
 | Resource | Route dự kiến | Hành vi | Owner |
 | --- | --- | --- | --- |
-| Loại sản phẩm | `/api/loai-san-pham` | CRUD, tìm kiếm, trạng thái nếu có | TV1 |
-| Đơn vị tính | `/api/don-vi-tinh` | CRUD | TV1 |
-| Sản phẩm | `/api/san-pham` | CRUD, tìm kiếm, lọc loại/trạng thái | TV1 |
+| Loại sản phẩm | `/api/loai-san-pham` | CRUD, tìm kiếm, phân trang theo [`loai-don-vi-tinh.md`](loai-don-vi-tinh.md) | TV1 |
+| Đơn vị tính | `/api/don-vi-tinh` | CRUD, tìm kiếm, phân trang theo [`loai-don-vi-tinh.md`](loai-don-vi-tinh.md) | TV1 |
+| Sản phẩm | `/api/san-pham` | CRUD, tìm kiếm, phân trang theo [`san-pham.md`](san-pham.md) | TV1 |
 | Nhà cung cấp | `/api/nha-cung-cap` | CRUD và mapping sản phẩm | TV1 |
 | Đối tác nhận hàng | `/api/doi-tac-nhan-hang` | CRUD và mapping sản phẩm | TV1 |
-| Kho | `/api/kho` | CRUD | TV1 |
-| Khu vực | `/api/khu-vuc` | CRUD, lọc theo kho | TV1 |
-| Vị trí | `/api/vi-tri` | CRUD, lọc khu vực/loại/sức chứa | TV1 |
+| Kho | `/api/kho` | CRUD theo [`warehouse-location.md`](warehouse-location.md) | TV1 |
+| Khu vực | `/api/khu-vuc` | CRUD, lọc theo kho theo [`warehouse-location.md`](warehouse-location.md) | TV1 |
+| Vị trí | `/api/vi-tri` | CRUD, lọc kho/khu vực theo [`warehouse-location.md`](warehouse-location.md) | TV1 |
 
-CRUD không đồng nghĩa cho phép xóa dữ liệu đã được chứng từ tham chiếu. Chính sách deactivate/soft delete cần được chốt theo resource.
+CRUD không cho phép xóa dữ liệu đã được chứng từ tham chiếu. Sản phẩm chỉ xóa khi chưa được tham chiếu theo contract; chính sách ngừng dùng cho các resource khác sẽ được chốt khi triển khai.
 
 ## Nhập kho và tồn
 
@@ -51,14 +51,14 @@ CRUD không đồng nghĩa cho phép xóa dữ liệu đã được chứng từ
 | --- | --- | --- | --- |
 | `GET` | `/api/phieu-nhap` | Danh sách/lọc phiếu | Nhân viên kho trở lên; Kế toán đọc |
 | `POST` | `/api/phieu-nhap` | Tạo phiếu nháp | NhanVienKho/QuanLyKho |
-| `GET` | `/api/phieu-nhap/{maPhieuNhap}` | Chi tiết phiếu | Theo role |
+| `GET` | `/api/phieu-nhap/{maPhieuNhap}` | Chi tiết phiếu theo [`inbound-completion.md`](inbound-completion.md) | Theo role |
 | `PUT` | `/api/phieu-nhap/{maPhieuNhap}` | Sửa header/dòng khi còn nháp | NhanVienKho/QuanLyKho |
-| `POST` | `/api/phieu-nhap/{maPhieuNhap}/hoan-tat` | Tạo lô, put-away, tăng tồn | Quyền hoàn tất cần chốt |
-| `POST` | `/api/phieu-nhap/{maPhieuNhap}/huy` | Hủy phiếu nháp | Quyền cần chốt |
-| `GET` | `/api/ton-kho` | Lọc theo kho/vị trí/sản phẩm/lô/hạn | Authenticated theo role |
+| `POST` | `/api/phieu-nhap/{maPhieuNhap}/hoan-tat` | Tạo lô, put-away, tăng tồn theo [`inbound-completion.md`](inbound-completion.md) | QuanLyKho |
+| `POST` | `/api/phieu-nhap/{maPhieuNhap}/huy` | Hủy phiếu nháp | QuanLyKho/NhanVienKho |
+| `GET` | `/api/ton-kho` | Lọc theo kho/vị trí/sản phẩm/lô/hạn theo [`inventory-query.md`](inventory-query.md) | Bốn role |
 | `GET` | `/api/lo-hang` | Tra cứu lô và hạn dùng | Authenticated theo role |
 
-Payload hoàn tất nhập phải chỉ ra cách phân bổ lô vào vị trí nếu thông tin đó chưa nằm trong phiếu. Hình thức payload cụ thể cần contract riêng.
+Payload và quyền thực tế của nhập/tồn nằm trong [`inbound-completion.md`](inbound-completion.md) và [`inventory-query.md`](inventory-query.md). `GET /api/lo-hang` vẫn là ý tưởng Draft; hiện tra cứu lô có tồn qua `/api/ton-kho`, gồm mã lô, hạn dùng, vị trí và phiếu nhập nguồn.
 
 ## Xuất kho
 
@@ -66,11 +66,11 @@ Payload hoàn tất nhập phải chỉ ra cách phân bổ lô vào vị trí n
 | --- | --- | --- | --- |
 | `GET` | `/api/phieu-xuat` | Danh sách/lọc phiếu | Theo role |
 | `POST` | `/api/phieu-xuat` | Tạo phiếu nháp | NhanVienKho/QuanLyKho |
-| `GET` | `/api/phieu-xuat/{maPhieuXuat}` | Chi tiết phiếu | Theo role |
+| `GET` | `/api/phieu-xuat/{maPhieuXuat}` | Chi tiết phiếu theo [`outbound-fefo-completion.md`](outbound-fefo-completion.md) | Theo role |
 | `PUT` | `/api/phieu-xuat/{maPhieuXuat}` | Sửa phiếu nháp | NhanVienKho/QuanLyKho |
-| `GET` | `/api/phieu-xuat/{maPhieuXuat}/goi-y-fefo` | Gợi ý lô/vị trí | NhanVienKho/QuanLyKho |
-| `POST` | `/api/phieu-xuat/{maPhieuXuat}/hoan-tat` | Kiểm tra và trừ tồn nguyên tử | Quyền hoàn tất cần chốt |
-| `POST` | `/api/phieu-xuat/{maPhieuXuat}/huy` | Hủy phiếu nháp | Quyền cần chốt |
+| `GET` | `/api/phieu-xuat/{maPhieuXuat}/goi-y-fefo` | Gợi ý lô/vị trí theo [`outbound-fefo-completion.md`](outbound-fefo-completion.md) | NhanVienKho/QuanLyKho |
+| `POST` | `/api/phieu-xuat/{maPhieuXuat}/hoan-tat` | Kiểm tra và trừ tồn nguyên tử theo [`outbound-fefo-completion.md`](outbound-fefo-completion.md) | QuanLyKho |
+| `POST` | `/api/phieu-xuat/{maPhieuXuat}/huy` | Hủy phiếu nháp | QuanLyKho/NhanVienKho |
 
 Gợi ý FEFO không giữ chỗ tồn vĩnh viễn. Khi hoàn tất phải kiểm tra/khóa lại tồn trong transaction.
 
@@ -79,21 +79,21 @@ Gợi ý FEFO không giữ chỗ tồn vĩnh viễn. Khi hoàn tất phải ki�
 | Resource | Route chính | Hành vi đặc biệt |
 | --- | --- | --- |
 | Phiếu chuyển | `/api/phieu-chuyen` | CRUD nháp, `/{id}/hoan-tat`, `/{id}/huy` |
-| Phiếu kiểm kê | `/api/phieu-kiem-ke` | Tạo snapshot, nhập thực tế, `/{id}/hoan-tat` |
-| Phiếu trả hàng | `/api/phieu-tra-hang` | Tạo từ phiếu xuất, kiểm tra giới hạn trả, `/{id}/hoan-tat` |
+| Phiếu kiểm kê | `/api/phieu-kiem-ke` | Tạo snapshot, nhập thực tế, chốt/hủy theo [`inventory-count.md`](inventory-count.md) |
+| Phiếu trả hàng | `/api/phieu-tra-hang` | Tạo từ phiếu xuất, kiểm tra giới hạn trả, `/{id}/hoan-tat` theo [`returning.md`](returning.md) |
 
-Mỗi resource cần contract riêng cho header/detail, trạng thái, quyền, validation và lỗi transaction.
+Contract hiện hành: [`transfer.md`](transfer.md), [`inventory-count.md`](inventory-count.md), [`returning.md`](returning.md).
 
 ## Báo cáo
 
 | Method | Route dự kiến | Bộ lọc chính | Role |
 | --- | --- | --- | --- |
 | `GET` | `/api/bao-cao/ton-kho` | kho, vị trí, sản phẩm, lô, ngày hết hạn | QuanLyKho/KeToan; role khác giới hạn |
-| `GET` | `/api/bao-cao/nhap-xuat` | từ ngày, đến ngày, sản phẩm/kho | QuanLyKho/KeToan |
+| `GET` | `/api/bao-cao/nhap-xuat` | từ ngày, đến ngày, sản phẩm/kho theo [`reporting.md`](reporting.md) | Admin/QuanLyKho/KeToan |
 | `GET` | `/api/bao-cao/lo-sap-het-han` | số ngày, kho | QuanLyKho/NhanVienKho |
-| `GET` | `/api/bao-cao/chenh-lech-kiem-ke` | kỳ/kho/vị trí | QuanLyKho/KeToan |
+| `GET` | `/api/bao-cao/chenh-lech-kiem-ke` | kỳ/kho/vị trí theo [`count-discrepancy-report.md`](count-discrepancy-report.md) | Admin/QuanLyKho/KeToan |
 
-Nguồn giá và boundary thời gian phải được chốt trước báo cáo giá trị.
+`/api/bao-cao/ton-kho` vẫn là ý tưởng Draft; `/api/ton-kho` đã trả số lượng/giá trị theo lô và vị trí. Báo cáo đã triển khai nằm trong [`reporting.md`](reporting.md), [`expiry-report.md`](expiry-report.md) và [`count-discrepancy-report.md`](count-discrepancy-report.md).
 
 ## Contract chi tiết cần tạo theo ưu tiên
 

@@ -44,7 +44,7 @@ Trạng thái: `Open`, `Accepted`, `Deferred` hoặc `Rejected`.
 | DEC-020 | Reviewer từng workstream | Reviewer khác owner, ưu tiên theo trách nhiệm rubric | Open |
 | DEC-021 | Người thực hiện tách frontend `GOV-03` | Trưởng nhóm hoặc TV4 trước khi UI phát triển song song | Open |
 | DEC-022 | Migration tool sau baseline | Chưa thêm Flyway/Liquibase; `init.sql` là điểm vào baseline | Deferred |
-| DEC-023 | Docker/local orchestration | Không bắt buộc cho baseline; chỉ thêm nếu giúp demo và có owner | Deferred |
+| DEC-023 | Docker/local orchestration | Thêm Compose cho demo có owner kỹ thuật; giữ cách chạy trực tiếp | Accepted trên nhánh triển khai; chờ review repository |
 
 ## Cách ghi quyết định
 
@@ -62,3 +62,4 @@ Khi một mục được chốt:
 | --- | --- | --- | --- |
 | DEC-001–010 | Quy ước nền tảng cho nhánh triển khai BE | Nhánh BE / 2026-10-05 | [ADR 0003](../../architecture/adr/0003-be-platform-contract.md) |
 | DEC-011–018 | Quy tắc kho cho nhánh triển khai BE | Nhánh BE / 2026-10-05 | [ADR 0004](../../architecture/adr/0004-stock-policies.md) |
+| DEC-023 | Compose cho bản demo và kiểm chứng SQL Server 2022 | Nhánh triển khai / 2026-10-09 | [ADR 0007](../../architecture/adr/0007-compose-demo.md) |

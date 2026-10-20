@@ -51,7 +51,8 @@
       <nav class="nav-groups" id="navGroups"></nav>
 
       <div class="sidebar-footer">
-        <div class="sync-status"><span></span><div><strong>Dữ liệu demo</strong><small>Sẵn sàng kết nối API</small></div></div>
+        <div class="sync-status"><span></span><div><strong id="dataStatus">Dữ liệu demo</strong><small id="dataStatusDetail">Có thể chuyển sang API</small></div></div>
+        <a class="support-link" id="apiModeLink" href="?mode=api#products">Kết nối API <svg aria-hidden="true"><use href="#icon-arrow"/></svg></a>
         <button class="support-link" type="button" id="helpButton">Hướng dẫn vận hành <svg aria-hidden="true"><use href="#icon-arrow"/></svg></button>
       </div>
     </aside>
@@ -70,7 +71,7 @@
             <kbd>Ctrl K</kbd>
           </label>
           <button class="icon-button notification-button" id="notificationButton" type="button" aria-label="Thông báo, có 3 thông báo mới"><svg aria-hidden="true"><use href="#icon-bell"/></svg><span>3</span></button>
-          <label class="role-switcher">
+          <label class="role-switcher" id="demoRoleSwitcher">
             <span>Vai trò demo</span>
             <select id="roleSwitcher" aria-label="Chuyển vai trò demo">
               <option value="manager">Quản lý kho</option>
@@ -78,6 +79,7 @@
               <option value="admin">Quản trị viên</option>
             </select>
           </label>
+          <button class="button button-quiet" id="logoutButton" type="button" hidden>Đăng xuất</button>
           <div class="user-profile"><span class="avatar" id="userAvatar">NT</span><span><strong id="userName">Nguyễn Trung</strong><small id="userRole">Quản lý kho</small></span></div>
         </div>
       </header>
@@ -146,6 +148,7 @@
                 <button class="button button-quiet" id="clearFiltersButton" type="button"><svg><use href="#icon-filter"/></svg>Xóa lọc</button>
               </div>
             </div>
+            <p class="list-message" id="listMessage" role="status" aria-live="polite" hidden></p>
             <div class="table-wrap"><table id="dataTable"><thead></thead><tbody></tbody></table></div>
             <div class="empty-state" id="listEmpty" hidden><svg><use href="#icon-search"/></svg><h3>Không có kết quả phù hợp</h3><p>Thử đổi từ khóa hoặc xóa bớt bộ lọc đang dùng.</p><button class="button button-secondary" type="button" data-clear-filters>Xóa bộ lọc</button></div>
             <footer class="pagination"><span id="recordRange">Hiển thị 1–8 trong 24 bản ghi</span><div><button id="previousPage" type="button" aria-label="Trang trước">‹</button><span id="pageNumbers"></span><button id="nextPage" type="button" aria-label="Trang sau">›</button></div></footer>
@@ -217,13 +220,24 @@
 
   <aside class="record-editor" id="recordEditor" aria-labelledby="recordEditorTitle" hidden>
     <div class="editor-header"><div><h2 id="recordEditorTitle">Thêm sản phẩm</h2><p>Tạo bản ghi mới trong dữ liệu demo.</p></div><button class="icon-button" id="closeRecordEditor" type="button" aria-label="Đóng bảng nhập">×</button></div>
-    <form id="recordForm"><div class="editor-body"><label class="field"><span>Mã bản ghi *</span><input id="recordCode" required maxlength="12" placeholder="VD: SP0129"></label><label class="field"><span>Tên hiển thị *</span><input id="recordName" required maxlength="120"></label><label class="field"><span>Phân loại</span><select id="recordCategory"><option>Thực phẩm</option><option>Đồ uống</option><option>Gia dụng</option><option>Khác</option></select></label><label class="field"><span>Trạng thái</span><select id="recordStatus"><option>Đang hoạt động</option><option>Chờ xử lý</option><option>Ngừng hoạt động</option></select></label><label class="field"><span>Ghi chú</span><textarea id="recordNote" rows="4" placeholder="Thông tin bổ sung..."></textarea></label></div><div class="editor-footer"><button class="button button-secondary" id="cancelRecordButton" type="button">Hủy</button><button class="button button-primary" type="submit">Lưu bản ghi</button></div></form>
+    <form id="recordForm"><div class="editor-body"><label class="field"><span>Mã bản ghi *</span><input id="recordCode" required maxlength="12" placeholder="VD: SP0129"></label><label class="field"><span>Tên hiển thị *</span><input id="recordName" required maxlength="120"></label><label class="field"><span>Phân loại</span><select id="recordCategory"><option>Thực phẩm</option><option>Đồ uống</option><option>Gia dụng</option><option>Khác</option></select></label><label class="field"><span>Trạng thái</span><select id="recordStatus"><option>Đang hoạt động</option><option>Chờ xử lý</option><option>Ngừng hoạt động</option></select></label><label class="field"><span>Ghi chú</span><textarea id="recordNote" rows="4" placeholder="Thông tin bổ sung..."></textarea></label></div><div class="editor-footer"><button class="button button-secondary" id="cancelRecordButton" type="button">Hủy</button><button class="button button-secondary" id="liveDeleteButton" type="button" hidden>Xóa sản phẩm</button><button class="button button-primary" id="liveSaveButton" type="submit">Lưu bản ghi</button></div></form>
   </aside>
+
+  <dialog class="login-dialog" id="loginDialog" aria-labelledby="loginTitle">
+    <form id="loginForm">
+      <h2 id="loginTitle">Đăng nhập BlueStock</h2>
+      <p>Dùng tài khoản được cấp để xem dữ liệu kho.</p>
+      <label class="field"><span>Tên tài khoản</span><input name="tenTaiKhoan" autocomplete="username" required></label>
+      <label class="field"><span>Mật khẩu</span><input name="matKhau" type="password" autocomplete="current-password" required></label>
+      <p class="text-danger" id="loginError" role="alert" hidden></p>
+      <div class="login-actions"><a href="?mode=demo#dashboard">Xem dữ liệu demo</a><button class="button button-primary" type="submit">Đăng nhập</button></div>
+    </form>
+  </dialog>
 
   <div class="command-results" id="commandResults" hidden></div>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
   <div class="editor-overlay" id="editorOverlay" hidden></div>
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -25,9 +25,20 @@ Mở `http://127.0.0.1:5174`.
 
 - `index.html`: app shell, các màn hình nghiệp vụ và biểu mẫu.
 - `styles.css`: design tokens, trạng thái và bố cục responsive.
-- `app.js`: điều hướng theo vai trò, dữ liệu demo, bảng/phân trang và tương tác biểu mẫu.
+- `app.js`: khởi tạo giao diện, bảng/phân trang và tương tác biểu mẫu.
+- `core/navigation.js`: cấu hình vai trò demo, menu và tiêu đề màn hình.
+- `core/api-client.js`: HTTP client giữ session cookie và CSRF token trong bộ nhớ cho chế độ API.
+- `data/demo.js`: dữ liệu giả của danh mục, tồn, kiểm kê và báo cáo.
+- `data/product-api.js`: adapter theo contract cho CRUD sản phẩm, loại và đơn vị tính.
+- `features/live-products.js`: màn hình sản phẩm dùng API thật.
+- `data/inventory-api.js`: adapter tra cứu tồn theo contract.
+- `features/live-inventory.js`: màn hình tồn kho dùng API thật.
+- `data/report-api.js`: adapter báo cáo nhập–xuất–tồn theo contract.
+- `features/live-report.js`: màn hình báo cáo dùng API thật.
+- `data/document-api.js`: adapter phiếu nhập, phiếu xuất và gợi ý FEFO.
+- `features/live-documents.js`: form nhập/xuất một dòng qua API thật.
 
-Ba file hiện tại là baseline chạy được nhưng chưa phải ranh giới phù hợp để bốn người sửa song song. Backlog `GOV-03` sẽ tách dần JavaScript/CSS theo `core` và bốn feature trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md), đồng thời giữ nguyên hành vi và không đổi framework.
+JavaScript đã tách cấu hình điều hướng và dữ liệu mẫu khỏi điểm vào. Logic tương tác và CSS vẫn tập trung trong hai file lớn; backlog `GOV-03` cần tiếp tục tách theo feature trong [`../../docs/project/governance/WORKSTREAMS.md`](../../docs/project/governance/WORKSTREAMS.md), giữ hành vi hiện có và không đổi framework.
 
 ## Ngôn ngữ giao diện
 
@@ -35,25 +46,17 @@ Giao diện dùng phong cách editorial tiết chế lấy cảm hứng từ tra
 
 ## Kết nối Spring Boot
 
-Mở `app.js` và đổi:
+Mở `http://127.0.0.1:5174/?mode=api#products` để đăng nhập và xem/tạo/sửa/xóa sản phẩm qua API theo [`../../contracts/session-rbac.md`](../../contracts/session-rbac.md) và [`../../contracts/san-pham.md`](../../contracts/san-pham.md). Chọn **Phiếu nhập** và **Phiếu xuất** để tạo nháp, tải lại phiếu bằng mã, hoàn tất hoặc hủy theo quyền trong [`../../contracts/inbound-completion.md`](../../contracts/inbound-completion.md) và [`../../contracts/outbound-fefo-completion.md`](../../contracts/outbound-fefo-completion.md). Chọn **Tồn kho** để tra cứu lô/vị trí theo [`../../contracts/inventory-query.md`](../../contracts/inventory-query.md), và **Báo cáo nhập–xuất–tồn** để xem biến động theo kỳ theo [`../../contracts/reporting.md`](../../contracts/reporting.md). Cần API tại `http://127.0.0.1:8080` và frontend mở đúng origin `http://127.0.0.1:5174`; backend phải được cấu hình JDBC và bootstrap tài khoản trước.
 
-```js
-const USE_DUMMY_DATA = false;
-```
+Form API nhập/xuất hiện hỗ trợ một dòng mỗi phiếu để demo luồng chính. Nhập mã nhà cung cấp `NCC001`, sản phẩm `SP0001`, vị trí `VT0001` cho phiếu nhập trên database demo; sau khi hoàn tất, xem mã lô mới trong màn hình tồn rồi dùng lô đó để lập phiếu xuất với đối tác `DT0001`. Tài khoản `QLKHO` mới có quyền hoàn tất. Với phiếu nhiều dòng, dùng HTTP client theo contract; không dùng form một dòng để sửa hoặc hoàn tất phiếu nhiều dòng.
 
-API mặc định: `http://localhost:8080/api`.
+Nếu port 8080 đang dùng, đặt `SERVER_PORT=8082` trong terminal API và mở frontend bằng `http://127.0.0.1:5174/?mode=api&apiPort=8082#products`. `apiPort` chỉ đổi cổng trên `127.0.0.1`; không gửi session sang host khác.
 
-Endpoint đã chuẩn bị:
+Nếu port 5174 cũng đang dùng, chạy `pwsh -File scripts/dev.ps1 -Target web -Port 5176`, đặt thêm `APP_WEB_ORIGIN=http://127.0.0.1:5176` cho API, rồi mở `http://127.0.0.1:5176/?mode=api&apiPort=8082#products`.
 
-- `GET /api/sanpham`
-- `POST /api/sanpham`
-- `PUT /api/sanpham/{maSP}`
-- `DELETE /api/sanpham/{maSP}`
-- `GET /api/baocao/tonkho`
+Mở `http://127.0.0.1:5174/` để xem prototype bằng dữ liệu mẫu. Các luồng chuyển kho, kiểm kê, trả hàng và màn hình danh mục khác vẫn là demo, chưa gửi HTTP. Dùng [`../../docs/testing/API_SMOKE.md`](../../docs/testing/API_SMOKE.md) với Postman để thử toàn bộ nghiệp vụ backend.
 
-Backend cần cấu hình CORS đúng origin frontend. Khi có API contract chính thức, tên field và lỗi phải theo `contracts/`, không tự suy đoán ở UI.
-
-Các URL trên phản ánh adapter baseline hiện tại. URL chính thức chỉ được đổi sau khi nhóm chốt [`../../contracts/BASELINE.md`](../../contracts/BASELINE.md) và cập nhật adapter, backend, test cùng tài liệu trong một thay đổi thống nhất.
+Frontend cần tiếp tục chuyển các màn hình theo [`../../docs/project/governance/BACKLOG.md`](../../docs/project/governance/BACKLOG.md). Dùng adapter HTTP và contract của từng resource, đồng thời giữ loading/error/empty state; không đổi URL rải rác trong form.
 
 Danh sách resource/endpoint dự kiến nằm trong [`../../contracts/API_CATALOG.md`](../../contracts/API_CATALOG.md). Frontend không tự thêm field hoặc route chưa có contract được review.
 

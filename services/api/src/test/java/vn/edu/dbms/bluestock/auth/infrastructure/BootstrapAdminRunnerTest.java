@@ -23,7 +23,7 @@ class BootstrapAdminRunnerTest {
         when(jdbc.queryForObject(anyString(), eq(Integer.class))).thenReturn(0);
         when(encoder.encode(password)).thenReturn("encoded-hash");
 
-        new BootstrapAdminRunner(jdbc, encoder, "admin", password).run(null);
+        new BootstrapAdminRunner(jdbc, encoder, "admin", password, false).run(null);
 
         verify(encoder).encode(password);
         verify(jdbc).update(contains("INSERT INTO dbo.TAI_KHOAN"),
@@ -37,8 +37,21 @@ class BootstrapAdminRunnerTest {
         when(jdbc.queryForObject(anyString(), eq(Integer.class))).thenReturn(1);
 
         assertThrows(IllegalStateException.class, () ->
-            new BootstrapAdminRunner(jdbc, encoder, "admin", UUID.randomUUID().toString()).run(null));
+            new BootstrapAdminRunner(jdbc, encoder, "admin", UUID.randomUUID().toString(), false).run(null));
 
+        verify(jdbc, never()).update(anyString(), eq("TK0001"), eq("NV0001"),
+            eq("ADMIN"), eq("admin"), anyString());
+    }
+
+    @Test
+    void skipsExistingAccountsForRepeatableDemoStartup() throws Exception {
+        var jdbc = mock(JdbcTemplate.class);
+        var encoder = mock(PasswordEncoder.class);
+        when(jdbc.queryForObject(anyString(), eq(Integer.class))).thenReturn(1);
+
+        new BootstrapAdminRunner(jdbc, encoder, "admin", UUID.randomUUID().toString(), true).run(null);
+
+        verify(encoder, never()).encode(anyString());
         verify(jdbc, never()).update(anyString(), eq("TK0001"), eq("NV0001"),
             eq("ADMIN"), eq("admin"), anyString());
     }
