@@ -149,7 +149,8 @@ if ($WithDatabase) {
         'database\tests\020_inventory_functions_views.sql',
         'database\tests\021_position_stock_guard.sql',
         'database\tests\022_application_roles.sql',
-        'database\tests\023_inventory_indexes.sql'
+        'database\tests\023_inventory_indexes.sql',
+        'database\tests\024_inventory_guard_triggers.sql'
     )
     foreach ($testFile in $databaseTests) {
         & $sqlcmd -S $SqlServer @sqlAuth -C -b -f i:65001 -d $DatabaseName -i (Join-Path $root $testFile)

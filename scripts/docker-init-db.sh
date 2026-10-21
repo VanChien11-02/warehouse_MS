@@ -22,5 +22,10 @@ else
   exit 1
 fi
 
+# CREATE OR ALTER keeps existing Compose volumes current after a code update.
+# A new database already has these triggers from init.sql.
+"$sqlcmd" -S db -U sa -C -b -d BlueStock \
+  -i database/migrations/027_inventory_guard_triggers.sql
+
 "$sqlcmd" -S db -U sa -C -b -d BlueStock -i database/seed/demo.sql
 "$sqlcmd" -S db -U sa -C -b -i database/docker-app-login.sql

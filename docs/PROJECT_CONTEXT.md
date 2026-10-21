@@ -19,7 +19,7 @@ Bốn vai trò dự kiến:
 | --- | --- | --- |
 | Frontend | Baseline HTML/CSS/Vanilla JavaScript có chế độ API cho CRUD sản phẩm, phiếu nhập/xuất một dòng, tra cứu tồn kho và báo cáo nhập–xuất–tồn; các màn hình khác còn dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
 | Backend | Spring Boot/Maven Wrapper, session/RBAC, CRUD nền tảng, năm luồng chứng từ, tra cứu tồn, báo cáo nhập–xuất–tồn/chênh lệch/hạn dùng và audit | [`../services/api/README.md`](../services/api/README.md) |
-| Database | `init.sql` dựng 27 bảng, năm procedure hoàn tất, năm function, bảy view, trigger, index và bốn database role; seed demo riêng; Compose đã chạy SQL Server 2022 | [`../database/README.md`](../database/README.md) |
+| Database | `init.sql` dựng 27 bảng, năm procedure hoàn tất, năm function, bảy view, năm trigger, index và bốn database role; seed demo riêng; Compose đã chạy SQL Server 2022 ở mốc trước khi thêm bốn trigger mới | [`../database/README.md`](../database/README.md) |
 | API contract | Baseline tổng thể còn Draft; các contract chi tiết cho API đã triển khai nằm trong `contracts/` | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
 | Phân công | Có đề xuất bốn workstream, còn chờ nhóm xác nhận | [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md) |
 

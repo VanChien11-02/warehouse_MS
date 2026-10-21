@@ -33,3 +33,18 @@ Môi trường: Docker Desktop Linux containers, image `mcr.microsoft.com/mssql/
 | `node "$env:TEMP\bluestock-http-smoke.mjs"` với `SMOKE_BASE_URL=http://127.0.0.1:8080` và mật khẩu admin local; client tạm thực hiện [`API_SMOKE.md`](API_SMOKE.md) | Exit 0: Admin/QLKHO đăng nhập; nhập `PN0001` tạo lô `LO0063`; xuất `PX0001`; tồn `SP0001` từ 30 thành 32; hoàn tất lại trả `409 OUTBOUND_NOT_DRAFT`; xuất sai FEFO trả `409 FEFO_VIOLATION` và giữ tồn; báo cáo có một dòng |
 
 Runner SQL dùng UTF-8 khi đọc script bằng Windows `sqlcmd`, và bài concurrency lấy giờ hẹn từ SQL Server để không phụ thuộc múi giờ máy host/container. Client HTTP tạm nằm ngoài repository; kịch bản có thể lặp lại thủ công theo [`API_SMOKE.md`](API_SMOKE.md). Không lưu secret hoặc session trong repository.
+
+## Bốn trigger bảo vệ kho mới (2026-10-21)
+
+Môi trường: SQL Server 2022 trong Docker Compose ở `tcp:127.0.0.1,14330`; `sqlcmd` đăng nhập bằng `bluestock_app` với `SQLCMDPASSWORD` lấy từ `.env` local, không ghi vào log/repository. Bộ Maven trên host dùng JDK 24, biên dịch target Java 21. Các lệnh dưới đây chạy từ root repository.
+
+| Lệnh/kiểm tra | Kết quả |
+| --- | --- |
+| `sqlcmd ... -d BlueStock -i database/migrations/027_inventory_guard_triggers.sql` | Exit 0; cài bốn trigger mới trên volume demo trước đó chỉ có một trigger |
+| `sqlcmd ... -d BlueStock -i database/tests/024_inventory_guard_triggers.sql` | Exit 0, `Inventory guard triggers passed.`; test thêm/sửa nhiều dòng sai, rollback toàn câu và đường ghi hợp lệ |
+| `pwsh -File scripts/verify.ps1 -WithDatabase -WithConcurrency -SqlServer 'tcp:127.0.0.1,14330' -SqlUser bluestock_app` | Exit 0: 8 test frontend, 157 test Java, 24 script SQL và hai session xuất cạnh tranh đạt; `Baseline verification passed.` |
+| Bản sao `database/init.sql` chỉ thay tên database sang `BlueStockTrig30c2a61c`, chạy bằng `sqlcmd -U sa`, rồi chạy test 024 | Exit 0; database sạch trên SQL Server 2022 có đúng 5 trigger enabled; database và file script tạm đã xóa sau kiểm tra |
+| `docker compose up -d --no-build --force-recreate db-init` trên volume cũ | `db-init` exit 0; chạy lại migration 027/seed thành công, vẫn có 5 trigger enabled và 3 lô mẫu `PND001` |
+| `docker compose up -d --no-build api web`, `GET /actuator/health`, `GET /?mode=api#products` | API trả `UP`, web HTTP 200; chưa chạy lại kịch bản HTTP nhập → xuất đầy đủ trong lượt này |
+
+Trong lần chạy test 024 đầu tiên, tên đơn vị tính fixture trùng dữ liệu seed và bị unique constraint từ chối. Đã đổi fixture sang tên riêng `TST241`/`TST242`, chạy lại test 024 và cổng đầy đủ đều đạt.

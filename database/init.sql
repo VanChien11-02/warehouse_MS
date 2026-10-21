@@ -63,5 +63,9 @@ GO
 :r database/programmability/views/vw_LichSuXuatKho.sql
 :r database/programmability/views/vw_LoSapHetHan.sql
 :r database/programmability/triggers/trg_ViTriKho_BaoVeTon.sql
+:r database/programmability/triggers/trg_LoHang_GioiHanPhanBo.sql
+:r database/programmability/triggers/trg_CtPhieuNhap_GioiHanLo.sql
+:r database/programmability/triggers/trg_TonKho_BaoVeViTri.sql
+:r database/programmability/triggers/trg_BienDongTonKho_DungChieu.sql
 :r database/security/001_application_roles.sql
 :r database/indexes/001_inventory_lookup.sql

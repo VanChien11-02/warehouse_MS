@@ -1,6 +1,6 @@
 # Kế hoạch physical schema SQL Server
 
-> Trạng thái: **Draft cho DB-01**. 27 bảng, năm procedure hoàn tất, năm function, bảy view, một trigger, bốn database role và index tra cứu đã có; script đã dựng được database độc lập trên SQL Server 17.x. Đo index có một lần chạy với dữ liệu giả; SQL Server 2022 còn cần kiểm chứng.
+> Trạng thái: **Draft cho DB-01**. 27 bảng, năm procedure hoàn tất, năm function, bảy view, năm trigger, bốn database role và index tra cứu đã có trong script. Kết quả kiểm chứng chạy thực tế ghi riêng tại tài liệu test; đo index lịch sử dùng dữ liệu giả.
 
 ## Mục tiêu
 

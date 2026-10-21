@@ -44,6 +44,8 @@ Identity map `TAI_KHOAN.MaTK` ↔ `maTaiKhoan`, `NHAN_VIEN.MaNV` ↔ `maNhanVien
 
 `SucChua` là số đơn vị tính gốc theo ADR 0004. Vị trí đang có tồn dương chỉ nhận lô cùng `MaDVT`; không cộng số lượng khác đơn vị để kết luận vị trí còn chỗ.
 
+Năm trigger tại [`database/programmability/triggers/README.md`](../../../database/programmability/triggers/README.md) bảo vệ vị trí, lượng lô so với dòng nhập, sức chứa/đơn vị tính của tồn và chiều biến động sổ. Chúng chạy tự động trong transaction của procedure khi API hoàn tất chứng từ; không thay thế kiểm tra, khóa và thông báo lỗi nghiệp vụ của procedure.
+
 Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/xuất theo [`contracts/partner.md`](../../../contracts/partner.md); tạo nháp không ghi sổ tồn.
 
 `SEQ_PHIEU_NHAP` và `SEQ_LO_HANG` cấp số mã chứng từ/lô. Quy tắc tổng số lượng lô, sức chứa, đơn vị tính và bảo quản cần procedure hoàn tất kiểm tra trong transaction theo [`contracts/inbound-completion.md`](../../../contracts/inbound-completion.md).
