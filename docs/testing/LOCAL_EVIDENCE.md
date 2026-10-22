@@ -1,5 +1,32 @@
 # Kết quả kiểm chứng local
 
+## Đồng bộ màn hình demo/API (2026-10-22)
+
+Phạm vi: SEC-01, CAT-01, LOC-01, FE-02, TRF-01, CNT-01, RET-01, REP-01,
+AUD-01. Backend bổ sung `GET /api/quyen-han` chỉ dành cho Admin; frontend dùng
+API cho bảy danh mục, mapping đối tác, năm chứng từ nhiều dòng, tổng quan,
+ma trận quyền, hạn dùng, chênh lệch kiểm kê và audit. Không thay schema.
+
+| Lệnh/kiểm tra | Kết quả |
+| --- | --- |
+| `pwsh -File scripts/verify.ps1` | Exit 0: 15 test frontend, 162 test Java; kiểm tra cú pháp và liên kết Markdown đạt. Host dùng JDK 24, compile target Java 21. Lần đầu trong sandbox lỗi truy cập Maven/cache; chạy lại với quyền môi trường host đạt. |
+| `node scripts/verify-web-parity.mjs` với `PLAYWRIGHT_PATH` trỏ thư viện bundled, `PLAYWRIGHT_CHANNEL=msedge`, `WEB_TEST_URL=http://127.0.0.1:5177` | Exit 0: bốn role, bảy màn danh mục, tạo kho, năm luồng lưu/hoàn tất chứng từ, quyền chỉ đọc/không được hoàn tất, desktop 1440px và mobile 390px; 124 request API giả lập, không lỗi JavaScript hoặc tràn viewport. |
+| `impeccable.cmd detect --json` trên các file UI sửa | Exit 0, kết quả `[]`. Đã xem ảnh desktop/mobile của ma trận quyền và phiếu chuyển. |
+| `docker compose build api web` | Exit 0, API build bằng Java 21. |
+| `docker compose up -d --no-deps api web` | Exit 0; thay hai container ứng dụng bằng image mới, giữ SQL Server và volume. |
+| Playwright với web 5174 và API 8080 thật | Đăng nhập Admin bằng cấu hình local trong bộ nhớ, đọc bốn vai trò/chín nhóm quyền và 12 danh sách danh mục/chứng từ trên SQL Server, đăng xuất; không lỗi JavaScript. Không ghi mật khẩu/cookie/token vào artifact. |
+
+Ảnh và output trình duyệt nằm trong thư mục artifact của phiên làm việc,
+không đưa vào Git. Script trình duyệt giả lập có thể chạy lại bằng cách cài
+Playwright ngoài frontend rồi đặt `PLAYWRIGHT_PATH`; tùy chọn `WEB_TEST_OUTPUT`
+chỉ nơi lưu ảnh. Chạy web qua `scripts/dev.ps1` trước khi dùng script này.
+
+Giới hạn: lượt này không chạy lại bộ SQL/concurrency và không ghi sổ nhập/xuất
+trên database đang demo. Browser test giả lập kiểm tra điều hướng/payload/UI;
+không thay thế kiểm tra transaction trên SQL Server. Kiểm kê lưu từng dòng qua
+API riêng; nếu một dòng lỗi thì những dòng đã lưu vẫn là nháp và có thể tiếp tục.
+Tập vai trò cố định, không có API tạo vai trò hoặc sửa policy tùy ý.
+
 Ngày 2026-10-08, nhánh `feature/db-foundation`, commit `83e69f5`. Môi trường: Windows, PowerShell 7.6.5, Node.js 25.9.0, JDK 25, SQL Server 2025 Express 17.0.1135.8. Mã Java biên dịch với target Java 21; chưa chạy trên JDK 21 hoặc SQL Server 2022.
 
 | Lệnh/kiểm tra | Kết quả |
@@ -48,3 +75,21 @@ Môi trường: SQL Server 2022 trong Docker Compose ở `tcp:127.0.0.1,14330`; 
 | `docker compose up -d --no-build api web`, `GET /actuator/health`, `GET /?mode=api#products` | API trả `UP`, web HTTP 200; chưa chạy lại kịch bản HTTP nhập → xuất đầy đủ trong lượt này |
 
 Trong lần chạy test 024 đầu tiên, tên đơn vị tính fixture trùng dữ liệu seed và bị unique constraint từ chối. Đã đổi fixture sang tên riêng `TST241`/`TST242`, chạy lại test 024 và cổng đầy đủ đều đạt.
+
+## Phân vai API và đối soát Kế toán (2026-10-22)
+
+Môi trường: Docker Compose SQL Server 2022, API chạy Java 21 trong container;
+host chạy Maven bằng JDK 24. Migration 028 được áp dụng lên volume demo hiện có.
+
+| Lệnh/kiểm tra | Kết quả |
+| --- | --- |
+| `docker compose run --rm db-init` | Exit 0; migration 028 thêm bảng đối soát, đồng bộ quyền SQL và seed lặp lại được |
+| `pwsh -File scripts/verify.ps1 -WithDatabase -SqlServer '127.0.0.1,14330' -SqlUser sa` với `SQLCMDPASSWORD` đọc từ `.env` local | Exit 0; 15 test frontend, 170 test Java và 25 script SQL đạt; `Baseline verification passed.` |
+| `impeccable.cmd detect --json apps/web/features/live-insights.js apps/web/features/live-documents.js apps/web/styles.css` | Exit 0, không phát hiện vấn đề (`[]`) |
+| `git diff --check` | Exit 0; chỉ có cảnh báo Git về chuyển LF/CRLF khi chạm file |
+| `docker compose up -d --build api web` | Exit 0; image API/web mới được dựng và hai container khởi động |
+| `GET http://127.0.0.1:8080/actuator/health`, `GET http://127.0.0.1:5174/?mode=api#dashboard` | API trả `UP`, web trả HTTP 200; màn đăng nhập API hiển thị trong browser |
+
+Chưa kiểm tra bằng thao tác trình duyệt sau khi đăng nhập đủ bốn vai trò trong lượt này; quyền HTTP được bao phủ bởi controller test, còn role SQL, schema và nghiệp vụ đối soát được kiểm tra bằng test tương ứng.
+
+Sau khi thêm biểu đồ khối lượng phiếu vào dashboard API, cùng lệnh `verify.ps1 -WithDatabase` được chạy lại và vẫn exit 0 với 15 test frontend, 170 test Java, 25 script SQL. Lệnh `docker compose up -d --build web` để đưa riêng biểu đồ mới lên container bị từ chối ở bước cấp quyền, nên container web đang chạy là bản trước thay đổi biểu đồ cuối này; mã nguồn và toàn bộ kiểm tra đã cập nhật.

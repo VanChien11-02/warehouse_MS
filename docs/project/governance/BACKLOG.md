@@ -32,6 +32,21 @@ Mục tiêu: dựng SQL Server và Spring Boot, đăng nhập thật và CRUD da
 | FE-02 | Tách adapter dữ liệu mẫu/API | P0 | Cần chốt | CAT-01 | Chuyển demo/API bằng cấu hình; có loading/error/empty |
 | QA-01 | Test nền tảng và traceability | P1 | Cần chốt | SEC-01, CAT-01 | Test auth, quyền, validation và contract |
 
+Phần bổ sung theo yêu cầu đồng bộ demo/API (2026-10-22), thuộc SEC-01, CAT-01,
+LOC-01, FE-02 và các item chứng từ/reporting bên dưới: Admin có ma trận quyền
+từ `/api/quyen-han` và gán vai trò qua tài khoản; Quản lý kho có đầy đủ danh mục,
+kho/khu vực/vị trí, đối tác/mapping và năm luồng chứng từ nhiều dòng qua API.
+Quyết định phân vai tiếp theo cùng ngày: Admin chỉ quản lý nhân viên, tài khoản,
+quyền hạn; Nhân viên kho chỉ quản lý tồn và phiếu nhập/xuất; Quản lý kho giữ
+phạm vi đã tích hợp. Kế toán đối soát giá trị phiếu nhập/xuất đã hoàn tất theo
+quyết định ACC-01 bên dưới. Dashboard API hiển thị dữ liệu
+thật và lối vào theo vai trò. Endpoint đọc audit đang tạm đóng chờ phân vai.
+Acceptance: phân trang/lọc; CRUD theo contract; sửa/hủy chỉ khi nháp; chốt bởi
+QLKHO; kiểm kê lấy snapshot từ server; có loading/empty/error; không rơi về dữ
+liệu demo trong chế độ API. Owner triển khai: backend/frontend; reviewer tích
+hợp: chủ repository. Bằng chứng và giới hạn nằm trong
+[`../../testing/LOCAL_EVIDENCE.md`](../../testing/LOCAL_EVIDENCE.md).
+
 ## Sprint 2 - Nhập, tồn và xuất kho
 
 Mục tiêu: hoàn thành luồng nhập lô → tồn theo vị trí → xuất FEFO.
@@ -64,6 +79,15 @@ Mục tiêu: hoàn thành luồng nhập lô → tồn theo vị trí → xuất
 | DB-R04 | Login, role và quyền | TV4 Phát | 4 role, ma trận quyền và GRANT/REVOKE/DENY |
 
 ## Sprint 4 - Hoàn thiện và bảo vệ
+
+### ACC-01 - Đối soát giá trị cho Kế toán
+
+Quyết định Project Owner 2026-10-22: Kế toán xem chứng từ, tồn và báo cáo;
+được xác nhận giá trị khớp hoặc ghi nhận chênh lệch trên phiếu nhập/xuất **đã
+hoàn tất**. Bản ghi đối soát riêng, tối đa một lần mỗi phiếu, có người/thời điểm
+và audit; không thay đổi tồn hoặc trạng thái ghi sổ. Acceptance: API từ chối
+phiếu nháp/đối soát lặp và role khác; UI chỉ hiện hành động cho Kế toán; schema
+sạch/migration và test theo [`../../../contracts/accounting-reconciliation.md`](../../../contracts/accounting-reconciliation.md).
 
 | ID | Backlog item | Ưu tiên | Owner | Phụ thuộc | Tiêu chí chấp nhận |
 | --- | --- | ---: | --- | --- | --- |

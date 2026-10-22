@@ -8,18 +8,18 @@ BlueStock là hệ thống quản lý kho phục vụ đồ án DBMS330284. Hệ
 
 Bốn vai trò dự kiến:
 
-- `Admin`: quản trị nhân viên, tài khoản, role và danh mục.
+- `Admin`: chỉ quản trị nhân viên, tài khoản và role.
 - `QuanLyKho`: quản lý cấu trúc kho, duyệt chứng từ và xem báo cáo.
-- `NhanVienKho`: lập và thao tác chứng từ kho trong phạm vi được cấp.
-- `KeToan`: xem chứng từ, giá trị nhập-xuất-tồn và báo cáo; không trực tiếp sửa tồn.
+- `NhanVienKho`: tra cứu tồn, lập và thao tác phiếu nhập/xuất nháp.
+- `KeToan`: đọc chứng từ, tồn và báo cáo; đối soát giá trị phiếu nhập/xuất đã hoàn tất mà không thay đổi tồn.
 
 ## Hiện trạng repository
 
 | Thành phần | Hiện trạng | Nguồn |
 | --- | --- | --- |
-| Frontend | Baseline HTML/CSS/Vanilla JavaScript có chế độ API cho CRUD sản phẩm, phiếu nhập/xuất một dòng, tra cứu tồn kho và báo cáo nhập–xuất–tồn; các màn hình khác còn dùng dữ liệu demo | [`../apps/web/README.md`](../apps/web/README.md) |
-| Backend | Spring Boot/Maven Wrapper, session/RBAC, CRUD nền tảng, năm luồng chứng từ, tra cứu tồn, báo cáo nhập–xuất–tồn/chênh lệch/hạn dùng và audit | [`../services/api/README.md`](../services/api/README.md) |
-| Database | `init.sql` dựng 27 bảng, năm procedure hoàn tất, năm function, bảy view, năm trigger, index và bốn database role; seed demo riêng; Compose đã chạy SQL Server 2022 ở mốc trước khi thêm bốn trigger mới | [`../database/README.md`](../database/README.md) |
+| Frontend | HTML/CSS/Vanilla JavaScript; chế độ API cho danh mục, cấu trúc kho, đối tác/mapping, năm loại chứng từ nhiều dòng, tồn, tổng quan, báo cáo, nhân viên/tài khoản, ma trận quyền và đối soát giá trị theo role; chế độ demo riêng | [`../apps/web/README.md`](../apps/web/README.md) |
+| Backend | Spring Boot/Maven Wrapper, session/RBAC, CRUD nền tảng, năm luồng chứng từ, tra cứu tồn, báo cáo nhập–xuất–tồn/chênh lệch/hạn dùng, audit và đối soát giá trị | [`../services/api/README.md`](../services/api/README.md) |
+| Database | `init.sql` dựng 28 bảng, năm procedure hoàn tất, năm function, bảy view, năm trigger, index và bốn database role; seed demo riêng; migration 028 cho đối soát và phân vai | [`../database/README.md`](../database/README.md) |
 | API contract | Baseline tổng thể còn Draft; các contract chi tiết cho API đã triển khai nằm trong `contracts/` | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
 | Phân công | Có đề xuất bốn workstream, còn chờ nhóm xác nhận | [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md) |
 

@@ -16,7 +16,7 @@ docker compose ps --all
 Invoke-RestMethod http://127.0.0.1:8080/actuator/health
 ```
 
-Đợi `db` ở trạng thái `healthy`, `db-init` kết thúc với mã `0`, `api` và `web` ở trạng thái `Up`, và health trả `UP`. Mở `http://127.0.0.1:5174/?mode=api#products`, đăng nhập `admin` bằng `APP_ADMIN_PASSWORD` trong `.env`. Trang không có `?mode=api` là prototype dùng dữ liệu mẫu. Giao diện API hiện hỗ trợ sản phẩm, phiếu nhập/xuất một dòng, tồn và báo cáo nhập–xuất–tồn; các nghiệp vụ còn lại thử qua HTTP client theo contract.
+Đợi `db` ở trạng thái `healthy`, `db-init` kết thúc với mã `0`, `api` và `web` ở trạng thái `Up`, và health trả `UP`. Mở `http://127.0.0.1:5174/?mode=api#accounts`, đăng nhập `admin` bằng `APP_ADMIN_PASSWORD` trong `.env`; Admin sẽ thấy quản lý nhân viên và tài khoản. Trang không có `?mode=api` là prototype dùng dữ liệu mẫu. Các vai trò kho/kế toán thấy những màn API được cấp quyền. Sau khi build lại web, tải lại tab đang mở để nhận JavaScript mới; container web gửi `Cache-Control: no-store` để tránh giữ phiên bản cũ khi tải lại.
 
 Compose tạo tài khoản admin **chỉ khi bảng tài khoản trống**. Đổi `APP_ADMIN_PASSWORD` sau lần khởi tạo không đổi mật khẩu trong database đã tồn tại. `db-init` chạy seed giả lập theo cách lặp lại được, không ghi sổ thêm khi khởi động lại.
 
@@ -47,4 +47,4 @@ docker compose down
 
 `down` giữ volume và dữ liệu demo. **Chỉ khi chủ động xóa database demo**, dùng `docker compose down -v` rồi khởi động lại. Không dùng volume này cho dữ liệu thật.
 
-Nếu cổng máy chủ trùng ứng dụng khác, sửa `DB_PORT`, `API_PORT`, `WEB_PORT` trong `.env`. Với `API_PORT` khác 8080, mở frontend bằng `http://127.0.0.1:<WEB_PORT>/?mode=api&apiPort=<API_PORT>#products`; Compose tự cấu hình CORS theo `WEB_PORT`. Nếu `db-init` thất bại, xem log của nó trước khi thử khởi động API. Một database đã tồn tại nhưng thiếu schema sẽ bị từ chối; Compose không tự sửa schema hoặc xóa dữ liệu.
+Nếu cổng máy chủ trùng ứng dụng khác, sửa `DB_PORT`, `API_PORT`, `WEB_PORT` trong `.env`. Với `API_PORT` khác 8080, mở frontend bằng `http://127.0.0.1:<WEB_PORT>/?mode=api&apiPort=<API_PORT>#products`; Compose tự cấu hình CORS theo `WEB_PORT`. Nếu `db-init` thất bại, xem log của nó trước khi thử khởi động API. Trên volume cũ có schema đầy đủ, `db-init` tự áp dụng migration 027 và 028; một database thiếu schema nền tảng sẽ bị từ chối và không bị xóa dữ liệu.
