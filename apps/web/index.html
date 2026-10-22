@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#153f34">
   <title>BlueStock | Trung tâm vận hành kho</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23153f34'/%3E%3Cpath d='M14 23 32 13l18 10v21L32 54 14 44V23Z' fill='none' stroke='%23f7f4eb' stroke-width='5' stroke-linejoin='round'/%3E%3Cpath d='m14 23 18 10 18-10M32 33v21' fill='none' stroke='%23c7d7b7' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=session-shell-4">
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Bỏ qua điều hướng</a>
@@ -85,6 +85,12 @@
       </header>
 
       <main class="main-content" id="mainContent" tabindex="-1">
+        <section class="view" id="apiSessionView" hidden>
+          <div class="empty-state">
+            <p id="apiSessionMessage" role="status" aria-live="polite">Đang kiểm tra phiên đăng nhập...</p>
+            <button class="button button-secondary" id="reloadApiButton" type="button" hidden>Tải lại trang</button>
+          </div>
+        </section>
         <section class="view active" id="dashboardView" data-page="dashboard">
           <div class="dashboard-intro">
             <div><h2>Nhịp kho hôm nay</h2><p>Dữ liệu minh họa · Cập nhật lần cuối lúc <time id="updatedTime">09:42</time></p></div>
@@ -238,6 +244,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
   <div class="editor-overlay" id="editorOverlay" hidden></div>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=session-shell-4"></script>
 </body>
 </html>

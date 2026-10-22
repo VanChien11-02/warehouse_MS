@@ -51,14 +51,17 @@ Write-Host '2/4 Kiểm tra JavaScript frontend...'
 $node = (Get-Command node -ErrorAction Stop).Source
 foreach ($scriptFile in @('app.js', 'core\navigation.js', 'core\api-client.js',
         'data\demo.js', 'data\product-api.js', 'data\inventory-api.js', 'data\report-api.js',
-        'data\document-api.js',
+        'data\document-api.js', 'data\identity-api.js', 'data\master-api.js', 'data\document-models.js', 'data\insight-api.js',
         'features\live-products.js', 'features\live-inventory.js', 'features\live-report.js',
-        'features\live-documents.js')) {
+        'features\live-documents.js', 'features\live-identity.js', 'features\live-masters.js',
+        'features\live-permissions.js', 'features\live-insights.js')) {
     & $node --check (Join-Path $root 'apps\web' $scriptFile)
     if ($LASTEXITCODE -ne 0) { throw "JavaScript frontend không hợp lệ: $scriptFile" }
 }
 & $node --test (Join-Path $root 'apps\web\core\api-client.test.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Frontend API client test thất bại.' }
+& $node --test (Join-Path $root 'apps\web\core\navigation.test.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Frontend role navigation test thất bại.' }
 & $node --test (Join-Path $root 'apps\web\data\product-api.test.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Frontend product adapter test thất bại.' }
 & $node --test (Join-Path $root 'apps\web\data\inventory-api.test.mjs')
@@ -67,6 +70,10 @@ if ($LASTEXITCODE -ne 0) { throw 'Frontend inventory adapter test thất bại.'
 if ($LASTEXITCODE -ne 0) { throw 'Frontend report adapter test thất bại.' }
 & $node --test (Join-Path $root 'apps\web\data\document-api.test.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Frontend document adapter test thất bại.' }
+& $node --test (Join-Path $root 'apps\web\data\identity-api.test.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Frontend identity adapter test thất bại.' }
+& $node --test (Join-Path $root 'apps\web\data\parity-api.test.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Frontend API parity test thất bại.' }
 & $node --check (Join-Path $root 'scripts\serve-web.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Static server script không hợp lệ.' }
 
@@ -108,7 +115,13 @@ $apiWrapper = Join-Path $root 'services\api\mvnw.cmd'
 if (Test-Path -LiteralPath $apiWrapper) {
     Push-Location (Split-Path -Parent $apiWrapper)
     try {
-        & $apiWrapper test
+        $installedMaven = Get-Command mvn -ErrorAction SilentlyContinue
+        if ($IsWindows -and $installedMaven) {
+            & $installedMaven.Source test
+        }
+        else {
+            & $apiWrapper test
+        }
         if ($LASTEXITCODE -ne 0) { throw 'Backend test thất bại.' }
     }
     finally {
@@ -150,7 +163,8 @@ if ($WithDatabase) {
         'database\tests\021_position_stock_guard.sql',
         'database\tests\022_application_roles.sql',
         'database\tests\023_inventory_indexes.sql',
-        'database\tests\024_inventory_guard_triggers.sql'
+        'database\tests\024_inventory_guard_triggers.sql',
+        'database\tests\025_accounting_reconciliation.sql'
     )
     foreach ($testFile in $databaseTests) {
         & $sqlcmd -S $SqlServer @sqlAuth -C -b -f i:65001 -d $DatabaseName -i (Join-Path $root $testFile)

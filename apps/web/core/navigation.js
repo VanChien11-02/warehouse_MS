@@ -25,6 +25,22 @@ export const roleProfiles = {
   }
 };
 
+// Pages currently backed by the API. The server remains the authority for every request.
+const apiPagesByRole = {
+  ADMIN: ["dashboard", "employees", "accounts", "permissions"],
+  QLKHO: [...roleProfiles.manager.pages, "expiry", "discrepancies"],
+  NVKHO: ["dashboard", "inventory", "inbound", "outbound"],
+  KETOAN: ["dashboard", "inventory", "inbound", "outbound", "transfer", "count", "return", "reports", "discrepancies"]
+};
+
+export function apiPagesForRole(role) {
+  return Object.hasOwn(apiPagesByRole, role) ? apiPagesByRole[role] : [];
+}
+
+export function apiLandingPageForRole(role) {
+  return apiPagesForRole(role)[0] || "products";
+}
+
 export const navDefinition = [
   {
     label: "Tổng quan",
@@ -67,7 +83,9 @@ export const navDefinition = [
       { id: "transfer", label: "Phiếu chuyển kho", icon: "file" },
       { id: "count", label: "Phiếu kiểm kê", icon: "file" },
       { id: "return", label: "Phiếu trả hàng", icon: "file" },
-      { id: "reports", label: "Báo cáo tồn kho", icon: "chart" }
+      { id: "reports", label: "Báo cáo tồn kho", icon: "chart" },
+      { id: "expiry", label: "Lô sắp hết hạn", icon: "chart" },
+      { id: "discrepancies", label: "Chênh lệch kiểm kê", icon: "chart" }
     ]
   },
   {
@@ -76,7 +94,8 @@ export const navDefinition = [
     items: [
       { id: "employees", label: "Nhân viên", icon: "users" },
       { id: "accounts", label: "Tài khoản đăng nhập", icon: "shield" },
-      { id: "permissions", label: "Quyền hạn", icon: "shield" }
+      { id: "permissions", label: "Quyền hạn", icon: "shield" },
+      { id: "audit", label: "Nhật ký thao tác", icon: "shield" }
     ]
   }
 ];
@@ -100,5 +119,8 @@ export const pageMeta = {
   reports: ["Báo cáo tồn kho", "Tổng hợp nhập — xuất — tồn"],
   employees: ["Nhân viên", "Hồ sơ nhân sự được cấp quyền hệ thống"],
   accounts: ["Tài khoản đăng nhập", "Trạng thái truy cập và vai trò"],
-  permissions: ["Quyền hạn", "Ma trận quyền theo vai trò"]
+  permissions: ["Quyền hạn", "Ma trận quyền theo vai trò"],
+  expiry: ["Lô sắp hết hạn", "Hạn dùng theo lô và vị trí"],
+  discrepancies: ["Chênh lệch kiểm kê", "Đối chiếu các phiếu đã hoàn tất"],
+  audit: ["Nhật ký thao tác", "Lịch sử giao dịch và quản trị"]
 };

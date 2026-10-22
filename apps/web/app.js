@@ -1,16 +1,23 @@
 "use strict";
 
-import { roleProfiles, navDefinition, pageMeta } from "./core/navigation.js";
-import { createApiClient } from "./core/api-client.js";
-import { listConfigs, inventoryRows, countRows, reportData, documentProducts } from "./data/demo.js";
-import { createProductApi } from "./data/product-api.js";
-import { createInventoryApi } from "./data/inventory-api.js";
-import { createReportApi } from "./data/report-api.js";
-import { createDocumentApi } from "./data/document-api.js";
-import { createLiveProducts } from "./features/live-products.js";
-import { createLiveInventory } from "./features/live-inventory.js";
-import { createLiveReport } from "./features/live-report.js";
-import { createLiveDocuments } from "./features/live-documents.js";
+import { roleProfiles, navDefinition, pageMeta, apiPagesForRole, apiLandingPageForRole } from "./core/navigation.js?v=session-shell-4";
+import { createApiClient } from "./core/api-client.js?v=session-shell-4";
+import { listConfigs, inventoryRows, countRows, reportData, documentProducts } from "./data/demo.js?v=session-shell-4";
+import { createProductApi } from "./data/product-api.js?v=session-shell-4";
+import { createInventoryApi } from "./data/inventory-api.js?v=session-shell-4";
+import { createReportApi } from "./data/report-api.js?v=session-shell-4";
+import { createDocumentApi } from "./data/document-api.js?v=session-shell-4";
+import { createIdentityApi } from "./data/identity-api.js?v=session-shell-4";
+import { createLiveProducts } from "./features/live-products.js?v=session-shell-4";
+import { createLiveInventory } from "./features/live-inventory.js?v=session-shell-4";
+import { createLiveReport } from "./features/live-report.js?v=session-shell-4";
+import { createLiveDocuments } from "./features/live-documents.js?v=session-shell-4";
+import { createLiveIdentity } from "./features/live-identity.js?v=session-shell-4";
+import { createMasterApi } from "./data/master-api.js?v=session-shell-4";
+import { createLiveMasters, masterScreens } from "./features/live-masters.js?v=session-shell-4";
+import { createLivePermissions } from "./features/live-permissions.js?v=session-shell-4";
+import { createInsightApi } from "./data/insight-api.js?v=session-shell-4";
+import { createLiveInsights } from "./features/live-insights.js?v=session-shell-4";
 
 const USE_DUMMY_DATA = new URLSearchParams(window.location.search).get("mode") !== "api";
 const requestedApiPort = new URLSearchParams(window.location.search).get("apiPort");
@@ -55,6 +62,14 @@ const apiClient = USE_DUMMY_DATA ? null : createApiClient({ baseUrl: API_BASE_UR
 let liveInventory = null;
 let liveReport = null;
 let liveDocuments = null;
+let liveIdentity = null;
+let liveMasters = null;
+let livePermissions = null;
+let liveInsights = null;
+let previousSessionRole = null;
+let apiViewsReady = false;
+const readyApiFeatures = new Set();
+const unavailableApiPages = new Set();
 const liveProducts = USE_DUMMY_DATA ? null : createLiveProducts({
   client: apiClient,
   products: createProductApi(apiClient),
@@ -62,9 +77,29 @@ const liveProducts = USE_DUMMY_DATA ? null : createLiveProducts({
   formatCurrency,
   showToast,
   onSessionChange: () => {
-    if (activeView === "inventory") liveInventory?.render();
-    if (activeView === "reports") liveReport?.render();
-    if (["inbound", "outbound"].includes(activeView)) liveDocuments?.show(activeView);
+    const role = liveProducts.getRole();
+    renderNavigation();
+    if (!apiViewsReady) return;
+    for (const feature of readyApiFeatures) feature.clear?.();
+    const allowed = apiPagesForRole(role);
+    if (!role) {
+      previousSessionRole = null;
+      closeRecordEditor();
+      setVisibleView("apiSessionView");
+      elements.pageTitle.textContent = "Đăng nhập BlueStock";
+      elements.pageSubtitle.textContent = "";
+      document.querySelector("#apiSessionMessage").textContent = "Đăng nhập để xem các chức năng được cấp quyền.";
+      document.querySelector("#reloadApiButton").hidden = true;
+      return;
+    }
+    if (role !== previousSessionRole) {
+      const requested = window.location.hash.slice(1);
+      previousSessionRole = role;
+      showView(allowed.includes(requested) ? requested : apiLandingPageForRole(role), false);
+      return;
+    }
+    previousSessionRole = role;
+    showView(allowed.includes(activeView) ? activeView : apiLandingPageForRole(role), false);
   },
   closeEditor: closeRecordEditor
 });
@@ -82,11 +117,25 @@ if (!USE_DUMMY_DATA) {
     requireLogin: liveProducts.requireLogin
   });
   liveDocuments = createLiveDocuments({
+    escapeHtml,
     documents: createDocumentApi(apiClient),
     isAuthenticated: liveProducts.isAuthenticated,
     getRole: liveProducts.getRole,
     requireLogin: liveProducts.requireLogin
   });
+  liveIdentity = createLiveIdentity({
+    identity: createIdentityApi(apiClient),
+    escapeHtml,
+    getRole: liveProducts.getRole,
+    requireLogin: liveProducts.requireLogin,
+    showToast
+  });
+  liveMasters = createLiveMasters({ masters: createMasterApi(apiClient), getRole: liveProducts.getRole,
+    requireLogin: liveProducts.requireLogin, escapeHtml, showToast });
+  livePermissions = createLivePermissions({ identity: createIdentityApi(apiClient), getRole: liveProducts.getRole,
+    requireLogin: liveProducts.requireLogin, escapeHtml, navigate: showView });
+  liveInsights = createLiveInsights({ insights: createInsightApi(apiClient), getRole: liveProducts.getRole,
+    requireLogin: liveProducts.requireLogin, escapeHtml, navigate: showView, pagesForRole: apiPagesForRole });
 }
 
 function icon(name) {
@@ -137,19 +186,8 @@ function closeMobileMenu() {
 }
 
 function renderNavigation() {
-  if (!USE_DUMMY_DATA) {
-    elements.navGroups.innerHTML = `<section class="nav-group"><p class="nav-group-title">Danh mục</p>
-      <button class="nav-item" type="button" data-view="products">${icon("box")}<span>Sản phẩm</span></button></section>
-      <section class="nav-group"><p class="nav-group-title">Kho</p>
-      <button class="nav-item" type="button" data-view="inventory">${icon("chart")}<span>Tồn kho</span></button>
-      <button class="nav-item" type="button" data-view="reports">${icon("chart")}<span>Báo cáo nhập–xuất–tồn</span></button></section>
-      <section class="nav-group"><p class="nav-group-title">Chứng từ</p>
-      <button class="nav-item" type="button" data-view="inbound">${icon("file")}<span>Phiếu nhập</span></button>
-      <button class="nav-item" type="button" data-view="outbound">${icon("file")}<span>Phiếu xuất</span></button></section>`;
-    updateActiveNavigation();
-    return;
-  }
-  const allowedPages = new Set(roleProfiles[activeRole].pages);
+  const allowedPages = new Set(USE_DUMMY_DATA
+    ? roleProfiles[activeRole].pages : apiPagesForRole(liveProducts.getRole()));
   const fragment = document.createDocumentFragment();
 
   navDefinition.forEach((group) => {
@@ -166,7 +204,7 @@ function renderNavigation() {
       button.type = "button";
       button.className = "nav-item";
       button.dataset.view = item.id;
-      button.innerHTML = `${icon(item.icon)}<span>${escapeHtml(item.label)}</span>${item.badge ? `<small>${item.badge}</small>` : ""}`;
+      button.innerHTML = `${icon(item.icon)}<span>${escapeHtml(item.label)}</span>${USE_DUMMY_DATA && item.badge ? `<small>${item.badge}</small>` : ""}`;
       section.append(button);
     });
     fragment.append(section);
@@ -253,26 +291,50 @@ function configureDocument(mode) {
 }
 
 function showView(viewName, updateHash = true) {
+  if (!USE_DUMMY_DATA && liveProducts.isAuthenticated() && liveDocuments?.isBusy()) return;
+  if (!USE_DUMMY_DATA && !liveProducts.isAuthenticated()) {
+    setVisibleView("apiSessionView");
+    return;
+  }
   const profile = roleProfiles[activeRole];
-  if (!USE_DUMMY_DATA && !["products", "inventory", "reports", "inbound", "outbound"].includes(viewName)) viewName = "products";
-  else if (!profile.pages.includes(viewName)) {
-    showToast("Vai trò hiện tại không hiển thị chức năng này.");
-    viewName = "dashboard";
+  const rolePages = USE_DUMMY_DATA ? profile.pages : apiPagesForRole(liveProducts.getRole());
+  const allowedPages = rolePages.length ? rolePages : ["products"];
+  if (!allowedPages.includes(viewName)) {
+    if (USE_DUMMY_DATA || liveProducts.getRole()) showToast("Vai trò hiện tại không hiển thị chức năng này.");
+    viewName = USE_DUMMY_DATA ? "dashboard" : apiLandingPageForRole(liveProducts.getRole());
   }
 
   activeView = viewName;
-  const [title, subtitle] = pageMeta[viewName] || pageMeta.dashboard;
+  const [title, subtitle] = viewName === "dashboard" && !USE_DUMMY_DATA && liveProducts.getRole() === "ADMIN"
+    ? ["Quản trị hệ thống", "Nhân viên, tài khoản và quyền truy cập"]
+    : pageMeta[viewName] || pageMeta.dashboard;
   elements.pageTitle.textContent = title;
   elements.pageSubtitle.textContent = subtitle;
 
-  if (viewName === "dashboard") setVisibleView("dashboardView");
+  if (!USE_DUMMY_DATA && unavailableApiPages.has(viewName)) {
+    setVisibleView("apiSessionView");
+    document.querySelector("#apiSessionMessage").textContent = "Không tải được chức năng này. Hãy tải lại trang để thử lại.";
+    document.querySelector("#reloadApiButton").hidden = false;
+  } else if (!USE_DUMMY_DATA && ["dashboard", "expiry", "discrepancies", "audit"].includes(viewName)) {
+    setVisibleView(liveInsights.viewId);
+    liveInsights.show(viewName);
+  } else if (!USE_DUMMY_DATA && Object.hasOwn(masterScreens, viewName)) {
+    setVisibleView(liveMasters.viewId);
+    liveMasters.show(viewName);
+  } else if (!USE_DUMMY_DATA && viewName === "permissions") {
+    setVisibleView(livePermissions.viewId);
+    livePermissions.show();
+  } else if (viewName === "dashboard") setVisibleView("dashboardView");
   else if (viewName === "inventory") {
     setVisibleView("inventoryView");
     if (USE_DUMMY_DATA) renderInventory();
     else liveInventory.render();
-  } else if (!USE_DUMMY_DATA && ["inbound", "outbound"].includes(viewName)) {
+  } else if (!USE_DUMMY_DATA && ["inbound", "outbound", "transfer", "count", "return"].includes(viewName)) {
     setVisibleView(liveDocuments.viewId);
     liveDocuments.show(viewName);
+  } else if (!USE_DUMMY_DATA && ["employees", "accounts"].includes(viewName)) {
+    setVisibleView(liveIdentity.viewId);
+    liveIdentity.show(viewName);
   } else if (["inbound", "outbound", "transfer"].includes(viewName)) {
     setVisibleView("documentView");
     configureDocument(viewName);
@@ -790,12 +852,31 @@ if (USE_DUMMY_DATA) {
   const initialHash = window.location.hash.slice(1);
   showView(roleProfiles[activeRole].pages.includes(initialHash) ? initialHash : "dashboard", false);
 } else {
-  liveInventory.start();
-  liveReport.start();
-  liveDocuments.start();
-  const initialHash = window.location.hash.slice(1);
-  showView(["products", "inventory", "reports", "inbound", "outbound"].includes(initialHash) ? initialHash : "products", false);
+  setVisibleView("apiSessionView");
+  elements.pageTitle.textContent = "BlueStock";
+  elements.pageSubtitle.textContent = "Đang kết nối hệ thống";
+  document.querySelector("#reloadApiButton").addEventListener("click", () => window.location.reload());
+  // Bind session controls before a feature can fail during initialization.
   liveProducts.start();
+  const features = [
+    [liveInventory, ["inventory"]],
+    [liveReport, ["reports"]],
+    [liveDocuments, ["inbound", "outbound", "transfer", "count", "return"]],
+    [liveIdentity, ["employees", "accounts"]],
+    [liveMasters, Object.keys(masterScreens)],
+    [livePermissions, ["permissions"]],
+    [liveInsights, ["dashboard", "expiry", "discrepancies", "audit"]]
+  ];
+  for (const [feature, pages] of features) {
+    try {
+      feature.start();
+      readyApiFeatures.add(feature);
+    } catch (error) {
+      pages.forEach((page) => unavailableApiPages.add(page));
+      console.error(`Không khởi tạo được chức năng ${pages.join(", ")}`, error);
+    }
+  }
+  apiViewsReady = true;
 }
 
 window.warehouseUi = {
