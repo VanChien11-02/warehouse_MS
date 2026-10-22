@@ -27,5 +27,9 @@ fi
 "$sqlcmd" -S db -U sa -C -b -d BlueStock \
   -i database/migrations/027_inventory_guard_triggers.sql
 
+# Add the accountant reconciliation table and refresh role grants for existing volumes.
+"$sqlcmd" -S db -U sa -C -b -d BlueStock \
+  -i database/migrations/028_accounting_reconciliation.sql
+
 "$sqlcmd" -S db -U sa -C -b -d BlueStock -i database/seed/demo.sql
 "$sqlcmd" -S db -U sa -C -b -i database/docker-app-login.sql

@@ -4,7 +4,13 @@ Thư mục này chứa toàn bộ script T-SQL có thể dựng lại database t
 
 Để dựng SQL Server 2022 và API/web bằng Compose trên máy hỗ trợ Docker, xem [`../docs/development/DOCKER_DEMO.md`](../docs/development/DOCKER_DEMO.md). Cách chạy `sqlcmd -E` bên dưới dành cho SQL Server cài trực tiếp trên Windows.
 
-`init.sql` tạo 27 bảng, năm procedure hoàn tất chứng từ, năm function, bảy view, năm trigger bảo vệ bất biến kho, index tra cứu và bốn role SQL. Bốn role ứng dụng được seed trong bảng `ROLE`; chưa có tài khoản đăng nhập. Script dựng mới không tạo dữ liệu demo hoặc mật khẩu.
+`init.sql` tạo 28 bảng, năm procedure hoàn tất chứng từ, năm function, bảy view, năm trigger bảo vệ bất biến kho, index tra cứu và bốn role SQL. Bốn role ứng dụng được seed trong bảng `ROLE`; chưa có tài khoản đăng nhập. Script dựng mới không tạo dữ liệu demo hoặc mật khẩu.
+
+Quyết định ACC-01 bổ sung bảng `DOI_SOAT_GIA_TRI` (28 bảng) cho Kế toán đối
+soát giá trị phiếu nhập/xuất đã hoàn tất. Database hiện có chạy một lần
+`sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/028_accounting_reconciliation.sql`.
+Migration cũng đồng bộ quyền SQL với chính sách vai trò ngày 2026-10-22;
+database dựng mới đã chứa bảng và quyền này qua `init.sql`.
 
 ## Chạy schema nền tảng
 
@@ -70,6 +76,8 @@ Sau migration 024, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database
 Sau migration 025, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/026_inventory_indexes.sql` để thêm index tra cứu lô, tồn và danh sách chứng từ. Test 023 và cách đo trước/sau ở [`indexes/README.md`](indexes/README.md).
 
 Sau migration 026, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/027_inventory_guard_triggers.sql` để cài bốn trigger mới vào database **đã tồn tại** trên Windows. Database dựng mới bằng `init.sql` đã có các trigger này; không chạy lại `init.sql` trên database cũ. Với Compose, `db-init` chạy migration 027 theo cách lặp lại được mỗi lần khởi động, kể cả khi volume cũ đã tồn tại. Test `database/tests/024_inventory_guard_triggers.sql` kiểm tra nhiều dòng hợp lệ/không hợp lệ và rollback. Trigger chạy tự động khi API gọi các procedure ghi lô, tồn, sổ; Java không gọi trigger theo tên. Xem [`programmability/triggers/README.md`](programmability/triggers/README.md) để giải thích từng trigger và kịch bản báo cáo.
+
+Sau migration 027, chạy migration 028 để thêm kết quả đối soát giá trị phiếu nhập/xuất và áp dụng lại quyền SQL hiện hành. Với Compose, `db-init` tự chạy migration 028 trên volume đã tồn tại. Test `database/tests/025_accounting_reconciliation.sql` kiểm tra cấu trúc và ràng buộc bảng.
 
 ## Cấu trúc mục tiêu
 

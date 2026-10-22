@@ -12,9 +12,11 @@ BEGIN TRY
     ALTER ROLE wms_accountant ADD MEMBER wms_test_accountant;
 
     EXECUTE AS USER = 'wms_test_admin';
-    IF HAS_PERMS_BY_NAME('dbo.LICH_SU_THAO_TAC', 'OBJECT', 'SELECT') <> 1
+    IF HAS_PERMS_BY_NAME('dbo.LICH_SU_THAO_TAC', 'OBJECT', 'SELECT') <> 0
         OR HAS_PERMS_BY_NAME('dbo.LICH_SU_THAO_TAC', 'OBJECT', 'INSERT') <> 0
         OR HAS_PERMS_BY_NAME('dbo.NHAN_VIEN', 'OBJECT', 'UPDATE') <> 1
+        OR HAS_PERMS_BY_NAME('dbo.SAN_PHAM', 'OBJECT', 'SELECT') <> 0
+        OR HAS_PERMS_BY_NAME('dbo.SAN_PHAM', 'OBJECT', 'INSERT') <> 0
         THROW 52110, N'Quyền Admin trên nhân viên/audit sai.', 1;
     REVERT;
 
@@ -28,7 +30,8 @@ BEGIN TRY
     EXECUTE AS USER = 'wms_test_staff';
     IF HAS_PERMS_BY_NAME('dbo.PHIEU_NHAP', 'OBJECT', 'INSERT') <> 1
         OR HAS_PERMS_BY_NAME('dbo.sp_HoanTatPhieuNhap', 'OBJECT', 'EXECUTE') <> 0
-        OR HAS_PERMS_BY_NAME('dbo.vw_LoSapHetHan', 'OBJECT', 'SELECT') <> 1
+        OR HAS_PERMS_BY_NAME('dbo.vw_LoSapHetHan', 'OBJECT', 'SELECT') <> 0
+        OR HAS_PERMS_BY_NAME('dbo.PHIEU_CHUYEN_KHO', 'OBJECT', 'INSERT') <> 0
         OR HAS_PERMS_BY_NAME('dbo.vw_BienDongTonKhoChiTiet', 'OBJECT', 'SELECT') <> 0
         THROW 52112, N'Quyền Nhân viên kho sai.', 1;
     REVERT;
@@ -36,6 +39,7 @@ BEGIN TRY
     EXECUTE AS USER = 'wms_test_accountant';
     IF HAS_PERMS_BY_NAME('dbo.vw_BienDongTonKhoChiTiet', 'OBJECT', 'SELECT') <> 1
         OR HAS_PERMS_BY_NAME('dbo.PHIEU_XUAT', 'OBJECT', 'UPDATE') <> 0
+        OR HAS_PERMS_BY_NAME('dbo.DOI_SOAT_GIA_TRI', 'OBJECT', 'INSERT') <> 1
         OR HAS_PERMS_BY_NAME('dbo.LICH_SU_THAO_TAC', 'OBJECT', 'SELECT') <> 0
         THROW 52113, N'Quyền Kế toán sai.', 1;
     REVERT;

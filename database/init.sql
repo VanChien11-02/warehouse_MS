@@ -42,6 +42,7 @@ BEGIN TRANSACTION;
 :r database/schema/027_ct_phieu_tra_hang.sql
 :r database/schema/028_return_sequence.sql
 :r database/schema/029_lich_su_thao_tac.sql
+:r database/schema/030_doi_soat_gia_tri.sql
 COMMIT TRANSACTION;
 GO
 :r database/programmability/procedures/inbound/sp_HoanTatPhieuNhap.sql
@@ -68,4 +69,5 @@ GO
 :r database/programmability/triggers/trg_TonKho_BaoVeViTri.sql
 :r database/programmability/triggers/trg_BienDongTonKho_DungChieu.sql
 :r database/security/001_application_roles.sql
+:r database/security/002_role_policy_20261022.sql
 :r database/indexes/001_inventory_lookup.sql

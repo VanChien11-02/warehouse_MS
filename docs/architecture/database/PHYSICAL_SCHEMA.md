@@ -1,6 +1,6 @@
 # Physical schema: identity, danh mục và cấu trúc kho
 
-Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 27 bảng đã có trong `database/schema/`; năm procedure hoàn tất nhập/xuất/chuyển/kiểm kê/trả và bảng audit đã có.
+Trạng thái: phần đầu của DB-01. Tài liệu này mô tả 28 bảng đã có trong `database/schema/`; năm procedure hoàn tất nhập/xuất/chuyển/kiểm kê/trả, audit và đối soát kế toán đã có.
 
 Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 
@@ -72,3 +72,5 @@ Mapping đối tác/sản phẩm phục vụ kiểm tra khi hoàn tất nhập/x
 `sp_HoanTatTraHang` khóa phiếu xuất gốc để không thể chốt song song vượt tổng lượng xuất, kiểm tra tình trạng/vị trí/sức chứa rồi tăng tồn và ghi sổ `TRA_HANG` trong cùng transaction. Test xác nhận trả tốt/hỏng, giới hạn cộng dồn, vị trí hỏng, chốt lặp và rollback khi lỗi ghi sổ muộn.
 
 `LICH_SU_THAO_TAC` dùng index thời gian/tài khoản và chỉ nhận JSON trước/sau hợp lệ theo [`contracts/audit.md`](../../../contracts/audit.md). Thao tác API sẽ ghi actor cùng transaction; script SQL trực tiếp không giả mạo actor.
+
+`DOI_SOAT_GIA_TRI` giữ một kết quả cho mỗi cặp loại (`NHAP`/`XUAT`) và mã phiếu bằng khóa chính ghép. Hai giá trị tiền dùng `DECIMAL(19,4)` không âm; trạng thái `KHOP` đòi giá trị bằng nhau, còn `CHENH_LECH` đòi giá trị khác nhau và ghi chú không rỗng. `MaTKKeToan` tham chiếu tài khoản, thời gian mặc định UTC và có index theo thời gian/tài khoản. API chỉ cho Kế toán tạo sau khi khóa và kiểm tra phiếu đã hoàn tất; kết quả không sửa/xóa. Xem [`contracts/accounting-reconciliation.md`](../../../contracts/accounting-reconciliation.md).

@@ -1,6 +1,6 @@
 # Kế hoạch physical schema SQL Server
 
-> Trạng thái: **Draft cho DB-01**. 27 bảng, năm procedure hoàn tất, năm function, bảy view, năm trigger, bốn database role và index tra cứu đã có trong script. Kết quả kiểm chứng chạy thực tế ghi riêng tại tài liệu test; đo index lịch sử dùng dữ liệu giả.
+> Trạng thái: **Draft cho DB-01**. 28 bảng, năm procedure hoàn tất, năm function, bảy view, năm trigger, bốn database role và index tra cứu đã có trong script. Kết quả kiểm chứng chạy thực tế ghi riêng tại tài liệu test; đo index lịch sử dùng dữ liệu giả.
 
 ## Mục tiêu
 
