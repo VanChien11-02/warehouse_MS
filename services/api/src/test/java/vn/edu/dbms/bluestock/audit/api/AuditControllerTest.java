@@ -29,14 +29,10 @@ class AuditControllerTest {
 
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
-    void adminCanReadAudit() throws Exception {
-        LocalDate date = LocalDate.of(2026, 10, 7);
-        when(service.list(date, date, "TK0001", 0, 20))
-            .thenReturn(new AuditPage(date, date, List.of(), 0, 20, 0, 0));
+    void adminCannotReadAudit() throws Exception {
         mvc.perform(get("/api/audit").param("tuNgay", "2026-10-07")
                 .param("denNgay", "2026-10-07").param("maTaiKhoan", "TK0001"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.items").isEmpty());
+            .andExpect(status().isForbidden());
     }
 
     @Test

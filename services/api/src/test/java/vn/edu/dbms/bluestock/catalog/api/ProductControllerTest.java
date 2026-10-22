@@ -89,7 +89,7 @@ class ProductControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockUser(authorities = "ROLE_QLKHO")
     void invalidPriceIsRejected() throws Exception {
         mvc.perform(post("/api/san-pham").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -100,7 +100,7 @@ class ProductControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockUser(authorities = "ROLE_QLKHO")
     void duplicateCodeReturnsConflict() throws Exception {
         when(service.create(eq("SP0001"), eq("LSP001"), eq("DVT001"), any()))
             .thenThrow(new ProductException(ProductException.Kind.CONFLICT,

@@ -53,16 +53,16 @@ class TransferControllerTest {
     }
 
     @Test
-    void staffCanCancelDraft() throws Exception {
+    void managerCanCancelDraft() throws Exception {
         when(service.cancel("PC0001", "TK0001")).thenReturn(transfer());
         mvc.perform(post("/api/phieu-chuyen/PC0001/huy")
-                .with(csrf()).with(user(principal("NVKHO"))))
+                .with(csrf()).with(user(principal("QLKHO"))))
             .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_NVKHO")
-    void staffCanUpdateDraft() throws Exception {
+    @WithMockUser(authorities = "ROLE_QLKHO")
+    void managerCanUpdateDraft() throws Exception {
         when(service.update(eq("PC0001"), eq(null), any())).thenReturn(transfer());
         mvc.perform(put("/api/phieu-chuyen/PC0001").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(createBody()))
@@ -71,9 +71,9 @@ class TransferControllerTest {
     }
 
     @Test
-    void staffCanCreateDraft() throws Exception {
+    void managerCanCreateDraft() throws Exception {
         when(service.create(eq("NV0001"), eq(null), any())).thenReturn(transfer());
-        mvc.perform(post("/api/phieu-chuyen").with(csrf()).with(user(principal("NVKHO")))
+        mvc.perform(post("/api/phieu-chuyen").with(csrf()).with(user(principal("QLKHO")))
                 .contentType(MediaType.APPLICATION_JSON).content(createBody()))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.trangThai").value("NHAP"));

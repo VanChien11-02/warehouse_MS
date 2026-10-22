@@ -5,7 +5,7 @@
 - Reviewer tích hợp: repository owner và frontend owner
 
 `GET /api/bao-cao/lo-sap-het-han?soNgay=30&maKho=KHO001&page=0&size=20`
-cho `Admin`, `QuanLyKho`, `NhanVienKho`; `KeToan` nhận 403. `soNgay` mặc định 30,
+chỉ cho `QuanLyKho`; ba vai trò khác nhận 403. `soNgay` mặc định 30,
 từ 0 đến 3650; `page` bắt đầu 0 và `size` từ 1 đến 100. `maKho` tùy chọn,
 chuẩn hóa chữ hoa, gồm 1–6 ký tự chữ/số.
 

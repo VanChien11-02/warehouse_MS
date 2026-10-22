@@ -2,6 +2,10 @@
 
 Module backend của hệ thống kho. Spring Boot 3.5.16 có Maven Wrapper, session/RBAC, CRUD danh mục/đối tác/cấu trúc kho, năm luồng chứng từ, tra cứu tồn, báo cáo và audit.
 
+Admin đọc ma trận bốn vai trò qua `GET /api/quyen-han` theo
+[`../../contracts/permissions.md`](../../contracts/permissions.md); gán role dùng
+API cập nhật tài khoản. Endpoint mới chỉ đọc, không đổi schema SQL Server.
+
 ## Công nghệ cố định
 
 - Java 21 LTS.
@@ -63,9 +67,9 @@ API session hiện có `GET /api/auth/csrf`, `POST /api/auth/dang-nhap`, `GET /a
 
 Admin có thể tạo/cập nhật nhân viên, tạo/khóa/mở tài khoản, đổi role và reset mật khẩu qua `/api/nhan-vien` và `/api/tai-khoan` theo [`contracts/identity-admin.md`](../../contracts/identity-admin.md). Mã nhân viên/tài khoản do Admin nhập; endpoint không trả hash.
 
-`GET /api/audit` cho Admin tra cứu nhật ký theo kỳ/tài khoản theo [`contracts/audit.md`](../../contracts/audit.md). Thay đổi nhân viên/tài khoản, đổi/reset mật khẩu, hủy nháp và hoàn tất năm loại chứng từ ghi audit trong cùng transaction; audit không lưu mật khẩu hoặc hash.
+Nhật ký vẫn được ghi trong cùng transaction khi thay đổi nhân viên/tài khoản, đổi/reset mật khẩu, hủy nháp và hoàn tất chứng từ; audit không lưu mật khẩu hoặc hash. API đọc audit hiện chưa cấp cho vai trò nào theo quyết định Admin chỉ quản lý nhân viên, tài khoản và quyền hạn; xem [`contracts/audit.md`](../../contracts/audit.md).
 
-API `/api/san-pham` hỗ trợ danh sách phân trang/tìm kiếm, chi tiết, tạo, sửa tên/giá và xóa khi chưa được tham chiếu theo [`contracts/san-pham.md`](../../contracts/san-pham.md). Loại và đơn vị tính mẫu cho thử nghiệm được tạo bằng `database/seed/catalog_demo.sql`; route ghi yêu cầu `ADMIN` hoặc `QLKHO` và CSRF token.
+API `/api/san-pham` hỗ trợ danh sách phân trang/tìm kiếm, chi tiết, tạo, sửa tên/giá và xóa khi chưa được tham chiếu theo [`contracts/san-pham.md`](../../contracts/san-pham.md). Loại và đơn vị tính mẫu cho thử nghiệm được tạo bằng `database/seed/catalog_demo.sql`; route ghi chỉ dành cho `QLKHO` và cần CSRF token.
 
 API `/api/loai-san-pham` và `/api/don-vi-tinh` hỗ trợ CRUD, phân trang/tìm kiếm theo [`contracts/loai-don-vi-tinh.md`](../../contracts/loai-don-vi-tinh.md). Có thể tạo hai dữ liệu này qua API trước khi tạo sản phẩm; không cần seed SQL nếu thử luồng danh mục từ đầu.
 
@@ -78,6 +82,11 @@ API `/api/phieu-nhap` đã có danh sách, tạo/sửa/hủy nháp, xem chi ti�
 API `GET /api/ton-kho` đọc `vw_TonKhoChiTiet`, hỗ trợ lọc/phân trang và chỉ lấy tồn khả dụng theo [`contracts/inventory-query.md`](../../contracts/inventory-query.md). Chưa có API ghi tồn trực tiếp; xuất kho vẫn phải kiểm tra lại trong transaction.
 
 API `/api/phieu-xuat` đã có danh sách, tạo/sửa/hủy nháp, xem chi tiết và hoàn tất theo [`contracts/outbound-fefo-completion.md`](../../contracts/outbound-fefo-completion.md). Procedure kiểm tra FEFO và trừ tồn trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần tạo đối tác nhận và mapping sản phẩm trước khi hoàn tất.
+
+Kế toán đối soát giá trị phiếu nhập/xuất đã hoàn tất qua
+`GET/POST /api/doi-soat-gia-tri/{loaiChungTu}/{maChungTu}` theo
+[`contracts/accounting-reconciliation.md`](../../contracts/accounting-reconciliation.md).
+Đối soát lưu riêng, không đổi tồn hoặc chứng từ; Quản lý kho chỉ xem kết quả.
 
 `GET /api/phieu-xuat/{maPhieuXuat}/goi-y-fefo` đề xuất lô/vị trí cho một sản phẩm và số lượng, trả phần thiếu nếu tồn không đủ. Gợi ý không giữ chỗ; lúc hoàn tất procedure kiểm tra FEFO và tồn lần nữa.
 

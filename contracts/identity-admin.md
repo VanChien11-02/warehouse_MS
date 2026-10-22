@@ -8,6 +8,10 @@ Tất cả route trong contract này chỉ dành cho `Admin`, dùng session/CSRF
 
 ## Nhân viên
 
+Ma trận quyền đọc tại `GET /api/quyen-han` được mô tả trong
+[`permissions.md`](permissions.md). Admin gán role qua cập nhật tài khoản hiện
+có; không có API tạo/xóa vai trò tùy ý.
+
 | Method | Route | Kết quả |
 | --- | --- | --- |
 | `GET` | `/api/nhan-vien?page=0&size=20` | Danh sách phân trang |

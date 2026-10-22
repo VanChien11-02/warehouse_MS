@@ -77,7 +77,7 @@ class WarehouseControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockUser(authorities = "ROLE_QLKHO")
     void invalidAreaTypeIsRejected() throws Exception {
         mvc.perform(post("/api/khu-vuc").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -87,7 +87,7 @@ class WarehouseControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockUser(authorities = "ROLE_QLKHO")
     void missingWarehouseReferenceIsRejected() throws Exception {
         when(service.createArea("KV0001", "KHO999", "Khu khô", "Khô"))
             .thenThrow(new WarehouseException(WarehouseException.Kind.VALIDATION,
@@ -122,7 +122,7 @@ class WarehouseControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockUser(authorities = "ROLE_QLKHO")
     void negativePositionCapacityIsRejected() throws Exception {
         mvc.perform(post("/api/vi-tri").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)

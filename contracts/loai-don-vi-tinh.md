@@ -6,7 +6,7 @@
 - Owner triển khai: nhánh BE
 - Reviewer tích hợp: repository owner và frontend owner
 
-Base URL: `/api/loai-san-pham` và `/api/don-vi-tinh`. Mọi request dùng session cookie. POST/PUT/DELETE cần CSRF token. Cả bốn role được đọc; `Admin` và `QuanLyKho` được ghi.
+Base URL: `/api/loai-san-pham` và `/api/don-vi-tinh`. Mọi request dùng session cookie. POST/PUT/DELETE cần CSRF token. `QuanLyKho`, `NhanVienKho`, `KeToan` được đọc; chỉ `QuanLyKho` được ghi.
 
 Mỗi resource có `GET /` để lấy danh sách, `GET /{ma}` để lấy chi tiết, `POST /` để tạo, `PUT /{ma}` để sửa và `DELETE /{ma}` để xóa. Thành công lần lượt trả `200`, `200`, `201` kèm `Location`, `200`, `204`.
 

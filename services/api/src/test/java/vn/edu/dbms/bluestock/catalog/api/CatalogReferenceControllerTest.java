@@ -56,8 +56,8 @@ class CatalogReferenceControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
-    void adminCanCreateUnit() throws Exception {
+    @WithMockUser(authorities = "ROLE_QLKHO")
+    void managerCanCreateUnit() throws Exception {
         when(service.createUnit("DVT001", "Hộp"))
             .thenReturn(new UnitView("DVT001", "Hộp"));
         mvc.perform(post("/api/don-vi-tinh").with(csrf())
@@ -84,7 +84,7 @@ class CatalogReferenceControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockUser(authorities = "ROLE_QLKHO")
     void invalidStorageRequirementIsRejected() throws Exception {
         mvc.perform(post("/api/loai-san-pham").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -94,7 +94,7 @@ class CatalogReferenceControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockUser(authorities = "ROLE_QLKHO")
     void referencedCategoryCannotBeDeleted() throws Exception {
         org.mockito.Mockito.doThrow(new CatalogReferenceException(
             CatalogReferenceException.Kind.CONFLICT, "CATEGORY_IN_USE", "Đã được tham chiếu"))

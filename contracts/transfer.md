@@ -16,11 +16,11 @@ HTTP API dùng session/CSRF chung:
 
 | Method | Route | Quyền | Kết quả |
 | --- | --- | --- | --- |
-| `POST` | `/api/phieu-chuyen` | `QuanLyKho`, `NhanVienKho` + CSRF | `201` phiếu `NHAP`, `Location` |
-| `GET` | `/api/phieu-chuyen/{maPhieuChuyen}` | Bốn role đã đăng nhập | `200` header và dòng |
-| `GET` | `/api/phieu-chuyen?trangThai=NHAP&page=0&size=20` | Bốn role đã đăng nhập | `200` danh sách header phân trang |
-| `PUT` | `/api/phieu-chuyen/{maPhieuChuyen}` | `QuanLyKho`, `NhanVienKho` + CSRF | `200` phiếu nháp sau khi thay toàn bộ dòng |
-| `POST` | `/api/phieu-chuyen/{maPhieuChuyen}/huy` | `QuanLyKho`, `NhanVienKho` + CSRF | `200` phiếu `DA_HUY`, giữ chứng từ và dòng |
+| `POST` | `/api/phieu-chuyen` | `QuanLyKho` + CSRF | `201` phiếu `NHAP`, `Location` |
+| `GET` | `/api/phieu-chuyen/{maPhieuChuyen}` | `QuanLyKho`, `KeToan` | `200` header và dòng |
+| `GET` | `/api/phieu-chuyen?trangThai=NHAP&page=0&size=20` | `QuanLyKho`, `KeToan` | `200` danh sách header phân trang |
+| `PUT` | `/api/phieu-chuyen/{maPhieuChuyen}` | `QuanLyKho` + CSRF | `200` phiếu nháp sau khi thay toàn bộ dòng |
+| `POST` | `/api/phieu-chuyen/{maPhieuChuyen}/huy` | `QuanLyKho` + CSRF | `200` phiếu `DA_HUY`, giữ chứng từ và dòng |
 | `POST` | `/api/phieu-chuyen/{maPhieuChuyen}/hoan-tat` | Chỉ `QuanLyKho` + CSRF | `200` mã, trạng thái và thời điểm hoàn tất |
 
 Tạo nháp: `{"ghiChu":null,"chiTiet":[{"maLo":"LO0001","maViTriNguon":"VT0001","maViTriDich":"VT0002","soLuong":2}]}`. Nhân viên lấy từ session, mã phiếu do server cấp. Một cặp lô/nguồn/đích chỉ có một dòng; số lượng nguyên dương. Response chi tiết thêm `ngayChuyen`, `maNhanVien`, `trangThai`, `ngayHoanTat`, tên/mã sản phẩm từng dòng. Thời điểm trả ISO-8601 UTC với `Z`.

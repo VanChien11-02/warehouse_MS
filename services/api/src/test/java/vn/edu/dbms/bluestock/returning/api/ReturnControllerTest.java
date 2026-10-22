@@ -53,33 +53,31 @@ class ReturnControllerTest {
     }
 
     @Test
-    void staffCanCancelDraft() throws Exception {
+    void managerCanCancelDraft() throws Exception {
         when(service.cancel("TH0001", "TK0001")).thenReturn(returnDoc());
         mvc.perform(post("/api/phieu-tra-hang/TH0001/huy")
-                .with(csrf()).with(user(principal("NVKHO"))))
+                .with(csrf()).with(user(principal("QLKHO"))))
             .andExpect(status().isOk());
     }
 
     @Test
-    void staffCanCreateDraft() throws Exception {
+    void managerCanCreateDraft() throws Exception {
         when(service.create(eq("NV0001"), eq("PX0001"), eq(null), any()))
             .thenReturn(returnDoc());
-        mvc.perform(post("/api/phieu-tra-hang").with(csrf()).with(user(principal("NVKHO")))
+        mvc.perform(post("/api/phieu-tra-hang").with(csrf()).with(user(principal("QLKHO")))
                 .contentType(MediaType.APPLICATION_JSON).content(createBody()))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.trangThai").value("NHAP"));
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_NVKHO")
-    void staffCanUpdateButCannotComplete() throws Exception {
+    @WithMockUser(authorities = "ROLE_QLKHO")
+    void managerCanUpdateDraft() throws Exception {
         when(service.update(eq("TH0001"), eq(null), any())).thenReturn(returnDoc());
         mvc.perform(put("/api/phieu-tra-hang/TH0001").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createBody().replace("\"maPhieuXuat\":\"PX0001\",", "")))
             .andExpect(status().isOk());
-        mvc.perform(post("/api/phieu-tra-hang/TH0001/hoan-tat").with(csrf()))
-            .andExpect(status().isForbidden());
     }
 
     @Test
@@ -93,7 +91,7 @@ class ReturnControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_NVKHO")
+    @WithMockUser(authorities = "ROLE_QLKHO")
     void zeroReturnQuantityIsRejected() throws Exception {
         mvc.perform(post("/api/phieu-tra-hang").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)

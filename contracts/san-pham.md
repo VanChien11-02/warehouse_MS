@@ -6,7 +6,7 @@
 - Owner triển khai: nhánh BE
 - Reviewer tích hợp: repository owner và frontend owner
 
-Base URL: `/api/san-pham`. Mọi request dùng session cookie; POST/PUT/DELETE cần CSRF token. `Admin` và `QuanLyKho` được ghi; cả bốn role được đọc.
+Base URL: `/api/san-pham`. Mọi request dùng session cookie; POST/PUT/DELETE cần CSRF token. Chỉ `QuanLyKho` được ghi; `QuanLyKho`, `NhanVienKho`, `KeToan` được đọc.
 
 | Method | Route | Hành vi | Thành công |
 | --- | --- | --- | --- |

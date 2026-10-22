@@ -81,13 +81,10 @@ class ReportingControllerTest {
 
     @Test
     @WithMockUser(authorities = "ROLE_NVKHO")
-    void warehouseStaffCanReadExpiringLots() throws Exception {
-        when(service.expiringLots(7, "KHO001", 0, 20))
-            .thenReturn(new ExpiringLotPage(7, List.of(), 0, 20, 0, 0));
+    void warehouseStaffCannotReadExpiringLots() throws Exception {
         mvc.perform(get("/api/bao-cao/lo-sap-het-han")
                 .param("soNgay", "7").param("maKho", "KHO001"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.soNgay").value(7));
+            .andExpect(status().isForbidden());
     }
 
     @Test

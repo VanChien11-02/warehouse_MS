@@ -6,7 +6,7 @@
 - Owner triển khai: nhánh BE
 - Reviewer tích hợp: repository owner và frontend owner
 
-`GET /api/ton-kho` yêu cầu session đã đăng nhập; cả bốn role được đọc. Không có endpoint ghi số tồn trực tiếp. Danh sách chỉ gồm dòng có `soLuongTon > 0` từ phiếu nhập đã hoàn tất, theo khóa `(maViTri, maLo)`.
+`GET /api/ton-kho` yêu cầu session đã đăng nhập; `QuanLyKho`, `NhanVienKho`, `KeToan` được đọc. Không có endpoint ghi số tồn trực tiếp. Danh sách chỉ gồm dòng có `soLuongTon > 0` từ phiếu nhập đã hoàn tất, theo khóa `(maViTri, maLo)`.
 
 Query hỗ trợ `page=0&size=20`, `maKho`, `maViTri`, `maSanPham`, `maLo`, `hanSuDungTruoc=yyyy-MM-dd` và `chiKhaDung=true|false`. `size` từ 1–100; mã lọc được trim/chuyển chữ hoa và dài 1–6 ký tự chữ/số. `hanSuDungTruoc` bao gồm ngày đã cho, không lấy lô có hạn `null`. Thứ tự: mã sản phẩm, hạn gần nhất trước, lô không hạn sau, rồi vị trí/lô. Response có page envelope chung.
 

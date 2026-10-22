@@ -62,7 +62,7 @@ class SupplierControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
+    @WithMockUser(authorities = "ROLE_QLKHO")
     void invalidEmailIsRejected() throws Exception {
         mvc.perform(post("/api/nha-cung-cap").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)

@@ -54,9 +54,9 @@ class CountControllerTest {
     }
 
     @Test
-    void staffCanCreateSnapshot() throws Exception {
+    void managerCanCreateSnapshot() throws Exception {
         when(service.create(eq("NV0001"), eq("VT0001"), eq(null))).thenReturn(count());
-        mvc.perform(post("/api/phieu-kiem-ke").with(csrf()).with(user(principal("NVKHO")))
+        mvc.perform(post("/api/phieu-kiem-ke").with(csrf()).with(user(principal("QLKHO")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"maViTri\":\"VT0001\"}"))
             .andExpect(status().isCreated())
@@ -64,22 +64,20 @@ class CountControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_NVKHO")
-    void staffCanEnterActualButCannotComplete() throws Exception {
+    @WithMockUser(authorities = "ROLE_QLKHO")
+    void managerCanEnterActual() throws Exception {
         when(service.setActual("KK0001", "LO0001", 4, "Hao hụt")).thenReturn(count());
         mvc.perform(put("/api/phieu-kiem-ke/KK0001/chi-tiet/LO0001").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"soLuongThucTe\":4,\"lyDoChenhLech\":\"Hao hụt\"}"))
             .andExpect(status().isOk());
-        mvc.perform(post("/api/phieu-kiem-ke/KK0001/hoan-tat").with(csrf()))
-            .andExpect(status().isForbidden());
     }
 
     @Test
-    void staffCanCancelDraft() throws Exception {
+    void managerCanCancelDraft() throws Exception {
         when(service.cancel("KK0001", "TK0001")).thenReturn(count());
         mvc.perform(post("/api/phieu-kiem-ke/KK0001/huy")
-                .with(csrf()).with(user(principal("NVKHO"))))
+                .with(csrf()).with(user(principal("QLKHO"))))
             .andExpect(status().isOk());
     }
 
@@ -95,7 +93,7 @@ class CountControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_NVKHO")
+    @WithMockUser(authorities = "ROLE_QLKHO")
     void negativeActualIsRejected() throws Exception {
         mvc.perform(put("/api/phieu-kiem-ke/KK0001/chi-tiet/LO0001").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)

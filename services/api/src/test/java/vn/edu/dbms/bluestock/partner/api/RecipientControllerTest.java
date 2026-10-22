@@ -40,8 +40,8 @@ class RecipientControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ROLE_ADMIN")
-    void adminCanCreateRecipientAndMapping() throws Exception {
+    @WithMockUser(authorities = "ROLE_QLKHO")
+    void managerCanCreateRecipientAndMapping() throws Exception {
         when(service.createRecipient("DTN001", "Đại lý A", "Đại lý", null, null, null))
             .thenReturn(new RecipientView("DTN001", "Đại lý A", "Đại lý", null, null, null));
         mvc.perform(post("/api/doi-tac-nhan-hang").with(csrf())

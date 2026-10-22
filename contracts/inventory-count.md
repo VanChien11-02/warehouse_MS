@@ -6,7 +6,7 @@ Trạng thái: Accepted for BE implementation. Owner: backend. Reviewer: chủ r
 
 Mỗi phiếu kiểm kê thuộc một `maViTri`, có mã `KK0001` theo sequence, nhân viên lập và trạng thái `NHAP`, `DA_HOAN_THANH` hoặc `DA_HUY`. Khi tạo phiếu, server khóa vị trí và lưu một dòng cho từng lô có tồn dương tại thời điểm snapshot. `soLuongHeThong` trên dòng là dữ liệu lịch sử, không tính lại từ tồn hiện tại. Phiếu nháp không thay đổi tồn.
 
-`NhanVienKho` và `QuanLyKho` được lập phiếu, nhập số thực tế và hủy nháp; `QuanLyKho` được hoàn tất; `Admin` và `KeToan` được đọc. `Admin` không có quyền ghi sổ theo DEC-015.
+Chỉ `QuanLyKho` được lập phiếu, nhập số thực tế, hủy nháp và hoàn tất; `KeToan` được đọc. `Admin` và `NhanVienKho` không truy cập phiếu kiểm kê.
 
 ## API
 

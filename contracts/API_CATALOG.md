@@ -24,7 +24,9 @@
 | `PUT` | `/api/auth/doi-mat-khau` | Đổi mật khẩu của user hiện tại | Authenticated | SEC-01 |
 | `GET/POST/PUT` | `/api/nhan-vien` | Danh sách/tạo/cập nhật theo [`identity-admin.md`](identity-admin.md) | Admin | SEC-01 |
 | `GET/POST/PUT` | `/api/tai-khoan` | Quản lý tài khoản, role, trạng thái và reset mật khẩu theo [`identity-admin.md`](identity-admin.md) | Admin | SEC-01 |
-| `GET` | `/api/audit` | Tra cứu nhật ký theo [`audit.md`](audit.md) | Admin | AUD-01 |
+| `GET` | `/api/audit` | Nhật ký vẫn được ghi, quyền đọc chờ phân vai theo [`audit.md`](audit.md) | Chưa cấp | AUD-01 |
+| `GET` | `/api/quyen-han` | Ma trận bốn vai trò theo [`permissions.md`](permissions.md) | Admin | SEC-01 |
+| `GET/POST` | `/api/doi-soat-gia-tri/{loaiChungTu}/{maChungTu}` | Xem/xác nhận đối soát theo [`accounting-reconciliation.md`](accounting-reconciliation.md) | GET: Quản lý kho/Kế toán; POST: Kế toán | ACC-01 |
 
 Không thiết kế endpoint trả password hash hoặc dữ liệu xác thực nội bộ.
 
@@ -89,9 +91,9 @@ Contract hiện hành: [`transfer.md`](transfer.md), [`inventory-count.md`](inve
 | Method | Route dự kiến | Bộ lọc chính | Role |
 | --- | --- | --- | --- |
 | `GET` | `/api/bao-cao/ton-kho` | kho, vị trí, sản phẩm, lô, ngày hết hạn | QuanLyKho/KeToan; role khác giới hạn |
-| `GET` | `/api/bao-cao/nhap-xuat` | từ ngày, đến ngày, sản phẩm/kho theo [`reporting.md`](reporting.md) | Admin/QuanLyKho/KeToan |
-| `GET` | `/api/bao-cao/lo-sap-het-han` | số ngày, kho | QuanLyKho/NhanVienKho |
-| `GET` | `/api/bao-cao/chenh-lech-kiem-ke` | kỳ/kho/vị trí theo [`count-discrepancy-report.md`](count-discrepancy-report.md) | Admin/QuanLyKho/KeToan |
+| `GET` | `/api/bao-cao/nhap-xuat` | từ ngày, đến ngày, sản phẩm/kho theo [`reporting.md`](reporting.md) | QuanLyKho/KeToan |
+| `GET` | `/api/bao-cao/lo-sap-het-han` | số ngày, kho | QuanLyKho |
+| `GET` | `/api/bao-cao/chenh-lech-kiem-ke` | kỳ/kho/vị trí theo [`count-discrepancy-report.md`](count-discrepancy-report.md) | QuanLyKho/KeToan |
 
 `/api/bao-cao/ton-kho` vẫn là ý tưởng Draft; `/api/ton-kho` đã trả số lượng/giá trị theo lô và vị trí. Báo cáo đã triển khai nằm trong [`reporting.md`](reporting.md), [`expiry-report.md`](expiry-report.md) và [`count-discrepancy-report.md`](count-discrepancy-report.md).
 

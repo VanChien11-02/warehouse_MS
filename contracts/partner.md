@@ -14,7 +14,7 @@ Khi hoàn tất phiếu nhập, database phải xác nhận mọi sản phẩm t
 
 ## API nhà cung cấp
 
-Các route dưới `/api/nha-cung-cap` dùng session và CSRF chung. `GET` dành cho bốn role đã đăng nhập; thao tác ghi dành cho `Admin` và `QuanLyKho`. Danh sách hỗ trợ `page` từ 0, `size` từ 1 đến 100 và `q` tìm mã/tên (tối đa 100 ký tự), trả `{items,page,size,totalElements,totalPages}`. Mã tối đa 6 ký tự chữ/số, không phân biệt hoa thường; mã đã tạo không sửa được.
+Các route dưới `/api/nha-cung-cap` dùng session và CSRF chung. `GET` dành cho `QuanLyKho`, `NhanVienKho`, `KeToan`; thao tác ghi chỉ dành cho `QuanLyKho`. Danh sách hỗ trợ `page` từ 0, `size` từ 1 đến 100 và `q` tìm mã/tên (tối đa 100 ký tự), trả `{items,page,size,totalElements,totalPages}`. Mã tối đa 6 ký tự chữ/số, không phân biệt hoa thường; mã đã tạo không sửa được.
 
 | Method | Route | Kết quả |
 | --- | --- | --- |

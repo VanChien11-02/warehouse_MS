@@ -16,11 +16,11 @@ HTTP API dùng session/CSRF chung:
 
 | Method | Route | Quyền | Kết quả |
 | --- | --- | --- | --- |
-| `POST` | `/api/phieu-tra-hang` | `QuanLyKho`, `NhanVienKho` | `201` phiếu `NHAP`, `Location` |
-| `GET` | `/api/phieu-tra-hang/{maPhieuTraHang}` | Bốn role đã đăng nhập | `200` header và dòng |
-| `GET` | `/api/phieu-tra-hang?trangThai=NHAP&maPhieuXuat=PX0001&page=0&size=20` | Bốn role đã đăng nhập | `200` danh sách header phân trang |
-| `PUT` | `/api/phieu-tra-hang/{maPhieuTraHang}` | `QuanLyKho`, `NhanVienKho` | `200` phiếu nháp sau thay ghi chú/dòng |
-| `POST` | `/api/phieu-tra-hang/{maPhieuTraHang}/huy` | `QuanLyKho`, `NhanVienKho` | `200` phiếu `DA_HUY` |
+| `POST` | `/api/phieu-tra-hang` | `QuanLyKho` | `201` phiếu `NHAP`, `Location` |
+| `GET` | `/api/phieu-tra-hang/{maPhieuTraHang}` | `QuanLyKho`, `KeToan` | `200` header và dòng |
+| `GET` | `/api/phieu-tra-hang?trangThai=NHAP&maPhieuXuat=PX0001&page=0&size=20` | `QuanLyKho`, `KeToan` | `200` danh sách header phân trang |
+| `PUT` | `/api/phieu-tra-hang/{maPhieuTraHang}` | `QuanLyKho` | `200` phiếu nháp sau thay ghi chú/dòng |
+| `POST` | `/api/phieu-tra-hang/{maPhieuTraHang}/huy` | `QuanLyKho` | `200` phiếu `DA_HUY` |
 | `POST` | `/api/phieu-tra-hang/{maPhieuTraHang}/hoan-tat` | Chỉ `QuanLyKho` | `200` mã, trạng thái, thời điểm UTC |
 
 Tạo nháp: `{"maPhieuXuat":"PX0001","ghiChu":null,"chiTiet":[{"maLo":"LO0001","maViTri":"VT0001","soLuong":2,"tinhTrang":"Tốt"}]}`. Phiếu xuất gốc phải hoàn tất. Nhân viên lấy từ session, mã phiếu do server cấp. `PUT` nhận `ghiChu` và `chiTiet` như trên, không đổi phiếu xuất gốc. Dòng phải có lô/vị trí hợp lệ, lượng dương và tình trạng đúng enum; mỗi lô một dòng. Nháp không ghi tồn, có thể hủy; hoàn tất/hủy rồi không sửa tiếp.

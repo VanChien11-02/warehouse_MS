@@ -20,8 +20,8 @@ HTTP API hiện có:
 
 | Method | Route | Quyền | Kết quả |
 | --- | --- | --- | --- |
-| `GET` | `/api/phieu-xuat/{maPhieuXuat}` | Bốn role đã đăng nhập | `200` chi tiết phiếu và dòng |
-| `GET` | `/api/phieu-xuat?trangThai=NHAP&maDoiTacNhanHang=DT0001&page=0&size=20` | Bốn role đã đăng nhập | `200` danh sách header phân trang |
+| `GET` | `/api/phieu-xuat/{maPhieuXuat}` | `QuanLyKho`, `NhanVienKho`, `KeToan` | `200` chi tiết phiếu và dòng |
+| `GET` | `/api/phieu-xuat?trangThai=NHAP&maDoiTacNhanHang=DT0001&page=0&size=20` | `QuanLyKho`, `NhanVienKho`, `KeToan` | `200` danh sách header phân trang |
 | `POST` | `/api/phieu-xuat` | `QuanLyKho`, `NhanVienKho` + CSRF | `201` phiếu `NHAP`, `Location` |
 | `PUT` | `/api/phieu-xuat/{maPhieuXuat}` | `QuanLyKho`, `NhanVienKho` + CSRF | `200` phiếu nháp sau khi thay header/dòng |
 | `POST` | `/api/phieu-xuat/{maPhieuXuat}/huy` | `QuanLyKho`, `NhanVienKho` + CSRF | `200` phiếu `DA_HUY`, giữ lại chứng từ và dòng |

@@ -6,7 +6,7 @@
 - Owner triển khai: nhánh BE
 - Reviewer tích hợp: repository owner và frontend owner
 
-Hiện có API `/api/kho`, `/api/khu-vuc` và `/api/vi-tri`. Mọi request dùng session cookie; POST/PUT/DELETE cần CSRF token. Cả bốn role được đọc; `Admin` và `QuanLyKho` được ghi.
+Hiện có API `/api/kho`, `/api/khu-vuc` và `/api/vi-tri`. Mọi request dùng session cookie; POST/PUT/DELETE cần CSRF token. `QuanLyKho`, `NhanVienKho`, `KeToan` được đọc; chỉ `QuanLyKho` được ghi.
 
 Mỗi resource có `GET /` (danh sách), `GET /{ma}` (chi tiết), `POST /` (tạo), `PUT /{ma}` (sửa), `DELETE /{ma}` (xóa). Thành công trả `200`, `200`, `201` kèm `Location`, `200`, `204`. Danh sách hỗ trợ `page=0&size=20&q=`, sắp theo mã tăng dần; khu vực hỗ trợ thêm `maKho`, vị trí hỗ trợ `maKho` và `maKhuVuc` để lọc. Page envelope gồm `items`, `page`, `size`, `totalElements`, `totalPages`. `size` từ 1–100, `page` không âm, `q` tìm literal trong mã/tên và dài tối đa 100 ký tự.
 

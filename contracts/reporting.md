@@ -6,7 +6,7 @@
 - Owner triển khai: nhánh BE
 - Reviewer tích hợp: repository owner và frontend owner
 
-`GET /api/bao-cao/nhap-xuat` chỉ dành cho `Admin`, `QuanLyKho`, `KeToan`; `NhanVienKho` nhận `403` vì response có giá trị tiền. Request yêu cầu `tuNgay`, `denNgay` theo `yyyy-MM-dd`, bao gồm cả hai ngày tại `Asia/Bangkok`. Backend đổi đầu ngày `tuNgay` và đầu ngày sau `denNgay` sang UTC, rồi lọc `NgayGhiSo >= startUtc` và `< endUtc`. `tuNgay > denNgay` hoặc thiếu ngày trả `422 INVALID_DATE_RANGE`; ngày sai kiểu trả `400 INVALID_PARAMETER`.
+`GET /api/bao-cao/nhap-xuat` chỉ dành cho `QuanLyKho`, `KeToan`; `Admin` và `NhanVienKho` nhận `403`. Request yêu cầu `tuNgay`, `denNgay` theo `yyyy-MM-dd`, bao gồm cả hai ngày tại `Asia/Bangkok`. Backend đổi đầu ngày `tuNgay` và đầu ngày sau `denNgay` sang UTC, rồi lọc `NgayGhiSo >= startUtc` và `< endUtc`. `tuNgay > denNgay` hoặc thiếu ngày trả `422 INVALID_DATE_RANGE`; ngày sai kiểu trả `400 INVALID_PARAMETER`.
 
 Lọc tùy chọn `maKho`, `maSanPham` (mã 1–6 chữ/số, chuẩn hóa hoa); `page` bắt đầu 0, `size` từ 1 đến 100. Lỗi mã hoặc phân trang trả `422 INVALID_CODE/INVALID_PAGINATION`. Danh sách chỉ gồm cặp kho/sản phẩm có ít nhất một biến động trước cuối kỳ; không tạo dòng 0 giả cho sản phẩm chưa từng ghi sổ.
 

@@ -18,6 +18,7 @@
 | `inventorycount` | Outbound/control | Kiểm kê, snapshot và điều chỉnh | `PHIEU_KIEM_KE`, `CT_KIEM_KE` | inventory, warehouse, auth |
 | `returning` | Outbound/control | Trả hàng dựa trên phiếu xuất gốc | `PHIEU_TRA_HANG`, `CT_PHIEU_TRA_HANG` | outbound, inventory, warehouse, auth |
 | `reporting` | Inbound/inventory | Tồn, nhập-xuất, hạn dùng, chênh lệch | View/query model, không sở hữu transaction table | inventory, inbound, outbound, inventorycount |
+| `accounting` | Accounting | Đối soát giá trị phiếu nhập/xuất đã hoàn tất | `DOI_SOAT_GIA_TRI` | inbound, outbound, auth, audit |
 
 ## Public surface dự kiến
 
