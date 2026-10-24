@@ -1,127 +1,279 @@
-# Hệ thống quản lý kho hàng
+# BlueStock - Hệ thống quản lý kho hàng
 
-Đồ án cuối kỳ môn Hệ quản trị cơ sở dữ liệu (DBMS330284). Hệ thống quản lý danh mục hàng hóa, nhập kho, xuất kho, tồn theo lô và vị trí, chuyển kho, kiểm kê, trả hàng, báo cáo và nhật ký thao tác.
+BlueStock là đồ án môn Hệ quản trị cơ sở dữ liệu (`DBMS330284`). Hệ thống quản lý danh mục hàng hóa, kho và vị trí; nhập, xuất, chuyển, kiểm kê, trả hàng; tồn kho theo lô; báo cáo, đối soát giá trị và nhật ký thao tác.
 
-## Trạng thái hiện tại
+## Chức năng chính
 
-- Frontend baseline có dashboard và các form demo; chế độ API hỗ trợ CRUD sản phẩm, phiếu nhập/xuất một dòng, tra cứu tồn kho và báo cáo nhập–xuất–tồn.
-- Backend có session/RBAC, quản trị tài khoản, CRUD danh mục/kho/đối tác, năm luồng chứng từ, tra cứu tồn, báo cáo và audit.
-- `database/init.sql` dựng 27 bảng, năm procedure hoàn tất chứng từ, năm function, bảy view, trigger, index và bốn database role. Seed demo tách khỏi schema và không chứa tài khoản hay mật khẩu.
-- Các test Java, SQL và tranh chấp hai session đã chạy trên SQL Server 2025 Express; kết nối JDBC/HTTP với SQL Server local và SQL Server 2022 còn cần kiểm chứng.
-- Thư mục `references/` chỉ dùng tham khảo cách tổ chức; không phải nguồn yêu cầu của dự án này.
+- Đăng nhập bằng session và phân quyền theo bốn vai trò: `ADMIN`, `QLKHO`, `NVKHO`, `KETOAN`.
+- Quản lý sản phẩm, loại sản phẩm, đơn vị tính, kho, khu vực, vị trí và đối tác.
+- Lập, sửa, hủy và hoàn tất năm loại chứng từ: nhập, xuất, chuyển kho, kiểm kê và trả hàng.
+- Quản lý tồn theo lô/vị trí, xuất theo FEFO và bảo vệ việc ghi sổ bằng transaction SQL Server.
+- Báo cáo nhập–xuất–tồn, lô sắp hết hạn, chênh lệch kiểm kê và đối soát giá trị.
+- Ghi nhật ký các thao tác quan trọng.
 
-## Công nghệ thống nhất
+## Công nghệ
 
 | Thành phần | Công nghệ |
 | --- | --- |
-| Frontend hiện tại | HTML5, CSS3, Vanilla JavaScript, Fetch API |
-| Frontend mục tiêu | Giữ baseline hiện tại; chỉ chuyển Vue 3 + TypeScript + Vite qua backlog riêng nếu nhóm chấp nhận |
-| Backend | Java 21 LTS, Spring Boot 3.x, Spring Web, Spring Security, Spring JDBC/JPA |
+| Frontend | HTML5, CSS3, Vanilla JavaScript, Fetch API |
+| Backend | Java 21, Spring Boot 3.5, Spring Web, Spring Security, Spring JDBC/JPA |
 | Database | Microsoft SQL Server 2022, T-SQL |
-| Công cụ | Git, PowerShell 7, Node.js 22 LTS, SSMS hoặc Azure Data Studio |
+| Công cụ | Maven Wrapper, PowerShell 7, Node.js 22, Docker Compose |
 
-Spring Boot và SQL Server là quyết định cố định. Logic ghi sổ tồn kho quan trọng phải được bảo vệ bằng transaction ở database/backend; frontend không tự tính và ghi tồn kho như nguồn sự thật.
+Frontend có hai chế độ:
 
-## Bắt đầu nhanh
+- `http://127.0.0.1:5174/`: prototype dùng dữ liệu mẫu.
+- `http://127.0.0.1:5174/?mode=api`: chương trình kết nối API và database thật.
 
-### 1. Chuẩn bị môi trường
+## Cài đặt và chạy chương trình
 
-Cài đặt:
+Có hai cách chạy. Docker Compose là cách nhanh và ổn định nhất để demo toàn bộ hệ thống. Cách cài trực tiếp phù hợp khi cần phát triển hoặc kiểm tra từng thành phần.
+
+### Cách 1 - Chạy bằng Docker Compose (khuyến nghị)
+
+#### Yêu cầu
 
 - Git 2.40 trở lên.
-- PowerShell 7.
-- Node.js 22 LTS hoặc mới hơn; CI tương lai sẽ chốt Node.js 22.
-- JDK 21 hoặc mới hơn, với `JAVA_HOME` trỏ tới JDK; mã nguồn backend nhắm Java 21.
-- SQL Server 2022 Developer/Express và công cụ quản trị SQL.
+- PowerShell 7 trở lên.
+- Docker Desktop đang chạy ở chế độ Linux containers.
 
-### 2. Clone và tạo nhánh
+#### Bước 1: Lấy mã nguồn
 
 ```powershell
 git clone <repository-url>
 cd <repository-folder>
-git switch main
-git pull
-git switch -c feature/<issue>-<ket-qua>
 ```
 
-Không commit trực tiếp lên `main`.
+Nếu đã có mã nguồn, mở PowerShell tại thư mục gốc của repository.
 
-Khi nhóm chấp nhận mô hình bốn workstream, owner tạo `workstream/<pham-vi>` từ cùng commit contract baseline thay cho branch feature ban đầu. Xem [kế hoạch phát triển song song](docs/project/governance/WORKSTREAMS.md).
+#### Bước 2: Tạo cấu hình môi trường
 
-### 3. Thiết lập và chạy
+```powershell
+Copy-Item .env.example .env
+```
+
+Mở `.env` và điền ba mật khẩu khác nhau:
+
+```dotenv
+MSSQL_SA_PASSWORD=<mat-khau-sa-du-manh>
+APP_DB_PASSWORD=<mat-khau-ket-noi-api>
+APP_ADMIN_PASSWORD=<mat-khau-dang-nhap-admin>
+```
+
+Lưu ý:
+
+- Mật khẩu SQL Server phải đáp ứng chính sách phức tạp của SQL Server.
+- `APP_DB_PASSWORD` dài 12–64 ký tự và chỉ dùng chữ, số hoặc `@#%+=._!-`.
+- `APP_ADMIN_PASSWORD` dài ít nhất 12 ký tự.
+- Không commit hoặc chia sẻ file `.env`.
+
+Các cổng mặc định đã có trong `.env.example`:
+
+| Dịch vụ | Địa chỉ |
+| --- | --- |
+| Frontend | `http://127.0.0.1:5174` |
+| Backend API | `http://127.0.0.1:8080` |
+| SQL Server | `tcp:127.0.0.1,14330` |
+
+#### Bước 3: Khởi động
+
+```powershell
+docker compose up -d --build
+docker compose ps --all
+```
+
+Đợi đến khi:
+
+- `db` có trạng thái `healthy`;
+- `db-init` kết thúc với mã `0`;
+- `api` và `web` có trạng thái `Up`.
+
+Kiểm tra backend:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8080/actuator/health
+```
+
+Kết quả hợp lệ có `status` là `UP`.
+
+#### Bước 4: Mở và đăng nhập
+
+Mở [http://127.0.0.1:5174/?mode=api](http://127.0.0.1:5174/?mode=api), sau đó đăng nhập bằng:
+
+- Tên đăng nhập: `admin`.
+- Mật khẩu: giá trị `APP_ADMIN_PASSWORD` trong `.env`.
+
+Compose chỉ tạo tài khoản admin khi bảng tài khoản còn trống. Việc sửa `APP_ADMIN_PASSWORD` sau lần khởi tạo đầu tiên không tự đổi mật khẩu admin trong database đang có.
+
+#### Dừng hoặc chạy lại
+
+```powershell
+docker compose down
+docker compose up -d
+```
+
+`docker compose down` giữ lại volume và dữ liệu. Chỉ dùng `docker compose down -v` khi chủ động muốn xóa toàn bộ database demo và dựng lại từ đầu.
+
+Xem log khi khởi động lỗi:
+
+```powershell
+docker compose logs db-init api
+```
+
+Hướng dẫn Compose đầy đủ nằm tại [`docs/development/DOCKER_DEMO.md`](docs/development/DOCKER_DEMO.md).
+
+### Cách 2 - Cài và chạy trực tiếp trên Windows
+
+#### Yêu cầu
+
+| Công cụ | Phiên bản/yêu cầu |
+| --- | --- |
+| Git | 2.40 trở lên |
+| PowerShell | 7 trở lên |
+| Node.js | 22 trở lên |
+| JDK | 21 trở lên; `JAVA_HOME` trỏ tới JDK |
+| SQL Server | 2022 Developer hoặc Express |
+| SQL client | `sqlcmd`, SSMS hoặc Azure Data Studio |
+
+SQL Server phải bật TCP/IP để Spring Boot kết nối qua JDBC. Nếu dùng cấu hình mặc định, kiểm tra cổng bằng:
+
+```powershell
+Test-NetConnection 127.0.0.1 -Port 1433
+```
+
+#### Bước 1: Kiểm tra môi trường
+
+Từ thư mục gốc repository:
 
 ```powershell
 pwsh -File scripts/setup.ps1
+```
+
+Script kiểm tra Git, PowerShell, Node.js, Java và cài dependency frontend nếu có.
+
+#### Bước 2: Khởi tạo database và dữ liệu demo
+
+Các lệnh sau dùng Windows Authentication và yêu cầu chưa có database `BlueStock`:
+
+```powershell
 sqlcmd -S localhost -E -C -b -i database/init.sql
 sqlcmd -S localhost -E -C -b -d BlueStock -i database/seed/demo.sql
 ```
 
-Sau khi bật TCP/IP cho SQL Server và cấu hình JDBC theo [hướng dẫn build](docs/development/BUILD_GUIDE.md), tạo Admin một lần. Lệnh bootstrap sẽ khởi động API; dừng tiến trình đó rồi chạy API bình thường:
+`database/init.sql` không xóa hoặc ghi đè database đã tồn tại. Nếu cần nâng cấp database cũ, làm theo [`database/README.md`](database/README.md) thay vì chạy lại `init.sql`.
+
+#### Bước 3: Cấu hình kết nối backend
+
+Tạo một SQL login cục bộ có quyền trên database `BlueStock`, sau đó đặt biến môi trường trong terminal sẽ chạy API:
+
+```powershell
+$env:SPRING_DATASOURCE_URL = 'jdbc:sqlserver://127.0.0.1:1433;databaseName=BlueStock;encrypt=true;trustServerCertificate=true'
+$env:SPRING_DATASOURCE_USERNAME = '<sql-login>'
+$env:SPRING_DATASOURCE_PASSWORD = '<local-password>'
+```
+
+Không ghi mật khẩu thật vào repository. File [`services/api/.env.example`](services/api/.env.example) chỉ là mẫu và Spring Boot không tự nạp file này.
+
+Hướng dẫn tạo login kỹ thuật và bật TCP/IP nằm tại [`docs/development/BUILD_GUIDE.md`](docs/development/BUILD_GUIDE.md).
+
+#### Bước 4: Tạo tài khoản admin lần đầu
+
+Khi bảng tài khoản còn trống, chạy:
 
 ```powershell
 pwsh -File scripts/bootstrap-admin.ps1
+```
+
+Nhập mật khẩu admin dài ít nhất 12 ký tự khi được hỏi. Script tạo tài khoản `admin`, khởi động API và lưu mật khẩu dưới dạng BCrypt hash. Sau khi tạo thành công, nhấn `Ctrl+C` để dừng tiến trình bootstrap.
+
+#### Bước 5: Chạy backend và frontend
+
+Terminal 1, giữ nguyên các biến môi trường JDBC ở bước 3:
+
+```powershell
 pwsh -File scripts/dev.ps1 -Target api
 ```
 
-Chạy `pwsh -File scripts/dev.ps1 -Target web` ở terminal khác và mở `http://127.0.0.1:5174`. Giao diện mặc định dùng dữ liệu mẫu; mở `?mode=api#products` để dùng các màn hình đã nối API theo [`apps/web/README.md`](apps/web/README.md).
+Terminal 2:
 
-### 4. Kiểm tra trước khi bàn giao
+```powershell
+pwsh -File scripts/dev.ps1 -Target web
+```
+
+Kiểm tra và sử dụng:
+
+- API health: [http://127.0.0.1:8080/actuator/health](http://127.0.0.1:8080/actuator/health).
+- Ứng dụng kết nối API: [http://127.0.0.1:5174/?mode=api](http://127.0.0.1:5174/?mode=api).
+- Đăng nhập bằng `admin` và mật khẩu đã nhập ở bước bootstrap.
+
+Nếu chỉ muốn xem prototype không cần database/API, chạy web rồi mở [http://127.0.0.1:5174/](http://127.0.0.1:5174/).
+
+### Đổi cổng khi bị trùng
+
+Ví dụ chạy API ở cổng `8082` và web ở cổng `5176`:
+
+```powershell
+# Terminal API
+$env:SERVER_PORT = '8082'
+$env:APP_WEB_ORIGIN = 'http://127.0.0.1:5176'
+pwsh -File scripts/dev.ps1 -Target api
+
+# Terminal web
+pwsh -File scripts/dev.ps1 -Target web -Port 5176
+```
+
+Mở `http://127.0.0.1:5176/?mode=api&apiPort=8082`.
+
+Khi dùng Docker, sửa `DB_PORT`, `API_PORT`, `WEB_PORT` trong `.env`; nếu đổi `API_PORT`, thêm `apiPort` vào URL frontend như ví dụ trên.
+
+## Kiểm tra trước khi bàn giao
+
+Chạy cổng kiểm tra mã nguồn từ root repository:
 
 ```powershell
 pwsh -File scripts/verify.ps1
+```
+
+Khi SQL Server đã sẵn sàng, chạy thêm test database và concurrency:
+
+```powershell
 pwsh -File scripts/verify.ps1 -WithDatabase -WithConcurrency
 ```
+
+Nếu kiểm tra SQL Server của Compose, xem lệnh có `SqlServer` và `SqlUser` tại [`docs/development/DOCKER_DEMO.md`](docs/development/DOCKER_DEMO.md).
+
+## Xử lý lỗi thường gặp
+
+| Hiện tượng | Cách kiểm tra |
+| --- | --- |
+| Frontend chỉ hiện dữ liệu mẫu | URL phải có `?mode=api`; kiểm tra API đang chạy ở đúng cổng |
+| API không kết nối được SQL Server | Kiểm tra TCP/IP, cổng 1433, JDBC URL và SQL login |
+| CORS hoặc session không hoạt động | Dùng cùng host `127.0.0.1` và đặt `APP_WEB_ORIGIN` khớp chính xác URL web |
+| `BlueStock` đã tồn tại | Không chạy lại `init.sql`; đọc hướng dẫn migration trong `database/README.md` |
+| Docker API chưa lên | Chờ `db` healthy, kiểm tra mã thoát `db-init`, rồi xem `docker compose logs db-init api` |
+| Port 8080/5174 đang bận | Đổi port theo mục **Đổi cổng khi bị trùng** |
 
 ## Cấu trúc repository
 
 ```text
-apps/
-  web/                       Frontend quản lý kho
-services/
-  api/                       Spring Boot API theo module nghiệp vụ
-database/                    Schema, procedure, function, trigger, view, index, seed và test SQL Server
-contracts/                   Hợp đồng API/DTO liên frontend-backend
-docs/
-  architecture/              ERD, quyết định kiến trúc và thiết kế database
-  project/governance/        Backlog, phân công và quy trình nhóm
-  reference/                 PDF đề bài và tài liệu nguồn
-  testing/                   Kế hoạch, traceability và kết quả test
-scripts/                     Lệnh setup, chạy local và kiểm tra
-.github/                     Issue/PR template và CI
-references/                  Project khác dùng tham khảo, không sửa theo nghiệp vụ kho
+apps/web/                 Frontend quản lý kho
+services/api/             Spring Boot API theo module nghiệp vụ
+database/                 Schema, migration, procedure, function, trigger, view, index, seed và test
+contracts/                Hợp đồng API/DTO giữa frontend và backend
+docs/                     Kiến trúc, yêu cầu, hướng dẫn, kiểm thử và quản trị dự án
+scripts/                  Lệnh setup, chạy local, bootstrap và kiểm tra
+references/               Project tham khảo, không phải nguồn yêu cầu nghiệp vụ
 ```
 
-## Tài liệu cần đọc trước khi sửa code
+## Tài liệu chính
 
-1. [`AGENTS.md`](AGENTS.md).
-2. [`docs/README.md`](docs/README.md).
-3. [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md).
-4. Backlog item liên quan trong [`docs/project/governance/BACKLOG.md`](docs/project/governance/BACKLOG.md).
-5. `AGENTS.md` gần nhất trong module sẽ sửa, nếu có.
-6. ERD, business rules và contract liên quan.
+- [`AGENTS.md`](AGENTS.md): quy tắc làm việc trong repository.
+- [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md): mục tiêu, hiện trạng và invariant của hệ thống.
+- [`docs/development/BUILD_GUIDE.md`](docs/development/BUILD_GUIDE.md): hướng dẫn build local chi tiết.
+- [`docs/development/DOCKER_DEMO.md`](docs/development/DOCKER_DEMO.md): hướng dẫn Docker Compose.
+- [`apps/web/README.md`](apps/web/README.md): cách dùng frontend và các màn hình API.
+- [`services/api/README.md`](services/api/README.md): cấu hình và endpoint backend.
+- [`database/README.md`](database/README.md): schema, seed, migration và test SQL Server.
+- [`docs/testing/API_SMOKE.md`](docs/testing/API_SMOKE.md): kịch bản demo nhập → tồn → xuất FEFO → báo cáo.
 
-## Nguồn sự thật
-
-Khi tài liệu mâu thuẫn, ưu tiên theo thứ tự:
-
-1. Quyết định hiện tại của nhóm/Project Owner.
-2. `AGENTS.md` gần file đang sửa.
-3. Backlog và quyết định kiến trúc hiện hành.
-4. ERD, yêu cầu và API contract đã được review.
-5. Code và test đã tích hợp.
-6. Tài liệu tham khảo hoặc lịch sử.
-
-## Liên kết chính
-
-- [Bản đồ tài liệu](docs/README.md)
-- [Project context](docs/PROJECT_CONTEXT.md)
-- [Hướng dẫn build](docs/development/BUILD_GUIDE.md)
-- [Hướng dẫn đóng góp](CONTRIBUTING.md)
-- [Backlog](docs/project/governance/BACKLOG.md)
-- [Phân công nhóm](docs/project/governance/TEAM.md)
-- [Kế hoạch bốn workstream phát triển song song](docs/project/governance/WORKSTREAMS.md)
-- [Draft contract baseline liên module](contracts/BASELINE.md)
-- [Danh mục API dự kiến](contracts/API_CATALOG.md)
-- [Các quyết định còn mở](docs/project/governance/OPEN_DECISIONS.md)
-- [ERD và nghiệp vụ](docs/architecture/database/ERD_VA_NGHIEP_VU.md)
-- [Changelog](CHANGELOG.md)
+Thư mục `references/` chỉ dùng để tham khảo cách tổ chức; không phải nguồn sự thật của dự án BlueStock.
