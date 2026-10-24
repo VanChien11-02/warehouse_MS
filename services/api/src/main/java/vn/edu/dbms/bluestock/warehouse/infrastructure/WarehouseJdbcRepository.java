@@ -164,6 +164,17 @@ public class WarehouseJdbcRepository {
         return jdbc.update("UPDATE dbo.VI_TRI_KHO SET TenViTri = ? WHERE MaViTri = ?", name, code);
     }
 
+    public int updatePosition(String code, String name, String areaCode, Integer capacity, String type) {
+        return jdbc.update("""
+            UPDATE dbo.VI_TRI_KHO
+            SET TenViTri = ?,
+                MaKhuVuc = COALESCE(?, MaKhuVuc),
+                SucChua = COALESCE(?, SucChua),
+                LoaiViTri = COALESCE(?, LoaiViTri)
+            WHERE MaViTri = ?
+            """, name, areaCode, capacity, type, code);
+    }
+
     public int deletePosition(String code) {
         return jdbc.update("DELETE FROM dbo.VI_TRI_KHO WHERE MaViTri = ?", code);
     }
