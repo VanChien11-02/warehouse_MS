@@ -34,10 +34,10 @@ Tạo vị trí:
 {"maViTri":"VT0001","maKhuVuc":"KV0001","tenViTri":"Kệ 1","sucChua":100,"loaiViTri":"Lưu trữ"}
 ```
 
-Sửa vị trí chỉ gồm `tenViTri`. Tên bắt buộc, tối đa 255 ký tự và duy nhất trong một khu vực. `sucChua` là số nguyên không âm theo đơn vị tính gốc; `loaiViTri` chính xác một trong `Lưu trữ`, `Lấy hàng`, `Hư hỏng`. Response thêm `tenKhuVuc`, `maKho`, `tenKho`, `loaiKhuVuc` để hiển thị và kiểm tra trước khi nhập hàng. Khu vực cha, sức chứa và loại vị trí không đổi qua API CRUD sau khi tạo; điều chỉnh sức chứa về sau cần use case riêng kiểm tra tồn hiện tại.
+Sửa vị trí gồm `tenViTri` bắt buộc và các trường tùy chọn `maKhuVuc`, `sucChua`, `loaiViTri`. Tên bắt buộc, tối đa 255 ký tự và duy nhất trong một khu vực. `sucChua` là số nguyên không âm theo đơn vị tính gốc; `loaiViTri` chính xác một trong `Lưu trữ`, `Lấy hàng`, `Hư hỏng`. Response thêm `tenKhuVuc`, `maKho`, `tenKho`, `loaiKhuVuc` để hiển thị và kiểm tra trước khi nhập hàng. Khi sửa `maKhuVuc`, `sucChua` hoặc `loaiViTri` của vị trí đang có tồn kho vi phạm quy tắc bảo vệ tồn, trigger `trg_ViTriKho_BaoVeTon` ném mã lỗi SQL `52101` và API trả `409 POSITION_STOCK_PROTECTED`.
 
 Lỗi dùng envelope chung: `404 WAREHOUSE_NOT_FOUND`/`AREA_NOT_FOUND`/`POSITION_NOT_FOUND`; `409 WAREHOUSE_CODE_EXISTS`, `WAREHOUSE_NAME_EXISTS`, `WAREHOUSE_IN_USE`, `AREA_CODE_EXISTS`, `AREA_NAME_EXISTS`, `AREA_IN_USE`, `POSITION_CODE_EXISTS`, `POSITION_NAME_EXISTS`, `POSITION_IN_USE`; `422 INVALID_WAREHOUSE`, `INVALID_AREA`, `INVALID_CODE`, `INVALID_PAGINATION`, `INVALID_QUERY`, `VALIDATION_FAILED`; `401` khi chưa đăng nhập, `403` khi thiếu quyền hoặc CSRF.
 
 Khi ghi sổ tồn, procedure phải kiểm tra sức chứa và loại bảo quản trong cùng transaction theo ADR 0004; CRUD cấu trúc không tự quyết định số tồn.
 
-Trigger `trg_ViTriKho_BaoVeTon` bảo vệ cả thao tác SQL trực tiếp: vị trí có tồn dương không được chuyển khu vực hoặc đổi loại; sức chứa mới không được thấp hơn tổng tồn hiện có. Trigger xử lý cập nhật nhiều vị trí trong một lệnh và rollback cả lệnh nếu một vị trí vi phạm. API CRUD chỉ cho sửa tên vị trí.
+Trigger `trg_ViTriKho_BaoVeTon` bảo vệ cả API `PUT /api/vi-tri/{ma}` lẫn thao tác SQL trực tiếp: vị trí có tồn dương không được chuyển khu vực hoặc đổi loại; sức chứa mới không được thấp hơn tổng tồn hiện có. Trigger xử lý cập nhật nhiều vị trí trong một lệnh và rollback cả lệnh nếu một vị trí vi phạm.

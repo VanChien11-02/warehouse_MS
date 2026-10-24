@@ -54,7 +54,7 @@ public class PositionController {
 
     @PutMapping("/{maViTri}")
     public PositionView update(@PathVariable String maViTri, @Valid @RequestBody UpdatePositionRequest body) {
-        return service.updatePosition(maViTri, body.tenViTri());
+        return service.updatePosition(maViTri, body.tenViTri(), body.maKhuVuc(), body.sucChua(), body.loaiViTri());
     }
 
     @DeleteMapping("/{maViTri}")
@@ -69,5 +69,8 @@ public class PositionController {
         @NotNull @Min(0) Integer sucChua,
         @NotBlank @Pattern(regexp = "Lưu trữ|Lấy hàng|Hư hỏng") String loaiViTri) {}
 
-    public record UpdatePositionRequest(@NotBlank @Size(max = 255) String tenViTri) {}
+    public record UpdatePositionRequest(@NotBlank @Size(max = 255) String tenViTri,
+        String maKhuVuc,
+        @Min(0) Integer sucChua,
+        @Pattern(regexp = "Lưu trữ|Lấy hàng|Hư hỏng") String loaiViTri) {}
 }

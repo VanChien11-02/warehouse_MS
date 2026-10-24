@@ -15,8 +15,8 @@ export const masterScreens = {
   zones: { title: "Khu vực kho", fields: [code("maKhuVuc", "Mã khu vực"), name("tenKhuVuc", "Tên khu vực"),
     code("maKho", "Mã kho", { immutable: true }), { key: "loaiKhuVuc", label: "Loại bảo quản", options: storage, required: true, immutable: true }] },
   locations: { title: "Vị trí trong kho", fields: [code("maViTri", "Mã vị trí"), name("tenViTri", "Tên vị trí"),
-    code("maKhuVuc", "Mã khu vực", { immutable: true }), { key: "sucChua", label: "Sức chứa", type: "number", min: 0, required: true, immutable: true },
-    { key: "loaiViTri", label: "Loại vị trí", options: ["Lưu trữ", "Lấy hàng", "Hư hỏng"], required: true, immutable: true }] },
+    code("maKhuVuc", "Mã khu vực"), { key: "sucChua", label: "Sức chứa", type: "number", min: 0, required: true },
+    { key: "loaiViTri", label: "Loại vị trí", options: ["Lưu trữ", "Lấy hàng", "Hư hỏng"], required: true }] },
   suppliers: { title: "Nhà cung cấp", fields: [code("maNhaCungCap", "Mã nhà cung cấp"), name("tenNhaCungCap", "Tên nhà cung cấp"), ...contact], mapping: true },
   recipients: { title: "Đối tác nhận hàng", fields: [code("maDoiTacNhanHang", "Mã đối tác"), name("tenDoiTac", "Tên đối tác"),
     name("loaiDoiTac", "Loại đối tác", { max: 50 }), ...contact], mapping: true }

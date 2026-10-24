@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -129,6 +130,20 @@ class WarehouseControllerTest {
                 .content(validPosition().replace("100", "-1")))
             .andExpect(status().isUnprocessableEntity())
             .andExpect(jsonPath("$.fieldErrors[0].field").value("sucChua"));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_QLKHO")
+    void managerCanUpdatePositionCapacityAreaAndType() throws Exception {
+        when(service.updatePosition("VT0001", "Kệ 1 mới", "KV0001", 150, "Lấy hàng"))
+            .thenReturn(new PositionView("VT0001", "KV0001", "Khu khô", "KHO001",
+                "Kho chính", "Kệ 1 mới", 150, "Lấy hàng", "Khô"));
+        mvc.perform(put("/api/vi-tri/VT0001").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"tenViTri\":\"Kệ 1 mới\",\"maKhuVuc\":\"KV0001\",\"sucChua\":150,\"loaiViTri\":\"Lấy hàng\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.sucChua").value(150))
+            .andExpect(jsonPath("$.loaiViTri").value("Lấy hàng"));
     }
 
     private static String validArea() {
