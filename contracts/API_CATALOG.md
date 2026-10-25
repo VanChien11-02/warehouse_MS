@@ -52,6 +52,7 @@ CRUD không cho phép xóa dữ liệu đã được chứng từ tham chiếu. 
 | Method | Route dự kiến | Mục đích | Quyền dự kiến |
 | --- | --- | --- | --- |
 | `GET` | `/api/phieu-nhap` | Danh sách/lọc phiếu | Nhân viên kho trở lên; Kế toán đọc |
+| `GET` | `/api/phieu-nhap/lich-su` | Lịch sử từng lô từ `vw_LichSuNhapKho`, lọc mã/ngày, phân trang | QuanLyKho/KeToan |
 | `POST` | `/api/phieu-nhap` | Tạo phiếu nháp | NhanVienKho/QuanLyKho |
 | `GET` | `/api/phieu-nhap/{maPhieuNhap}` | Chi tiết phiếu theo [`inbound-completion.md`](inbound-completion.md) | Theo role |
 | `PUT` | `/api/phieu-nhap/{maPhieuNhap}` | Sửa header/dòng khi còn nháp | NhanVienKho/QuanLyKho |

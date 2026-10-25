@@ -36,7 +36,7 @@ Các object sau **đã có trong repo**. Người nhận chịu trách nhiệm k
 
 | TV | Ràng buộc/quan hệ | Trigger | View | Function | Index và truy vấn | Procedure/transaction |
 | --- | --- | --- | --- | --- | --- | --- |
-| TV1 | `CT_PHIEU_NHAP.SoLuong > 0`, FK lô → dòng nhập, hạn dùng lô | `trg_LoHang_GioiHanPhanBo`, `trg_CtPhieuNhap_GioiHanLo` | `vw_LichSuNhapKho` | `fn_TonTheoLo` | `IX_PHIEU_NHAP_NGAY_MA`: phiếu nhập mới nhất | `sp_HoanTatPhieuNhap`: tạo lô, put-away, tăng tồn, ghi sổ cùng transaction |
+| TV1 | `CT_PHIEU_NHAP.SoLuong > 0`, FK lô → dòng nhập, hạn dùng lô | `trg_LoHang_GioiHanPhanBo`, `trg_LoaiSanPham_BaoVeBaoQuan` | `vw_LichSuNhapKho` | `fn_TonTheoLo` | `IX_PHIEU_NHAP_NGAY_MA`: phiếu nhập mới nhất | `sp_HoanTatPhieuNhap`: tạo lô, put-away, tăng tồn, ghi sổ cùng transaction |
 | TV2 | `TON_KHO(MaViTri, MaLo)`, tồn không âm, xuất chỉ rõ lô/vị trí | `trg_TonKho_BaoVeViTri` | `vw_TonKhoChiTiet`, `vw_LichSuXuatKho`, `vw_LoSapHetHan` | `fn_TonKhaDungTaiViTri`, `fn_LoSapHetHan` | `IX_LO_HANG_SAN_PHAM_HAN` cho FEFO; `IX_TON_KHO_LO_VI_TRI` cho tồn | `sp_HoanTatPhieuXuat`: khóa tồn, kiểm FEFO, trừ tồn, chống lặp |
 | TV3 | Nguồn khác đích, lượng chuyển dương, snapshot/lý do kiểm kê | `trg_ViTriKho_BaoVeTon` | `vw_ChenhLechKiemKe`, `vw_TonKhoTheoSanPham` | `fn_TonTheoSanPham` | `IX_BIEN_DONG_TON_KHO_NGAY`: biến động theo kỳ | `sp_HoanTatChuyenKho`, `sp_HoanTatKiemKe`: chuyển nguyên tử, điều chỉnh một lần |
 | TV4 | FK trả → phiếu xuất, lượng trả dương, đối soát duy nhất theo phiếu | `trg_BienDongTonKho_DungChieu` | `vw_BienDongTonKhoChiTiet` | `fn_GiaTriTonKho` | `IX_PHIEU_TRA_HANG_PX` cho cộng dồn trả; `IX_DOI_SOAT_GIA_TRI_THOI_GIAN` cho đối soát | `sp_HoanTatTraHang`: trả tốt/hỏng, kiểm tổng trả, audit cùng transaction |

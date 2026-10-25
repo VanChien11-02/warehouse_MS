@@ -28,6 +28,14 @@ public final class InboundModels {
     public record InboundPage(List<InboundSummary> items, int page, int size,
         long totalElements, long totalPages) {}
 
+    public record HistoryItem(String maPhieuNhap, OffsetDateTime ngayHoanTat,
+        String maNhaCungCap, String maSanPham, String tenSanPham, String maDonViTinh,
+        String maLo, LocalDate ngaySanXuat, LocalDate hanSuDung, int soLuongNhap,
+        BigDecimal donGiaNhap, BigDecimal giaTriNhap) {}
+
+    public record HistoryPage(List<HistoryItem> items, int page, int size,
+        long totalElements, long totalPages) {}
+
     public record CompletionView(String maPhieuNhap, String trangThai,
         OffsetDateTime ngayHoanTat) {}
 }

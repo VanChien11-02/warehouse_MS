@@ -75,6 +75,23 @@ public class InboundService {
         return get(code);
     }
 
+    @Transactional(readOnly = true)
+    public InboundModels.HistoryPage history(int page, int size, String receiptCode,
+        String productCode, String supplierCode, LocalDate from, LocalDate to) {
+        if (page < 0 || page > 1_000_000 || size < 1 || size > 100) {
+            throw new InboundException(Kind.VALIDATION, "INVALID_PAGINATION", "page hoặc size không hợp lệ");
+        }
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new InboundException(Kind.VALIDATION, "INVALID_DATE_RANGE", "Từ ngày không được sau đến ngày.");
+        }
+        return repository.findHistory(page, size, optionalCode(receiptCode), optionalCode(productCode),
+            optionalCode(supplierCode), from, to);
+    }
+
+    private static String optionalCode(String value) {
+        return value == null || value.isBlank() ? null : normalizeCode(value);
+    }
+
     @Transactional
     public InboundView update(String code, String supplierCode, String note, List<LineData> lines) {
         String normalizedCode = normalizeCode(code);
@@ -161,8 +178,12 @@ public class InboundService {
                 "Không tìm thấy phiếu nhập");
             case 51102 -> new InboundException(Kind.CONFLICT, "INBOUND_NOT_DRAFT",
                 "Phiếu nhập không còn ở trạng thái nháp");
-            case 51103, 51104, 51107, 51108 -> new InboundException(Kind.VALIDATION,
+            case 51103, 51104, 51107 -> new InboundException(Kind.VALIDATION,
                 "INVALID_ALLOCATION", "Phân bổ lô không hợp lệ");
+            case 51108 -> new InboundException(Kind.VALIDATION, "ALLOCATION_INCOMPLETE",
+                "Chưa phân bổ đủ số lượng nhập. Hãy phân bổ đủ từng sản phẩm trước khi hoàn tất.");
+            case 51820 -> new InboundException(Kind.VALIDATION, "ALLOCATION_EXCEEDS_LINE",
+                "Tổng số lượng phân bổ vượt số lượng nhập. Hãy giảm lượng phân bổ hoặc sửa dòng nhập trước khi hoàn tất.");
             case 51105 -> new InboundException(Kind.VALIDATION, "LINES_REQUIRED",
                 "Phiếu nhập chưa có dòng sản phẩm");
             case 51106 -> new InboundException(Kind.VALIDATION, "SUPPLIER_PRODUCT_NOT_LINKED",

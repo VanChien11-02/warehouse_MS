@@ -31,5 +31,17 @@ fi
 "$sqlcmd" -S db -U sa -C -b -d BlueStock \
   -i database/migrations/028_accounting_reconciliation.sql
 
+# Inbound completion delegates the lot upper bound to the table trigger.
+"$sqlcmd" -S db -U sa -C -b -d BlueStock \
+  -i database/migrations/029_inbound_trigger_boundary.sql
+
+# Replace the draft-line guard with the category storage-history guard.
+"$sqlcmd" -S db -U sa -C -b -d BlueStock \
+  -i database/migrations/030_category_storage_guard.sql
+
+# Keep the shorter inbound procedure last so older migrations cannot overwrite it.
+"$sqlcmd" -S db -U sa -C -b -d BlueStock \
+  -i database/migrations/031_simplify_inbound_completion.sql
+
 "$sqlcmd" -S db -U sa -C -b -d BlueStock -i database/seed/demo.sql
 "$sqlcmd" -S db -U sa -C -b -i database/docker-app-login.sql

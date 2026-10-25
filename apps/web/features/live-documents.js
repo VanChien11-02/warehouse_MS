@@ -1,5 +1,6 @@
 import { documentScreens, draftBody, actualBody } from "../data/document-models.js?v=session-shell-4";
 import { nextCode, selectOptions } from "../data/master-api.js?v=session-shell-4";
+import { createLiveInboundHistory } from "./live-inbound-history.js?v=inbound-history-2";
 
 const docPrefixes = { inbound: "PN", outbound: "PX", transfer: "PC", count: "KK", return: "TH" };
 
@@ -14,6 +15,21 @@ export function createLiveDocuments({ documents, masters, products, inventory, i
     getRole() === "NVKHO" && ["inbound", "outbound"].includes(mode));
   const editable = () => writable() && (!current || current.trangThai === "NHAP");
   const code = () => current?.[screen().code];
+  const history = createLiveInboundHistory({ api: documents.inbound, escapeHtml: esc, requireLogin,
+    onOpen: (receipt) => {
+      showTab(false);
+      run(async () => { display(await documents.inbound.get(receipt)); message(""); el("liveDocState").scrollIntoView({ block: "start" }); });
+    }
+  });
+  function showTab(showHistory) {
+    el("liveDocWorkspace").hidden = showHistory;
+    el("liveDocHistory").hidden = !showHistory;
+    for (const [id, selected] of [["liveDocTabDocuments", !showHistory], ["liveDocTabHistory", showHistory]]) {
+      el(id).setAttribute("aria-selected", String(selected));
+      el(id).tabIndex = selected ? 0 : -1;
+    }
+    history.show(showHistory);
+  }
   function message(text, error = false) {
     el("liveDocMessage").textContent = text;
     el("liveDocMessage").classList.toggle("text-danger", error);
@@ -263,12 +279,23 @@ export function createLiveDocuments({ documents, masters, products, inventory, i
     el("liveDocPartner").required = !!screen().partner;
     el("liveDocHead").innerHTML = `<tr>${screen().fields.map(([, label]) => `<th>${esc(label)}</th>`).join("")}<th></th></tr>`;
     el("liveDocStatus").value = "";
+    el("liveDocTabs").hidden = mode !== "inbound" || !["QLKHO", "KETOAN"].includes(getRole());
+    if (!el("liveDocTabs").hidden) {
+      el("liveDocWorkspace").setAttribute("role", "tabpanel");
+      el("liveDocWorkspace").setAttribute("aria-labelledby", "liveDocTabDocuments");
+    } else {
+      el("liveDocWorkspace").removeAttribute("role");
+      el("liveDocWorkspace").removeAttribute("aria-labelledby");
+    }
+    showTab(false);
     reset();
     loadReferences();
     loadList(0);
   }
   function start() {
     view.innerHTML = `<div class="section-toolbar"><h2 id="liveDocTitle"></h2><button class="button button-primary" id="liveDocNew">Phiếu mới</button></div>
+      <div id="liveDocTabs" class="document-tabs" role="tablist" aria-label="Tra cứu nhập kho" hidden><button id="liveDocTabDocuments" type="button" role="tab" aria-selected="true" aria-controls="liveDocWorkspace">Phiếu nhập</button><button id="liveDocTabHistory" type="button" role="tab" aria-selected="false" aria-controls="liveDocHistory" tabindex="-1">Lịch sử nhập kho</button></div>
+      <div id="liveDocWorkspace">
       <div class="live-filters"><label class="field"><span>Trạng thái</span><select id="liveDocStatus"><option value="">Tất cả</option><option value="NHAP">Nháp</option><option value="DA_HOAN_THANH">Đã hoàn thành</option><option value="DA_HUY">Đã hủy</option></select></label><button class="button button-secondary" id="liveDocRefresh">Làm mới</button>
       <label class="field"><span>Mã phiếu</span><select id="liveDocLoadCode"><option value="">Chọn mã phiếu...</option></select></label><button class="button button-secondary" id="liveDocLoad">Tải phiếu</button></div>
       <div class="table-wrap"><table><thead><tr><th>Mã phiếu</th><th>Thời điểm tạo</th><th>Trạng thái</th><th>Nhân viên</th><th>Chi tiết</th></tr></thead><tbody id="liveDocListRows"></tbody></table></div>
@@ -287,9 +314,20 @@ export function createLiveDocuments({ documents, masters, products, inventory, i
       <section id="liveDocReconciliation" class="mapping-section" hidden><h3>Đối soát giá trị</h3><p id="liveDocReconciliationState" role="status" aria-live="polite"></p>
       <form id="liveDocReconciliationForm" class="live-reconciliation-form" hidden><label class="field"><span>Giá trị kế toán đối soát (₫)</span><input name="giaTriDoiSoat" type="number" min="0" step="0.0001" required></label>
       <label class="field"><span>Ghi chú sai lệch</span><textarea name="ghiChu" maxlength="1000" rows="2" placeholder="Bắt buộc nếu giá trị không khớp"></textarea></label>
-      <button class="button button-primary" type="submit">Xác nhận đối soát</button></form></section></section>`;
+      <button class="button button-primary" type="submit">Xác nhận đối soát</button></form></section></section></div>
+      <section id="liveDocHistory" role="tabpanel" aria-labelledby="liveDocTabHistory" hidden></section>`;
     document.querySelector("#mainContent").append(view);
-    el("liveDocNew").addEventListener("click", reset);
+    history.start(el("liveDocHistory"));
+    el("liveDocTabDocuments").addEventListener("click", () => showTab(false));
+    el("liveDocTabHistory").addEventListener("click", () => showTab(true));
+    el("liveDocTabs").addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      const showHistory = event.key === "End" || (event.key !== "Home" && event.target.id === "liveDocTabDocuments");
+      showTab(showHistory);
+      el(showHistory ? "liveDocTabHistory" : "liveDocTabDocuments").focus();
+    });
+    el("liveDocNew").addEventListener("click", () => { showTab(false); reset(); });
     el("liveDocRefresh").addEventListener("click", () => loadList(0));
     el("liveDocStatus").addEventListener("change", () => loadList(0));
     el("liveDocPrevious").addEventListener("click", () => loadList(page - 1));
@@ -390,6 +428,6 @@ export function createLiveDocuments({ documents, masters, products, inventory, i
       });
     });
   }
-  function clear() { generation++; current = null; if (!pending) reset(); }
+  function clear() { generation++; current = null; history.clear(); if (!pending) reset(); }
   return { start, show, clear, isBusy: () => pending, viewId: view.id };
 }

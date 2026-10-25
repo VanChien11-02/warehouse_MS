@@ -2,7 +2,7 @@
 
 - Status: Accepted for BE implementation
 - Date: 2026-10-07
-- Scope: CAT-01, BR-CAT-001, BR-WHS-003
+- Scope: CAT-01, BR-CAT-001, BR-CAT-003, BR-WHS-003
 - Owner triển khai: nhánh BE
 - Reviewer tích hợp: repository owner và frontend owner
 
@@ -20,6 +20,13 @@ Request tạo loại sản phẩm:
 
 Request sửa không chứa `maLoai`. `tenLoai` bắt buộc, tối đa 255 ký tự; `moTa` có thể `null`, tối đa 1000 ký tự; `yeuCauBaoQuan` có thể `null` hoặc chính xác một trong `Khô`, `Mát`, `Đông lạnh`. Response có cùng bốn trường. Giá trị này được kiểm tra lại khi ghi sổ vào vị trí kho theo BR-WHS-003.
 
+Theo [ADR 0009](../docs/architecture/adr/0009-category-storage-history-guard.md),
+loại đã có bất kỳ lô hàng nào không được đổi yêu cầu bảo quản (kể cả đổi NULL),
+ngay cả khi tồn đã về 0. Trigger `trg_LoaiSanPham_BaoVeBaoQuan` phát SQL 51825;
+API trả 409 `CATEGORY_STORAGE_LOCKED`, rollback cả UPDATE. Sửa tên/mô tả và
+giữ cùng yêu cầu vẫn được; loại chưa có lô được đổi bình thường. Không kiểm
+tra chặn trước ở Java, lỗi đi từ trigger thật về form danh mục hiện có.
+
 Request tạo đơn vị tính:
 
 ```json
@@ -28,6 +35,6 @@ Request tạo đơn vị tính:
 
 Request sửa chỉ chứa `tenDonViTinh`. Tên bắt buộc, tối đa 100 ký tự và duy nhất trong database. Response có cùng hai trường. Mã do client nhập, trim/chuyển chữ hoa ở server và dài 1–6 ký tự chữ/số; mã không đổi sau khi tạo.
 
-Lỗi dùng envelope chung: `404 CATEGORY_NOT_FOUND`/`UNIT_NOT_FOUND`; `409 CATEGORY_CODE_EXISTS`, `UNIT_CODE_EXISTS`, `UNIT_NAME_EXISTS`, `CATEGORY_IN_USE`, `UNIT_IN_USE`; `422 INVALID_CODE`, `INVALID_PAGINATION`, `INVALID_QUERY`, `VALIDATION_FAILED`; `401` khi chưa đăng nhập và `403` khi thiếu quyền hoặc CSRF. FK chặn xóa loại/đơn vị đã được sản phẩm hoặc chứng từ tham chiếu.
+Lỗi dùng envelope chung: `404 CATEGORY_NOT_FOUND`/`UNIT_NOT_FOUND`; `409 CATEGORY_CODE_EXISTS`, `CATEGORY_STORAGE_LOCKED`, `UNIT_CODE_EXISTS`, `UNIT_NAME_EXISTS`, `CATEGORY_IN_USE`, `UNIT_IN_USE`; `422 INVALID_CODE`, `INVALID_PAGINATION`, `INVALID_QUERY`, `VALIDATION_FAILED`; `401` khi chưa đăng nhập và `403` khi thiếu quyền hoặc CSRF. FK chặn xóa loại/đơn vị đã được sản phẩm hoặc chứng từ tham chiếu.
 
 Schema hiện hành không có trạng thái hoạt động của loại hoặc đơn vị; API không phát sinh trạng thái giả.

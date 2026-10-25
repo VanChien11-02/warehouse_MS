@@ -18,6 +18,7 @@ Các mã trong tài liệu này dùng để liên kết requirement → contract
 | --- | --- | --- |
 | BR-CAT-001 | Mã sản phẩm, kho, khu vực, vị trí và đối tác phải duy nhất theo schema đã chốt | Tạo mã trùng trả lỗi có cấu trúc |
 | BR-CAT-002 | Giá mặc định không âm; tiền dùng `DECIMAL`/`BigDecimal` | Giá âm bị từ chối, số thập phân không dùng FLOAT |
+| BR-CAT-003 | Yêu cầu bảo quản của loại đã phát sinh lô hàng không được đổi; tên/mô tả vẫn sửa được | Đổi Khô → Mát hoặc NULL bị trigger chặn/HTTP 409; loại chưa có lô đổi được; UPDATE nhiều dòng rollback cả câu |
 | BR-WHS-001 | Khu vực phải thuộc một kho; vị trí phải thuộc một khu vực | FK sai bị từ chối |
 | BR-WHS-002 | Sức chứa là số đơn vị tính gốc; tồn dương tại một vị trí chỉ dùng một `MaDVT` | Từ chối trộn đơn vị tính hoặc vượt `SucChua` |
 | BR-WHS-003 | `YeuCauBaoQuan` của loại sản phẩm phải trùng loại khu vực nếu có giá trị | Nhập/chuyển/trả vào khu vực sai loại bị từ chối |

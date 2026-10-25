@@ -1,5 +1,15 @@
 # SQL Server database
 
+Demo hành vi SQL trên SSMS: chạy [`study/00_tv1_chuan_bi_demo.sql`](study/00_tv1_chuan_bi_demo.sql)
+một lần, rồi từng mục của [`study/02_tv1_demo_hanh_vi.sql`](study/02_tv1_demo_hanh_vi.sql).
+File [`study/03_tv1_don_du_lieu_demo.sql`](study/03_tv1_don_du_lieu_demo.sql)
+chỉ dọn fixture học có marker. Giải thích kết quả tại
+[`../docs/development/TV1_DEMO_HANH_VI_SSMS.md`](../docs/development/TV1_DEMO_HANH_VI_SSMS.md).
+
+Ôn vấn đáp SSMS cho phần nhập: [`study/01_tv1_kiem_tra_ssms.sql`](study/01_tv1_kiem_tra_ssms.sql)
+chỉ dùng SELECT để tra cứu các object project và đọc code transaction. Mẫu CREATE
+để học theo bài giảng tại [`../docs/development/TV1_HOC_SQL_SSMS.md`](../docs/development/TV1_HOC_SQL_SSMS.md).
+
 Thư mục này chứa toàn bộ script T-SQL có thể dựng lại database từ đầu và các đối tượng phục vụ rubric.
 
 Để dựng SQL Server 2022 và API/web bằng Compose trên máy hỗ trợ Docker, xem [`../docs/development/DOCKER_DEMO.md`](../docs/development/DOCKER_DEMO.md). Cách chạy `sqlcmd -E` bên dưới dành cho SQL Server cài trực tiếp trên Windows.
@@ -13,6 +23,24 @@ Migration cũng đồng bộ quyền SQL với chính sách vai trò ngày 2026-
 database dựng mới đã chứa bảng và quyền này qua `init.sql`.
 
 ## Chạy schema nền tảng
+
+Database hiện có cần áp dụng
+`sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/029_inbound_trigger_boundary.sql`.
+Migration cập nhật procedure nhập: kiểm tra thiếu lượng ở procedure, chặn vượt
+lượng ở trigger lô trong cùng transaction. Database sạch lấy phiên bản hiện
+hành từ `procedures/procedures.sql`; Compose áp dụng migration khi khởi động.
+
+Tiếp theo chạy `database/migrations/030_category_storage_guard.sql` trên database
+hiện có. Migration gỡ trigger dòng nhập cũ, tạo
+`trg_LoaiSanPham_BaoVeBaoQuan` và giữ khóa loại khi hoàn tất nhập. Vẫn có đúng
+năm trigger. Compose tự chạy migration 030 sau 027/029, kể cả trên volume cũ.
+
+Phiên bản nhập gọn hơn nằm trong `procedures/procedures.sql`, chia năm bước
+có chú thích tiếng Việt; giữ nguyên tham số, mã lỗi, khóa và tính nguyên tử.
+Database hiện có chạy `database/migrations/031_simplify_inbound_completion.sql`
+sau 030. Compose tự áp dụng 031 cuối cùng. Xem
+[`../docs/development/INBOUND_WALKTHROUGH.md`](../docs/development/INBOUND_WALKTHROUGH.md)
+để trình bày luồng thủ tục và demo commit/rollback trên UI.
 
 Từ thư mục gốc repository, dùng SQL Server có Windows Authentication và `sqlcmd`:
 

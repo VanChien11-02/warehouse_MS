@@ -31,6 +31,27 @@ class InboundServiceTest {
     private final InboundService service = new InboundService(repository, new ObjectMapper(), audit);
 
     @Test
+    void historyNormalizesFiltersAndTreatsBlankAsAbsent() {
+        var from = LocalDate.of(2026, 10, 25);
+        service.history(0, 20, " pn0001 ", " sp0001 ", "  ", from, from);
+        verify(repository).findHistory(0, 20, "PN0001", "SP0001", null, from, from);
+        verifyNoInteractions(audit);
+    }
+
+    @Test
+    void historyRejectsBadPaginationDateRangeAndCodesBeforeQuerying() {
+        assertEquals("INVALID_PAGINATION", assertThrows(InboundException.class,
+            () -> service.history(-1, 20, null, null, null, null, null)).code());
+        assertEquals("INVALID_PAGINATION", assertThrows(InboundException.class,
+            () -> service.history(0, 101, null, null, null, null, null)).code());
+        assertEquals("INVALID_DATE_RANGE", assertThrows(InboundException.class,
+            () -> service.history(0, 20, null, null, null, LocalDate.of(2026, 10, 26), LocalDate.of(2026, 10, 25))).code());
+        assertEquals("INVALID_CODE", assertThrows(InboundException.class,
+            () -> service.history(0, 20, "';DROP", null, null, null, null)).code());
+        verifyNoInteractions(repository, audit);
+    }
+
+    @Test
     void duplicateProductLineIsRejectedBeforeWriting() {
         var lines = List.of(new LineData("sp0001", 1, BigDecimal.ONE),
             new LineData("SP0001", 2, BigDecimal.ONE));
@@ -61,6 +82,30 @@ class InboundServiceTest {
                 new AllocationData("SP0001", "VT0001", 2, null, null)), "TK0001"));
         assertEquals("CAPACITY_EXCEEDED", error.code());
         assertEquals(InboundException.Kind.CONFLICT, error.kind());
+    }
+
+    @Test
+    void actualLotTriggerErrorBecomesActionableAllocationError() {
+        when(repository.complete(eq("PN0001"), any(), eq("TK0001"))).thenThrow(
+            new DataIntegrityViolationException("trigger rejected lot insert",
+                new SQLException("lot upper bound", "S0001", 51820)));
+        var error = assertThrows(InboundException.class,
+            () -> service.complete("PN0001", List.of(
+                new AllocationData("SP0001", "VT0001", 6, null, null),
+                new AllocationData("SP0001", "VT0002", 5, null, null)), "TK0001"));
+        assertEquals("ALLOCATION_EXCEEDS_LINE", error.code());
+        assertEquals(InboundException.Kind.VALIDATION, error.kind());
+    }
+
+    @Test
+    void underAllocationRemainsACompletionRule() {
+        when(repository.complete(eq("PN0001"), any(), eq("TK0001"))).thenThrow(
+            new DataIntegrityViolationException("completion rejected",
+                new SQLException("under allocation", "S0001", 51108)));
+        var error = assertThrows(InboundException.class,
+            () -> service.complete("PN0001", List.of(
+                new AllocationData("SP0001", "VT0001", 9, null, null)), "TK0001"));
+        assertEquals("ALLOCATION_INCOMPLETE", error.code());
     }
 
     @Test

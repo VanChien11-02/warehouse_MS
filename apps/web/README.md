@@ -1,5 +1,11 @@
 # Frontend quản lý kho
 
+Trong chế độ API, **Phiếu nhập kho → Lịch sử nhập kho** dành cho QLKHO/KETOAN
+đọc từng lô đã nhập từ `vw_LichSuNhapKho` qua API. Lọc theo mã phiếu, sản phẩm,
+nhà cung cấp và ngày hoàn tất UTC; phân trang 20 lô/trang, bấm mã phiếu mở
+chứng từ gốc. Tab giữ nháp khi chuyển qua lại; có loading/empty/error/retry.
+Module riêng `features/live-inbound-history.js`, adapter tại `data/document-api.js`.
+
 Baseline hiện dùng HTML5, CSS3 và Vanilla JavaScript, không có thư viện ngoài.
 
 ## Chạy
@@ -65,6 +71,31 @@ Mở `http://127.0.0.1:5174/` để xem prototype bằng dữ liệu mẫu. Tron
 Frontend cần tiếp tục chuyển các màn hình theo [`../../docs/project/governance/BACKLOG.md`](../../docs/project/governance/BACKLOG.md). Dùng adapter HTTP và contract của từng resource, đồng thời giữ loading/error/empty state; không đổi URL rải rác trong form.
 
 ## Kiểm tra trình duyệt
+
+Trigger bảo quản mới dùng ngay form **Loại sản phẩm**: mở loại đã có lô, đổi
+**Yêu cầu bảo quản** từ Khô sang Mát rồi **Lưu**. Lỗi 409 từ trigger giữ dialog
+mở và database giữ giá trị cũ; đổi lại Khô rồi sửa tên/mô tả vẫn lưu được. Loại
+chưa có lô được đổi yêu cầu. Không có màn hình thực hành riêng.
+
+`node scripts/verify-category-storage-ui.mjs` kiểm tra form này bằng tài khoản
+`CATEGORY_TEST_USERNAME`/`CATEGORY_TEST_PASSWORD`, loại có lô và yêu cầu Khô
+`CATEGORY_TEST_USED`, loại chưa có lô `CATEGORY_TEST_UNUSED`. Dùng dữ liệu test
+riêng vì ca hợp lệ thực sự sửa tên/mô tả và yêu cầu bảo quản. Cấu hình
+Playwright/URL/thư mục ảnh dùng như các browser gate bên dưới.
+
+Ngay trên form Phiếu nhập, nhập một dòng 10 đơn vị rồi phân bổ 6 + 5 vào các
+vị trí hợp lệ, đủ sức chứa. Bấm **Hoàn tất**: trigger trên `LO_HANG` chặn lượng
+vượt, API trả `ALLOCATION_EXCEEDS_LINE`, UI giữ phiếu nháp và hiển thị cách sửa.
+Phân bổ 6 + 3 trả `ALLOCATION_INCOMPLETE` từ procedure; sửa thành 6 + 4 hoàn tất
+được. Không có màn hình thực hành hay endpoint SQL thử trong ứng dụng.
+Xem [ranh giới procedure/trigger](../../docs/architecture/adr/0008-inbound-integrity-boundary.md).
+
+`node scripts/verify-inbound-rollback-ui.mjs` kiểm tra form nhập thật với
+`INBOUND_TEST_USERNAME`, `INBOUND_TEST_PASSWORD` của Quản lý kho. Dùng dữ liệu
+test riêng, vị trí đủ sức chứa; script tạo và hoàn tất phiếu thật. Có thể đặt
+`INBOUND_TEST_PRODUCT`, `INBOUND_TEST_SUPPLIER`, `INBOUND_TEST_POSITION_A`,
+`INBOUND_TEST_POSITION_B`, `INBOUND_TEST_BAD_POSITION`; mặc định dùng seed.
+Các biến Playwright/URL/thư mục ảnh dùng như bài browser gate bên dưới.
 
 `scripts/verify-web-parity.mjs` dùng Playwright được cài ngoài frontend. Đặt
 `PLAYWRIGHT_PATH` tới module Playwright, tùy chọn `PLAYWRIGHT_CHANNEL=msedge`,

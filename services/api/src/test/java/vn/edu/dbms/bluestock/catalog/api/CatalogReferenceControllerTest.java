@@ -24,6 +24,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,6 +39,33 @@ class CatalogReferenceControllerTest {
 
     @MockitoBean
     private UserDetailsService userDetailsService;
+
+    @Test
+    @WithMockUser(authorities = "ROLE_QLKHO")
+    void managerReceivesStorageHistoryConflictFromNormalEdit() throws Exception {
+        when(service.updateCategory("LSP001", "Đồ khô", null, "Mát"))
+            .thenThrow(new CatalogReferenceException(CatalogReferenceException.Kind.CONFLICT,
+                "CATEGORY_STORAGE_LOCKED", "Không thể đổi yêu cầu bảo quản vì loại sản phẩm đã phát sinh lô hàng."));
+        mvc.perform(put("/api/loai-san-pham/LSP001").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"tenLoai":"Đồ khô","yeuCauBaoQuan":"Mát"}
+                    """))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("CATEGORY_STORAGE_LOCKED"));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_NVKHO")
+    void staffCannotChangeStorageRequirement() throws Exception {
+        mvc.perform(put("/api/loai-san-pham/LSP001").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"tenLoai":"Đồ khô","yeuCauBaoQuan":"Mát"}
+                    """))
+            .andExpect(status().isForbidden());
+        org.mockito.Mockito.verifyNoInteractions(service);
+    }
 
     @Test
     @WithMockUser(authorities = "ROLE_NVKHO")

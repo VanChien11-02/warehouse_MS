@@ -1,5 +1,6 @@
 package vn.edu.dbms.bluestock.inbound.infrastructure;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -14,6 +15,8 @@ import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundSummary;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundPage;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineData;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineView;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.HistoryItem;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.HistoryPage;
 
 @Repository
 public class InboundJdbcRepository {
@@ -79,6 +82,36 @@ public class InboundJdbcRepository {
         return jdbc.queryForList("""
             SELECT TrangThai FROM dbo.PHIEU_NHAP WITH (UPDLOCK, HOLDLOCK) WHERE MaPN = ?
             """, String.class, code).stream().findFirst();
+    }
+
+    public HistoryPage findHistory(int page, int size, String receipt, String product,
+        String supplier, LocalDate from, LocalDate to) {
+        var clauses = new ArrayList<String>();
+        var args = new ArrayList<Object>();
+        if (receipt != null) { clauses.add("v.MaPN = ?"); args.add(receipt); }
+        if (product != null) { clauses.add("v.MaSP = ?"); args.add(product); }
+        if (supplier != null) { clauses.add("v.MaNCC = ?"); args.add(supplier); }
+        if (from != null) { clauses.add("CAST(v.NgayHoanTat AS DATE) >= ?"); args.add(from); }
+        if (to != null) { clauses.add("CAST(v.NgayHoanTat AS DATE) <= ?"); args.add(to); }
+        // View là nguồn dữ liệu lịch sử; không dựng lại JOIN/lọc trạng thái tại Java.
+        String source = " FROM dbo.vw_LichSuNhapKho v "
+            + (clauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", clauses) + " ");
+        Long count = jdbc.queryForObject("SELECT COUNT_BIG(*)" + source, Long.class, args.toArray());
+        args.add(page * size);
+        args.add(size);
+        List<HistoryItem> items = jdbc.query("""
+            SELECT v.MaPN, v.NgayHoanTat, v.MaNCC, v.MaSP, v.TenSP, v.MaDVT,
+                   v.MaLo, v.NgaySanXuat, v.HanSuDung, v.SoLuongNhap, v.DonGiaNhap, v.GiaTriNhap
+            """ + source + "ORDER BY v.NgayHoanTat DESC, v.MaPN DESC, v.MaLo ASC "
+            + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY", (row, index) -> new HistoryItem(
+                row.getString("MaPN").trim(), utc(row.getObject("NgayHoanTat", LocalDateTime.class)),
+                row.getString("MaNCC").trim(), row.getString("MaSP").trim(), row.getString("TenSP"),
+                row.getString("MaDVT").trim(), row.getString("MaLo").trim(),
+                row.getObject("NgaySanXuat", LocalDate.class), row.getObject("HanSuDung", LocalDate.class),
+                row.getInt("SoLuongNhap"), row.getBigDecimal("DonGiaNhap"), row.getBigDecimal("GiaTriNhap")),
+            args.toArray());
+        long total = count == null ? 0 : count;
+        return new HistoryPage(items, page, size, total, (total + size - 1) / size);
     }
 
     public void updateHeader(String code, String supplier, String note) {

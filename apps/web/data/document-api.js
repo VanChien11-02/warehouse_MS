@@ -48,7 +48,16 @@ export function createDocumentApi(client) {
         return client.send(`/doi-soat-gia-tri/${kind}/${encodeURIComponent(code)}`, { method: "POST", body });
       }
     },
-    inbound: resource("inbound"),
+    inbound: {
+      ...resource("inbound"),
+      history(filters = {}) {
+        const params = new URLSearchParams({ page: 0, size: 20 });
+        for (const [key, value] of Object.entries(filters)) {
+          if (value !== "" && value != null) params.set(key, String(value));
+        }
+        return client.send(`/phieu-nhap/lich-su?${params}`);
+      }
+    },
     transfer: resource("transfer"),
     return: resource("return"),
     count: {

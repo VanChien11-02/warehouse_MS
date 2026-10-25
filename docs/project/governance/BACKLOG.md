@@ -80,7 +80,51 @@ Mục tiêu: hoàn thành luồng nhập lô → tồn theo vị trí → xuất
 
 Chi tiết object, ca demo và bằng chứng cá nhân nằm trong [`DBMS_WORK_ASSIGNMENT.md`](DBMS_WORK_ASSIGNMENT.md); trạng thái là đề xuất đến khi nhóm chốt `GOV-02`. Không suy ra tác giả code đã tích hợp từ bảng owner mới.
 
+Bổ sung theo quyết định mới nhất ngày 2026-10-25 (DB-R01/INB-01): bỏ giao diện
+và API thực hành trigger. Luồng hoàn tất nhập thật dùng trigger để chặn lượng
+lô vượt dòng nhập, procedure chặn phân bổ thiếu và đảm bảo transaction. UI
+hiển thị lỗi nghiệp vụ và cho sửa nháp; không cho sửa phiếu hoàn tất. Tiêu chí:
+10 so với 6+5 nhận lỗi trigger 51820/HTTP 422; 6+3 bị procedure chặn; 6+4 ghi sổ
+đúng một lần; lỗi không để lại lô, tồn, sổ hay audit COMPLETE. Trigger chiều
+giảm dòng vẫn bảo vệ cấp bảng, không tạo đường sửa chứng từ trái nghiệp vụ
+để trình diễn. Owner triển khai: module nhập; reviewer: chủ repository. Xem
+[ADR 0008](../../architecture/adr/0008-inbound-integrity-boundary.md).
+Quyết định tiếp theo cùng ngày thay trigger chiều giảm dòng bằng
+`trg_LoaiSanPham_BaoVeBaoQuan`: loại đã có lô không đổi yêu cầu bảo quản;
+tên/mô tả vẫn sửa được, loại chưa có lô đổi được. Tiêu chí: gỡ trigger cũ ở
+database sạch và volume cũ; lỗi thật từ form Loại sản phẩm; UPDATE nhiều dòng
+rollback nguyên tử; nhập và quyền hiện tại vẫn đạt. Xem
+[ADR 0009](../../architecture/adr/0009-category-storage-history-guard.md).
+
 ## Sprint 4 - Hoàn thiện và bảo vệ
+
+Điều chỉnh DOC-01/DB-R01/DB-R02/DB-R03 theo giải thích mới nhất: cần minh
+chứng hành vi SQL, không dừng ở tra metadata. Bộ SSMS gồm fixture HS0001,
+SELECT xem actual plan, INSERT/UPDATE gây lỗi hai trigger, EXEC6+5 rollback,
+EXEC6+4 commit, view/function và chống ghi sổ lặp. Có file dọn đúng fixture;
+không đổi object ứng dụng. Hướng dẫn `docs/development/TV1_DEMO_HANH_VI_SSMS.md`.
+
+Bổ sung DOC-01/DB-R01/DB-R02/DB-R03 ngày 2026-10-25: theo yêu cầu học vấn
+đáp, đối chiếu bài giảng trong thư mục utexlms do Project Owner cung cấp và
+soạn mẫu SQL ngắn cho TV1. Tách lệnh chứng minh object hiện có với mẫu CREATE
+để luyện trên bản sao; phân biệt transaction với object lưu trong database.
+Tài liệu `docs/development/TV1_HOC_SQL_SSMS.md` và script chỉ đọc
+`database/study/01_tv1_kiem_tra_ssms.sql`; không thay SQL/UI nghiệp vụ.
+
+Bổ sung INB-01/INV-01/DB-R01 ngày 2026-10-25: API lịch sử nhập đọc trực tiếp
+`vw_LichSuNhapKho` và tab Lịch sử nhập kho trong màn phiếu nhập. Giữ quyền
+SQL hiện có QLKHO/KETOAN; lọc mã phiếu/sản phẩm/nhà cung cấp/ngày hoàn tất,
+phân trang theo lô; mở chứng từ gốc, giữ nháp khi chuyển tab. Acceptance:
+nháp/rollback không xuất hiện, hoàn tất 6+4 có hai dòng và giá trị đúng;
+loading/empty/error/retry, role/validation, desktop/mobile. View đã tồn tại,
+không đổi schema. Contract tại `contracts/inbound-completion.md`.
+
+Bổ sung INB-01/DB-R02/DB-R03 ngày 2026-10-25: rút gọn thủ tục nhập để trình
+bày theo năm bước, không đổi contract hoặc bỏ kiểm tra nghiệp vụ. Gom kiểm
+tra đơn vị, chuyển ngày một lần; giữ khóa, thứ tự tạo lô/tồn/sổ và rollback
+6+5. Migration 031 cập nhật database hiện có; test 009 bổ sung ngày và hai
+chiều trộn đơn vị. Kịch bản thuyết trình tại
+[`../../development/INBOUND_WALKTHROUGH.md`](../../development/INBOUND_WALKTHROUGH.md).
 
 ### ACC-01 - Đối soát giá trị cho Kế toán
 

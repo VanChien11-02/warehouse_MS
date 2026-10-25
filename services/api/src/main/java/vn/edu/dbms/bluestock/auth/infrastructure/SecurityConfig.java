@@ -105,6 +105,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/doi-tac-nhan-hang/*",
                     "/api/doi-tac-nhan-hang/*/san-pham/*")
                     .hasAuthority("ROLE_QLKHO")
+                .requestMatchers(HttpMethod.GET, "/api/phieu-nhap/lich-su")
+                    .hasAnyAuthority("ROLE_QLKHO", "ROLE_KETOAN")
                 .requestMatchers(HttpMethod.GET, "/api/phieu-nhap", "/api/phieu-nhap/*")
                     .hasAnyAuthority("ROLE_QLKHO", "ROLE_NVKHO", "ROLE_KETOAN")
                 .requestMatchers(HttpMethod.POST, "/api/phieu-nhap")

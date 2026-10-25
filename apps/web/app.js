@@ -6,12 +6,12 @@ import { listConfigs, inventoryRows, countRows, reportData, documentProducts } f
 import { createProductApi } from "./data/product-api.js?v=session-shell-6";
 import { createInventoryApi } from "./data/inventory-api.js?v=session-shell-6";
 import { createReportApi } from "./data/report-api.js?v=session-shell-6";
-import { createDocumentApi } from "./data/document-api.js?v=session-shell-6";
+import { createDocumentApi } from "./data/document-api.js?v=inbound-history-1";
 import { createIdentityApi } from "./data/identity-api.js?v=session-shell-6";
 import { createLiveProducts } from "./features/live-products.js?v=session-shell-6";
 import { createLiveInventory } from "./features/live-inventory.js?v=session-shell-6";
 import { createLiveReport } from "./features/live-report.js?v=session-shell-6";
-import { createLiveDocuments } from "./features/live-documents.js?v=session-shell-6";
+import { createLiveDocuments } from "./features/live-documents.js?v=inbound-history-2";
 import { createLiveIdentity } from "./features/live-identity.js?v=session-shell-6";
 import { createMasterApi, nextCode } from "./data/master-api.js?v=session-shell-6";
 import { createLiveMasters, masterScreens } from "./features/live-masters.js?v=session-shell-6";

@@ -23,3 +23,12 @@ test("document adapter uses accepted create, completion and FEFO routes", async 
     { path: "/doi-soat-gia-tri/XUAT/PX0001", options: { method: "POST", body: { giaTriDoiSoat: 120, ghiChu: null } } }
   ]);
 });
+
+test("inbound history keeps page zero and omits empty optional filters", async () => {
+  const paths = [];
+  const api = createDocumentApi({ send: async (path) => { paths.push(path); return { items: [] }; } });
+  await api.inbound.history({ page: 0, maPhieuNhap: "PN0001", maSanPham: "", tuNgay: "2026-10-25", denNgay: null });
+  const url = new URL(paths[0], "http://local.test");
+  assert.equal(url.pathname, "/phieu-nhap/lich-su");
+  assert.deepEqual(Object.fromEntries(url.searchParams), { page: "0", size: "20", maPhieuNhap: "PN0001", tuNgay: "2026-10-25" });
+});

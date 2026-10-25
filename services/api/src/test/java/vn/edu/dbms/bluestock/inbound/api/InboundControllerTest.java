@@ -17,6 +17,7 @@ import vn.edu.dbms.bluestock.auth.infrastructure.SecurityConfig;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundView;
 import vn.edu.dbms.bluestock.inbound.application.InboundService;
+import vn.edu.dbms.bluestock.inbound.application.InboundException;
 import vn.edu.dbms.bluestock.platform.api.ApiExceptionHandler;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -49,6 +50,46 @@ class InboundControllerTest {
         mvc.perform(get("/api/phieu-nhap/PN0001"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.maPhieuNhap").value("PN0001"));
+    }
+
+    @Test
+    void managerAndAccountantCanReadLotHistoryWithFilters() throws Exception {
+        var item = new vn.edu.dbms.bluestock.inbound.application.InboundModels.HistoryItem(
+            "PN0001", OffsetDateTime.parse("2026-10-25T00:00:00Z"), "NCC001", "SP0001", "Mì hộp",
+            "DVT001", "LO0001", null, null, 6, new BigDecimal("12500.0000"), new BigDecimal("75000.0000"));
+        when(service.history(0, 20, "PN0001", "SP0001", "NCC001", java.time.LocalDate.parse("2026-10-25"), null))
+            .thenReturn(new vn.edu.dbms.bluestock.inbound.application.InboundModels.HistoryPage(List.of(item), 0, 20, 1, 1));
+        for (String role : List.of("QLKHO", "KETOAN")) {
+            mvc.perform(get("/api/phieu-nhap/lich-su").with(user(principal(role)))
+                    .param("maPhieuNhap", "PN0001").param("maSanPham", "SP0001")
+                    .param("maNhaCungCap", "NCC001").param("tuNgay", "2026-10-25"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].maLo").value("LO0001"))
+                .andExpect(jsonPath("$.items[0].giaTriNhap").value(75000))
+                .andExpect(jsonPath("$.items[0].ngayHoanTat").value("2026-10-25T00:00:00Z"));
+        }
+    }
+
+    @Test
+    void staffAndAdminCannotReadLotHistory() throws Exception {
+        for (String role : List.of("NVKHO", "ADMIN")) {
+            mvc.perform(get("/api/phieu-nhap/lich-su").with(user(principal(role))))
+                .andExpect(status().isForbidden());
+        }
+        org.mockito.Mockito.verifyNoInteractions(service);
+    }
+
+    @Test
+    void anonymousCannotReadLotHistory() throws Exception {
+        mvc.perform(get("/api/phieu-nhap/lich-su")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_QLKHO")
+    void historyRejectsMalformedDate() throws Exception {
+        mvc.perform(get("/api/phieu-nhap/lich-su").param("tuNgay", "sai-ngay"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("INVALID_PARAMETER"));
     }
 
     @Test
@@ -137,6 +178,31 @@ class InboundControllerTest {
     private static AccountPrincipal principal(String role) {
         return new AccountPrincipal("TK0001", "NV0001", "Nhân viên", "staff",
             "hash", role, true);
+    }
+
+    @Test
+    void completionDisplaysLotTriggerRejectionAsBusinessValidation() throws Exception {
+        when(service.complete(eq("PN0001"), any(), eq("TK0001"))).thenThrow(
+            new InboundException(InboundException.Kind.VALIDATION, "ALLOCATION_EXCEEDS_LINE",
+                "Tổng số lượng phân bổ vượt số lượng nhập."));
+        mvc.perform(post("/api/phieu-nhap/PN0001/hoan-tat")
+                .with(csrf()).with(user(principal("QLKHO")))
+                .contentType(MediaType.APPLICATION_JSON).content("""
+                    {"phanBo":[{"maSanPham":"SP0001","maViTri":"VT0001","soLuong":6},
+                                {"maSanPham":"SP0001","maViTri":"VT0002","soLuong":5}]}
+                    """))
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(jsonPath("$.code").value("ALLOCATION_EXCEEDS_LINE"))
+            .andExpect(jsonPath("$.message").value("Tổng số lượng phân bổ vượt số lượng nhập."));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_QLKHO")
+    void removedPracticeEndpointIsNoLongerAccessible() throws Exception {
+        mvc.perform(post("/api/thuc-hanh/trigger-nhap").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content("{}"))
+            .andExpect(status().isForbidden());
+        org.mockito.Mockito.verifyNoInteractions(service);
     }
 
     private static InboundView inbound() {

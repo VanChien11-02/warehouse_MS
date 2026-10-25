@@ -17,6 +17,7 @@ Mỗi phần tử có `role`, `tenVaiTro`, `permissions`. Mỗi quyền gồm `m
 | Nhân viên, tài khoản | Đọc/tạo/sửa/khóa/gán role | Không | Không | Không |
 | Sản phẩm, loại, đơn vị, kho/khu vực/vị trí, đối tác | Không | CRUD | Đọc để lập phiếu/đối chiếu | Đọc để đối chiếu |
 | Phiếu nhập, phiếu xuất | Không | Lập/sửa/hủy nháp và hoàn tất | Lập/sửa/hủy nháp | Đọc |
+| Lịch sử nhập kho theo lô (`vw_LichSuNhapKho`) | Không | Đọc | Không | Đọc |
 | Phiếu chuyển, kiểm kê, trả hàng | Không | Lập/sửa/hủy nháp và hoàn tất | Không | Đọc |
 | Tồn kho | Không | Đọc | Đọc | Đọc |
 | Nhập–xuất–tồn, chênh lệch kiểm kê | Không | Đọc | Không | Đọc |

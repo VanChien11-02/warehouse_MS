@@ -6,6 +6,9 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 
 - [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md): briefing ngắn về mục tiêu, hiện trạng, invariant, nguồn sự thật và đường đọc theo công việc.
 - [`development/BUILD_GUIDE.md`](development/BUILD_GUIDE.md): môi trường, lệnh đang chạy được, thứ tự kỹ thuật và checklist build sạch.
+- [`development/INBOUND_WALKTHROUGH.md`](development/INBOUND_WALKTHROUGH.md): năm bước thủ tục nhập, transaction và thao tác UI để thuyết trình.
+- [`development/TV1_HOC_SQL_SSMS.md`](development/TV1_HOC_SQL_SSMS.md): các đoạn SQL ngắn ôn SSMS theo bài giảng, lệnh kiểm tra object và phân biệt commit/rollback.
+- [`development/TV1_DEMO_HANH_VI_SSMS.md`](development/TV1_DEMO_HANH_VI_SSMS.md): chạy truy vấn xem index trong plan, DML gây lỗi trigger, EXEC và kiểm tra commit/rollback, view/function.
 - [`development/DOCKER_DEMO.md`](development/DOCKER_DEMO.md): dựng SQL Server 2022, API và web bằng Docker Compose để demo trên máy khác.
 - [`development/RAILWAY_DEPLOY.md`](development/RAILWAY_DEPLOY.md): deploy SQL Server/API lên Railway và kết nối frontend Vercel qua proxy.
 - [`project/governance/OPEN_DECISIONS.md`](project/governance/OPEN_DECISIONS.md): các điểm chưa được phép tự suy đoán trên từng branch.
@@ -24,6 +27,8 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 - [`architecture/adr/0005-outbound-fefo-enforcement.md`](architecture/adr/0005-outbound-fefo-enforcement.md): kiểm tra thứ tự FEFO tại transaction hoàn tất xuất.
 - [`architecture/adr/0006-transfer-posting.md`](architecture/adr/0006-transfer-posting.md): khóa và ghi sổ chuyển kho.
 - [`architecture/adr/0007-compose-demo.md`](architecture/adr/0007-compose-demo.md): môi trường demo SQL Server/API/web bằng Compose.
+- [`architecture/adr/0008-inbound-integrity-boundary.md`](architecture/adr/0008-inbound-integrity-boundary.md): trách nhiệm procedure và trigger trong luồng nhập thật.
+- [`architecture/adr/0009-category-storage-history-guard.md`](architecture/adr/0009-category-storage-history-guard.md): thay trigger dòng nhập bằng bảo vệ yêu cầu bảo quản của loại đã có lô.
 
 ## Quản lý dự án
 

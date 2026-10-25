@@ -1,5 +1,10 @@
 # Spring Boot API
 
+`GET /api/phieu-nhap/lich-su` đọc trực tiếp `dbo.vw_LichSuNhapKho`, phân trang
+và lọc mã phiếu/sản phẩm/nhà cung cấp/ngày hoàn tất UTC. Quyền QLKHO/KETOAN;
+NVKHO/ADMIN bị chặn. Contract và response tại
+[`../../contracts/inbound-completion.md`](../../contracts/inbound-completion.md).
+
 Module backend của hệ thống kho. Spring Boot 3.5.16 có Maven Wrapper, session/RBAC, CRUD danh mục/đối tác/cấu trúc kho, năm luồng chứng từ, tra cứu tồn, báo cáo và audit.
 
 Admin đọc ma trận bốn vai trò qua `GET /api/quyen-han` theo
@@ -73,6 +78,10 @@ API `/api/san-pham` hỗ trợ danh sách phân trang/tìm kiếm, chi tiết, t
 
 API `/api/loai-san-pham` và `/api/don-vi-tinh` hỗ trợ CRUD, phân trang/tìm kiếm theo [`contracts/loai-don-vi-tinh.md`](../../contracts/loai-don-vi-tinh.md). Có thể tạo hai dữ liệu này qua API trước khi tạo sản phẩm; không cần seed SQL nếu thử luồng danh mục từ đầu.
 
+Sửa yêu cầu bảo quản của loại đã có lô bị `trg_LoaiSanPham_BaoVeBaoQuan` chặn
+(SQL 51825 → HTTP 409 `CATEGORY_STORAGE_LOCKED`). Sửa tên/mô tả, giữ cùng yêu
+cầu vẫn được. Java ánh xạ lỗi từ trigger, không chặn trước bằng truy vấn lô.
+
 API `/api/kho`, `/api/khu-vuc` và `/api/vi-tri` hỗ trợ CRUD, phân trang/tìm kiếm và lọc theo kho/khu vực theo [`contracts/warehouse-location.md`](../../contracts/warehouse-location.md). Kiểm tra sức chứa và bảo quản khi ghi sổ tồn thuộc procedure nghiệp vụ.
 
 API `/api/nha-cung-cap` và `/api/doi-tac-nhan-hang` hỗ trợ CRUD, danh sách sản phẩm liên kết và gán/bỏ liên kết theo [`contracts/partner.md`](../../contracts/partner.md). Các liên kết được kiểm tra lại tại thời điểm hoàn tất phiếu.
@@ -80,6 +89,12 @@ API `/api/nha-cung-cap` và `/api/doi-tac-nhan-hang` hỗ trợ CRUD, danh sách
 API `/api/phieu-nhap` đã có danh sách, tạo/sửa/hủy nháp, xem chi tiết và hoàn tất theo [`contracts/inbound-completion.md`](../../contracts/inbound-completion.md). Java tạo/sửa/hủy nháp trong transaction; hoàn tất gọi `sp_HoanTatPhieuNhap` để procedure tự khóa/ghi sổ trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần tạo nhà cung cấp và mapping sản phẩm trước khi hoàn tất.
 
 API `GET /api/ton-kho` đọc `vw_TonKhoChiTiet`, hỗ trợ lọc/phân trang và chỉ lấy tồn khả dụng theo [`contracts/inventory-query.md`](../../contracts/inventory-query.md). Chưa có API ghi tồn trực tiếp; xuất kho vẫn phải kiểm tra lại trong transaction.
+
+Hoàn tất nhập giao điều kiện tổng lượng lô không vượt dòng nhập cho
+`trg_LoHang_GioiHanPhanBo`. Lỗi SQL 51820 được ánh xạ thành HTTP 422
+`ALLOCATION_EXCEEDS_LINE`; procedure rollback toàn phiếu. Procedure chặn phân
+bổ thiếu bằng 51108 → `ALLOCATION_INCOMPLETE`. Xem
+[ADR 0008](../../docs/architecture/adr/0008-inbound-integrity-boundary.md).
 
 API `/api/phieu-xuat` đã có danh sách, tạo/sửa/hủy nháp, xem chi tiết và hoàn tất theo [`contracts/outbound-fefo-completion.md`](../../contracts/outbound-fefo-completion.md). Procedure kiểm tra FEFO và trừ tồn trong transaction SQL Server. Chỉ `QLKHO` được hoàn tất. Cần tạo đối tác nhận và mapping sản phẩm trước khi hoàn tất.
 

@@ -55,26 +55,27 @@ BEGIN
 END;
 GO
 
--- trg_CtPhieuNhap_GioiHanLo: Chặn giảm số lượng dòng nhập xuống dưới tổng lượng lô đã phân bổ.
-CREATE OR ALTER TRIGGER dbo.trg_CtPhieuNhap_GioiHanLo
-ON dbo.CT_PHIEU_NHAP
-AFTER INSERT, UPDATE
+-- trg_LoaiSanPham_BaoVeBaoQuan: Giữ yêu cầu bảo quản của loại đã có lô để không đổi nghĩa hàng đã nhập.
+CREATE OR ALTER TRIGGER dbo.trg_LoaiSanPham_BaoVeBaoQuan
+ON dbo.LOAI_SAN_PHAM
+AFTER UPDATE
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF NOT UPDATE(SoLuong)
+    IF NOT UPDATE(YeuCauBaoQuan)
         RETURN;
 
     IF EXISTS (
         SELECT 1
-        FROM inserted line
-        JOIN dbo.LO_HANG lot
-            ON lot.MaPN = line.MaPN AND lot.MaSP = line.MaSP
-        GROUP BY line.MaPN, line.MaSP, line.SoLuong
-        HAVING SUM(CONVERT(BIGINT, lot.SoLuongNhap)) > line.SoLuong
+        FROM inserted currentCategory
+        JOIN deleted previousCategory ON previousCategory.MaLoai = currentCategory.MaLoai
+        JOIN dbo.SAN_PHAM product ON product.MaLoai = currentCategory.MaLoai
+        JOIN dbo.LO_HANG lot ON lot.MaSP = product.MaSP
+        WHERE COALESCE(currentCategory.YeuCauBaoQuan, N'')
+           <> COALESCE(previousCategory.YeuCauBaoQuan, N'')
     )
-        THROW 51821, N'Số lượng dòng nhập nhỏ hơn tổng số lượng lô đã tạo.', 1;
+        THROW 51825, N'Không thể đổi yêu cầu bảo quản của loại sản phẩm đã phát sinh lô hàng.', 1;
 END;
 GO
 

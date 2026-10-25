@@ -37,7 +37,8 @@ public class PermissionService {
             new ModulePermission("expiry", "Lô sắp hết hạn", manager, false, false, false, false),
             new ModulePermission("reconciliation", "Đối soát giá trị phiếu nhập/xuất", manager || accountant,
                 accountant, false, false, false),
-            new ModulePermission("audit", "Nhật ký thao tác", false, false, false, false, false)
+            new ModulePermission("audit", "Nhật ký thao tác", false, false, false, false, false),
+            new ModulePermission("inbound-history", "Lịch sử nhập kho theo lô", manager || accountant, false, false, false, false)
         ));
     }
 

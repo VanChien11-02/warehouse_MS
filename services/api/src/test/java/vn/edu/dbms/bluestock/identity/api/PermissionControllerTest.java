@@ -53,7 +53,11 @@ class PermissionControllerTest {
             .andExpect(jsonPath("$[2].permissions[4].tao").value(true))
             .andExpect(jsonPath("$[2].permissions[6].xem").value(false))
             .andExpect(jsonPath("$[3].permissions[4].tao").value(false))
-            .andExpect(jsonPath("$[3].permissions[10].xem").value(true));
+            .andExpect(jsonPath("$[3].permissions[10].xem").value(true))
+            .andExpect(jsonPath("$[0].permissions[?(@.module == 'inbound-history')].xem").value(org.hamcrest.Matchers.contains(false)))
+            .andExpect(jsonPath("$[1].permissions[?(@.module == 'inbound-history')].xem").value(org.hamcrest.Matchers.contains(true)))
+            .andExpect(jsonPath("$[2].permissions[?(@.module == 'inbound-history')].xem").value(org.hamcrest.Matchers.contains(false)))
+            .andExpect(jsonPath("$[3].permissions[?(@.module == 'inbound-history')].xem").value(org.hamcrest.Matchers.contains(true)));
         mvc.perform(post("/api/quyen-han").with(csrf())).andExpect(status().isForbidden());
     }
 }

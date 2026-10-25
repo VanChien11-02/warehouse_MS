@@ -54,7 +54,7 @@ foreach ($scriptFile in @('app.js', 'core\navigation.js', 'core\api-client.js',
         'data\demo.js', 'data\product-api.js', 'data\inventory-api.js', 'data\report-api.js',
         'data\document-api.js', 'data\identity-api.js', 'data\master-api.js', 'data\document-models.js', 'data\insight-api.js',
         'features\live-products.js', 'features\live-inventory.js', 'features\live-report.js',
-        'features\live-documents.js', 'features\live-identity.js', 'features\live-masters.js',
+        'features\live-documents.js', 'features\live-inbound-history.js', 'features\live-identity.js', 'features\live-masters.js',
         'features\live-permissions.js', 'features\live-insights.js')) {
     & $node --check (Join-Path $webRoot $scriptFile)
     if ($LASTEXITCODE -ne 0) { throw "JavaScript frontend không hợp lệ: $scriptFile" }

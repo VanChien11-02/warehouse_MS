@@ -3,6 +3,7 @@ package vn.edu.dbms.bluestock.catalog.application;
 import java.util.Locale;
 import java.util.function.Supplier;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,7 @@ import vn.edu.dbms.bluestock.catalog.application.CatalogReferenceModels.Category
 import vn.edu.dbms.bluestock.catalog.application.CatalogReferenceModels.Page;
 import vn.edu.dbms.bluestock.catalog.application.CatalogReferenceModels.UnitView;
 import vn.edu.dbms.bluestock.catalog.infrastructure.CatalogReferenceJdbcRepository;
+import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
 
 @Service
 public class CatalogReferenceService {
@@ -57,9 +59,17 @@ public class CatalogReferenceService {
     @Transactional
     public CategoryView updateCategory(String code, String name, String description, String storageRequirement) {
         String normalizedCode = normalizeCode(code);
-        if (repository.updateCategory(normalizedCode, name.trim(), optionalText(description), storageRequirement) == 0) {
-            throw new CatalogReferenceException(Kind.NOT_FOUND, "CATEGORY_NOT_FOUND",
-                "Không tìm thấy loại sản phẩm");
+        try {
+            if (repository.updateCategory(normalizedCode, name.trim(), optionalText(description), storageRequirement) == 0) {
+                throw new CatalogReferenceException(Kind.NOT_FOUND, "CATEGORY_NOT_FOUND",
+                    "Không tìm thấy loại sản phẩm");
+            }
+        } catch (DataAccessException exception) {
+            if (SqlErrorNumbers.from(exception) == 51825) {
+                throw new CatalogReferenceException(Kind.CONFLICT, "CATEGORY_STORAGE_LOCKED",
+                    "Không thể đổi yêu cầu bảo quản vì loại sản phẩm đã phát sinh lô hàng. Bạn vẫn có thể sửa tên và mô tả.");
+            }
+            throw exception;
         }
         return category(normalizedCode);
     }

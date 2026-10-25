@@ -93,3 +93,166 @@ host chạy Maven bằng JDK 24. Migration 028 được áp dụng lên volume d
 Chưa kiểm tra bằng thao tác trình duyệt sau khi đăng nhập đủ bốn vai trò trong lượt này; quyền HTTP được bao phủ bởi controller test, còn role SQL, schema và nghiệp vụ đối soát được kiểm tra bằng test tương ứng.
 
 Sau khi thêm biểu đồ khối lượng phiếu vào dashboard API, cùng lệnh `verify.ps1 -WithDatabase` được chạy lại và vẫn exit 0 với 15 test frontend, 170 test Java, 25 script SQL. Lệnh `docker compose up -d --build web` để đưa riêng biểu đồ mới lên container bị từ chối ở bước cấp quyền, nên container web đang chạy là bản trước thay đổi biểu đồ cuối này; mã nguồn và toàn bộ kiểm tra đã cập nhật.
+
+## Phương án thực hành trigger đã thay thế (2026-10-25)
+
+Lượt trước từng kiểm tra UI thực hành tách biệt: 183 test Java, 16 test
+frontend, bốn ca SQL và browser desktop/mobile đạt. Project Owner sau đó
+bác bỏ phương án vì không thuộc quy trình vận hành kho. UI, endpoint,
+fixture SQL và test riêng của phương án này đã được gỡ; kết quả lịch sử
+không dùng làm bằng chứng cho luồng nghiệp vụ hiện tại. Ranh giới mới nằm
+trong [ADR 0008](../architecture/adr/0008-inbound-integrity-boundary.md).
+
+## Trigger trong luồng nhập thật (2026-10-25)
+
+Theo quyết định mới nhất, đã gỡ toàn bộ UI/API/SQL fixture thực hành, tách
+quy tắc thiếu lượng (procedure) và vượt lượng (trigger). Migration 029 nâng
+cấp procedure hiện có; không đổi schema, không cho sửa phiếu hoàn tất. API
+hiển thị thông báo nghiệp vụ có cách khắc phục, không đưa tên object SQL lên UI.
+
+| Lệnh/kiểm tra | Kết quả |
+| --- | --- |
+| `sqlcmd -S localhost -E -C -b -f i:65001 -d BlueStock -i database/migrations/029_inbound_trigger_boundary.sql`, sau đó test 009 và 024 | Exit 0; gọi procedure nhập thật với 10 so với 6+5 nhận đúng ERROR_NUMBER 51820, ERROR_PROCEDURE `trg_LoHang_GioiHanPhanBo`. Kiểm tra rollback cả lô/tồn/sổ/audit COMPLETE, phiếu còn NHAP; test cả hai chiều trigger nhiều dòng đạt. |
+| `pwsh -File scripts/verify.ps1 -WithDatabase` | Exit 0; 16 test frontend, 177 test Java (không lỗi/bỏ qua) và 25 bài SQL đạt; cú pháp/liên kết Markdown đạt. Host JDK 24, target Java 21, SQL Server local. |
+| `docker compose up -d --build` | Exit 0; API Java 21/web mới chạy cùng SQL Server 2022; db-init áp migration 029 lên volume đang có. |
+| `node scripts/verify-inbound-rollback-ui.mjs` với tài khoản/danh mục/vị trí test riêng | Exit 0; form nhập thật, login/API/SQL Server thật: 6+5 → 422 ALLOCATION_EXCEEDS_LINE; 6+3 → 422 ALLOCATION_INCOMPLETE; vị trí Hư hỏng → 422 INCOMPATIBLE_STORAGE; 6+4 hoàn tất, hai lô 6 và 4, tồn tăng đúng 10. Các ca lỗi giữ nháp và tồn cũ; hoàn tất lại → 409, tồn không tăng thêm. Desktop 1440 và mobile 390 không tràn ngang/pageerror; không còn mục thực hành. |
+| Cập nhật riêng web bằng `docker compose up -d --build --no-deps web`, chạy lại browser gate | Exit 0; các ca nhập, rollback và chống lặp vẫn đạt. Sau khi xem ảnh, sửa thêm độ ưu tiên CSS để thông báo trong editor nền sáng dùng đỏ đậm thay vì utility màu nhạt của nền tối. |
+| `git diff --check`, `node --check scripts/verify-inbound-rollback-ui.mjs` | Exit 0; Git chỉ cảnh báo LF/CRLF. |
+
+Ảnh desktop/mobile trong artifact phiên làm việc. Browser test tạo các phiếu
+PN0052–PN0055 trên dữ liệu riêng; sau mỗi lượt đã dọn đúng chứng từ, lô, tồn,
+sổ, danh mục, vị trí, tài khoản và audit của fixture, không đụng phiếu người
+dùng. Secret chỉ đọc vào bộ nhớ; không lưu mật khẩu/cookie/token vào Git/ảnh.
+
+Kiểm tra cơ học Impeccable khi bao gồm cả `index.html` báo các cảnh báo giao
+diện có sẵn trên toàn app (màu/độ tương phản/chữ nhỏ và advisory thiết kế).
+Phạm vi này sửa độ tương phản thông báo lỗi trong editor chứng từ; chưa audit
+hoặc sửa toàn bộ giao diện cũ. Browser đã xác nhận hai kích thước, thông báo
+đọc được và không có lỗi JavaScript.
+
+Giới hạn nghiệp vụ: trigger chiều giảm dòng không có đường phát lỗi từ UI
+hiện tại vì chỉ tạo lô khi hoàn tất và không sửa phiếu hoàn tất. Nó được kiểm
+chứng ở cấp bảng bằng test 024, không mô tả lỗi procedure hay khóa form thành
+lỗi trigger. Chưa triển khai bản mới lên hosting từ xa.
+
+## Thay trigger dòng nhập bằng guard bảo quản loại sản phẩm (2026-10-25)
+
+Theo yêu cầu tiếp theo của Project Owner, gỡ `trg_CtPhieuNhap_GioiHanLo`, thêm
+`trg_LoaiSanPham_BaoVeBaoQuan`. Loại đã có lô không đổi yêu cầu bảo quản; loại
+chưa có lô đổi được, tên/mô tả vẫn sửa được. Chi tiết và giới hạn đường ghi
+trực tiếp CT_PHIEU_NHAP tại [ADR 0009](../architecture/adr/0009-category-storage-history-guard.md).
+
+| Lệnh/kiểm tra | Kết quả |
+| --- | --- |
+| Migration 030, test 024 và test 009 qua `sqlcmd -S localhost -E -C -b -f i:65001 -d BlueStock -i ...` | Exit 0; trigger cũ không còn, trigger mới nhận đúng 51825/ERROR_PROCEDURE; UPDATE nhiều loại rollback cả câu, NULL bị chặn; giữ bảo quản/sửa tên và loại chưa có lô được phép. Nhập/vượt lượng/rollback vẫn đạt. |
+| `pwsh -File scripts/verify.ps1 -WithDatabase` | Exit 0; 181 test Java, 16 test frontend, 25 bài SQL; không lỗi hoặc bỏ qua. Host JDK 24, target Java 21; SQL Server local. |
+| `docker compose up -d --build`, sau đó `docker compose up -d` | API/web mới dựng thành công. Lần khởi động đầu db-init gặp database chưa mở xong dù master healthcheck đã đạt; chạy lại sau recovery thành công, giữ nguyên volume. Migration 027/029/030 áp theo thứ tự, trigger cũ bị gỡ. API chạy Java 21, SQL Server 2022. |
+| `node scripts/verify-category-storage-ui.mjs` qua runner cấu hình fixture riêng | Exit 0; đăng nhập QLKHO thật, sửa loại trên form thật: Khô → Mát và NULL nhận 409 CATEGORY_STORAGE_LOCKED, DB giữ Khô; giữ Khô sửa tên/mô tả thành công; loại chưa có lô đổi được. Desktop 1440/mobile 390, không tràn ngang/pageerror. |
+| Bản sao `init.sql` đổi tên sang database tạm `BlueStockGuardCheck69bbf28c`, test 024, chạy lại migration 030 | Exit 0; schema sạch không có trigger cũ, bộ guard đạt, migration chạy lại được. Database/file SQL tạm đã dọn. |
+| `impeccable.cmd detect --json apps/web/styles.css` | Exit 0, `[]`; đã xem ảnh dialog desktop/mobile. |
+
+Browser runner nhận `CATEGORY_TEST_USERNAME`, `CATEGORY_TEST_PASSWORD`,
+`CATEGORY_TEST_USED` (có lô, bảo quản Khô), `CATEGORY_TEST_UNUSED` (chưa có lô)
+và các biến Playwright/URL/ảnh như gate khác. Lượt này tạo dữ liệu riêng qua
+API, hoàn tất nhập để có lô thật; đã dọn đúng danh mục, kho/vị trí, chứng từ,
+lô/tồn/sổ, tài khoản và audit fixture. Không lưu secret trong source/ảnh.
+
+Giới hạn: chưa chạy riêng bài hai session nhập và sửa yêu cầu bảo quản đồng
+thời; procedure đã giữ HOLDLOCK loại đến cuối transaction. Các ca tuần tự,
+rollback, role, database sạch/volume cũ và UI thật đã kiểm chứng. Bản mới chỉ
+cập nhật local, chưa deploy hosting từ xa.
+
+## Rút gọn thủ tục nhập để trình bày (2026-10-25)
+
+Thủ tục nhập chia năm bước có chú thích tiếng Việt, gộp kiểm tra đơn vị của
+hàng mới/tồn cũ và chuyển đổi ngày một lần. Giữ nguyên contract, khóa phiếu,
+loại/vị trí, vòng lặp tạo từng lô, mã lỗi và ghi sổ nguyên tử. Migration 031
+đồng bộ canonical; Compose áp 031 sau 030. Hướng dẫn đọc code và lời trình
+bày tại [`../development/INBOUND_WALKTHROUGH.md`](../development/INBOUND_WALKTHROUGH.md).
+
+| Lệnh/kiểm tra | Kết quả |
+| --- | --- |
+| `sqlcmd -S localhost -E -C -b -f i:65001 -d BlueStock -i database/migrations/031_simplify_inbound_completion.sql`, rồi test 009 | Exit 0; ngày hợp lệ giữ đúng, ngày sai/hạn trước NSX nhận 51104; trộn đơn vị giữa hai hàng mới và giữa hàng mới/tồn cũ nhận 51111; commit, chống lặp, thiếu lượng, sức chứa, mapping và lỗi trigger 51820 rollback đạt. |
+| `pwsh -File scripts/verify.ps1 -WithDatabase` với JAVA_HOME JDK 24 | Exit 0; 181 test Java, 16 test frontend, 25 script SQL đạt; cú pháp/liên kết Markdown đạt. |
+| Pipe nội dung migration 031 rồi test 009 vào `docker compose exec -T db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -f i:65001 -d BlueStock` | Exit 0; database SQL Server 2022 mà API/UI local đang dùng đã cập nhật, không cần dựng lại API/web. |
+| `node scripts/verify-inbound-rollback-ui.mjs` qua runner dữ liệu riêng | Exit 0; desktop/mobile: 6+5 nhận lỗi và giữ tồn, 6+3 bị chặn, vị trí hư hỏng bị chặn, sửa 6+4 hoàn tất với hai lô, tồn tăng 10, gọi lại 409 không tăng tồn; không overflow/pageerror. PN0103/PN0104 và toàn bộ fixture riêng đã dọn. |
+| `git diff --check` | Exit 0; chỉ cảnh báo LF/CRLF. |
+
+Lượt refactor này không chạy lại bài concurrency hai session hoặc dựng
+database sạch; không đổi schema hay thứ tự khóa. Chưa deploy hosting từ xa.
+
+## API và UI lịch sử nhập kho từ view (2026-10-25)
+
+`GET /api/phieu-nhap/lich-su` → InboundService →
+InboundJdbcRepository.findHistory đọc trực tiếp `dbo.vw_LichSuNhapKho`.
+Không đổi schema hoặc view, không thêm migration. Tab Lịch sử nhập kho trong
+màn Phiếu nhập hiển thị từng lô, bộ lọc mã/ngày UTC, phân trang và link mở
+chứng từ gốc. QLKHO/KETOAN được đọc, NVKHO/ADMIN bị chặn; ma trận quyền đã
+cập nhật. Contract tại [`../../contracts/inbound-completion.md`](../../contracts/inbound-completion.md).
+
+| Lệnh/kiểm tra | Kết quả |
+| --- | --- |
+| `mvn -q -Dtest=InboundControllerTest,InboundServiceTest test` (JAVA_HOME JDK 24) | Exit 0; route tĩnh lịch sử, QLKHO/KETOAN, từ chối NVKHO/ADMIN/anonymous, malformed date, chuẩn hóa mã, page/size/date validation đạt. Lần đầu trong sandbox không đọc/tải được Maven parent; chạy ngoài sandbox đạt. |
+| `pwsh -File scripts/verify.ps1 -WithDatabase` | Exit 0; 187 test Java, 17 test frontend, 25 bài SQL; cú pháp/Markdown đạt. Test 009 xác nhận view không có phiếu nháp/rollback và phản ánh đúng lượng/giá trị sau commit. |
+| `docker compose up -d --build api web` | Exit 0; API Java 21/web mới chạy trên SQL Server 2022, db-init áp migration hiện hành thành công. |
+| `node scripts/verify-inbound-rollback-ui.mjs` qua runner fixture riêng, hai lượt | Exit 0 cả hai lượt, desktop1440/mobile390: draft và rollback không vào lịch sử; hoàn tất6+4 có hai lô, giá trị75000/50000; code/date filters và phân trang API size1 đạt; tab hiển thị đúng, lỗi503 chủ động/empty/retry, mở phiếu gốc và bàn phím chuyển tab đạt; không overflow/pageerror. PN0105–PN0108 và fixture riêng đã dọn. |
+| `impeccable.cmd detect --json apps/web/styles.css apps/web/features/live-inbound-history.js` | Exit 0, `[]`. Review ảnh chỉ ra bảng mobile hẹp và nút ngắt dòng; sửa cùng một batch, dựng riêng web bằng `docker compose up -d --build --no-deps web`, chụp lại hai kích thước; reviewer chấm cả ba điểm đã sửa đạt trong phạm vi đó. |
+| Kiểm tra cú pháp module/app, `node --test apps/web/data/document-api.test.mjs`, `git diff --check` sau sửa responsive | Exit 0; hai test adapter đạt; Git chỉ cảnh báo LF/CRLF. |
+
+Ảnh `inbound-history-1440.png`/`inbound-history-390.png` lưu trong artifact
+phiên làm việc. Browser dùng QLKHO thật và SQL Server thật, mock chỉ dùng
+riêng ca lỗi503 có chủ đích; không lưu secret. UI phân trang được kiểm tra
+trạng thái một trang; chuyển trang nhiều kết quả kiểm tra qua API size1.
+Chưa chạy riêng browser KETOAN/NVKHO, concurrency hoặc database sạch trong
+lượt này; phân quyền có controller test và quyền view SQL sẵn có được gate
+SQL kiểm tra. Bản chạy cập nhật local, chưa deploy hosting từ xa.
+
+## Bộ học SQL ngắn trên SSMS cho TV1 (2026-10-25)
+
+Theo yêu cầu của Project Owner, đọc sáu bài giảng Index/View/Function/Trigger/
+SP/Transaction P1 tại thư mục `E:\tai_lieu\hệ quản trị cơ sở dữ liệu\utexlms`;
+trích xuất nội dung và xem ảnh các trang cú pháp. Mẫu được chuyển sang bảng
+kho hiện hành, ghi nguồn/trang và lời giải thích tại
+[`../development/TV1_HOC_SQL_SSMS.md`](../development/TV1_HOC_SQL_SSMS.md).
+Không đổi object/UI production. Script thực thi trong project là
+[`../../database/study/01_tv1_kiem_tra_ssms.sql`](../../database/study/01_tv1_kiem_tra_ssms.sql),
+chỉ đọc metadata/dữ liệu, bài transaction dùng bảng tạm.
+
+| Lệnh/kiểm tra | Kết quả |
+| --- | --- |
+| Bản init đổi tên thành database tạm `BlueStockStudyCheck01a17217`, gỡ object tương ứng ở database tạm, chạy tám block từ hướng dẫn | Exit 0; CREATE index/view/function/hai trigger/proc mẫu, CHECK/FK và transaction bảng tạm chạy được. Kết quả rollback10, commit6. |
+| `sqlcmd -S localhost -E -C -b -f i:65001 -d BlueStockStudyCheck01a17217 -i database/tests/009_inbound_completion.sql`, rồi test024 | Exit 0 cả hai; mẫu view/hàm/trigger rút gọn giữ hành vi kiểm tra nhập, rollback và nhiều dòng. Database tạm đã DROP sau kiểm tra. |
+| `sqlcmd -S localhost -E -C -b -f i:65001 -i database/study/01_tv1_kiem_tra_ssms.sql` | Exit 0; metadata index/cột INCLUDE, định nghĩa object/constraint, SELECT view/hàm và hai ca bảng tạm đạt trên SQL Server Windows local. Không tuyên bố hiệu năng tăng dựa trên lượt này; SSMS Actual Execution Plan chưa được thao tác riêng. |
+| `pwsh -File scripts/verify.ps1` với JAVA_HOME JDK24 | Exit 0; 187 test Java, 17 frontend, cú pháp/Markdown đạt. Không chạy lại toàn bộ 25 bài SQL ở lượt tài liệu này, chỉ chạy hai bài liên quan trên database tạm. |
+
+Mẫu EXEC hoàn tất trong tài liệu yêu cầu người học tự tạo một phiếu nháp
+10 qua UI và thay mã phiếu/vị trí; không tự chọn và ghi sổ phiếu thật của
+người dùng để kiểm tra. Không chạy UI/browser lại vì không thay frontend/API.
+
+Điều chỉnh tiếp theo theo yêu cầu người học: file
+`database/study/01_tv1_kiem_tra_ssms.sql` chuyển sang **chỉ SELECT**, bỏ các
+lệnh EXEC và bài bảng tạm khỏi file kiểm tra. SELECT các catalog sys.indexes,
+sys.views, sys.objects, sys.triggers, sys.procedures, sys.check_constraints,
+sys.foreign_keys và OBJECT_DEFINITION. Chọn BlueStock trong dropdown SSMS.
+Chạy `sqlcmd -S localhost -E -C -b -f i:65001 -d BlueStock -i database/study/01_tv1_kiem_tra_ssms.sql`
+đạt exit0, trả đúng tên object/điều kiện FK-CHECK; hai trigger và index đang bật.
+
+## Minh chứng hành vi SQL trên SSMS (2026-10-25)
+
+Theo giải thích tiếp theo của người học, bổ sung kịch bản thực thi nghiệp vụ:
+[`../../database/study/00_tv1_chuan_bi_demo.sql`](../../database/study/00_tv1_chuan_bi_demo.sql),
+[`../../database/study/02_tv1_demo_hanh_vi.sql`](../../database/study/02_tv1_demo_hanh_vi.sql),
+[`../../database/study/03_tv1_don_du_lieu_demo.sql`](../../database/study/03_tv1_don_du_lieu_demo.sql).
+Phiếu/sản phẩm/vị trí fixture HS0001 có marker riêng, một dòng10 giá12500,
+vị trí khô sức chứa100. Không dùng chứng từ người dùng, không sửa object ứng dụng.
+
+| Lệnh/kiểm tra | Kết quả |
+| --- | --- |
+| Init database tạm `BlueStockBehaviorCheck01a17217`, chạy file00, file02 kèm assertions sau từng mục, file03 | Exit0; INSERT6+5 lỗi51820 không để lô; EXEC6+5 lỗi51820 rollback lô/tồn/sổ, phiếuNHAP; EXEC6+4 commit2lô, tồn10,2biến động; view2dòng giá trị75000/50000, function6/4; UPDATE bảo quản lỗi51825 giữKhô; hoàn tất lại lỗi51102 không tăng tồn. Cleanup đạt; database tạm đã DROP. |
+| `docker compose exec -T db ... sqlcmd ... -d BlueStock -y 0 -Q 'SET STATISTICS XML ON; SELECT NgayNhap, MaPN, MaNCC, TrangThai FROM dbo.PHIEU_NHAP ORDER BY NgayNhap DESC, MaPN DESC; SET STATISTICS XML OFF;'` | Exit0; actual XML có RunTimeInformation, Index Scan dùng IX_PHIEU_NHAP_NGAY_MA, Ordered=1,0operatorSort. Chỉ truy vấn dữ liệu Docker, không thay dữ liệu/index. Plan lưu artifact `actual-index-plan.sqlplan`; không tuyên bố số đo cải thiện hiệu năng từ lượt này. |
+| `pwsh -File scripts/verify.ps1` với JDK24, `git diff --check` | Exit0; 187 testJava,17frontend, Markdown/cú pháp đạt; chỉ cảnh báo LF/CRLF. Không chạy lại browser hoặc toàn bộ25SQL vì không đổi API/UI/object nghiệp vụ. |
+
+Hướng dẫn trình bày kết quả tại
+[`../development/TV1_DEMO_HANH_VI_SSMS.md`](../development/TV1_DEMO_HANH_VI_SSMS.md).
+File01 tra metadata vẫn giữ làm tài liệu phụ. Chưa thao tác SSMS desktop tự
+động; plan kiểm tra bằng SQL Server actual XML, ảnh SSMS do người học cung cấp.

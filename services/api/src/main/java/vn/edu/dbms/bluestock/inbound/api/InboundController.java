@@ -13,6 +13,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,7 @@ import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundView;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundPage;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineData;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.HistoryPage;
 import vn.edu.dbms.bluestock.inbound.application.InboundService;
 
 @RestController
@@ -50,6 +52,17 @@ public class InboundController {
     @GetMapping("/{maPhieuNhap}")
     public InboundView get(@PathVariable String maPhieuNhap) {
         return service.get(maPhieuNhap);
+    }
+
+    @GetMapping("/lich-su")
+    public HistoryPage history(
+        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String maPhieuNhap,
+        @RequestParam(required = false) String maSanPham,
+        @RequestParam(required = false) String maNhaCungCap,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tuNgay,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate denNgay) {
+        return service.history(page, size, maPhieuNhap, maSanPham, maNhaCungCap, tuNgay, denNgay);
     }
 
     @PostMapping
