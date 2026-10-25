@@ -3,21 +3,21 @@
 import { roleProfiles, navDefinition, pageMeta, apiPagesForRole, apiLandingPageForRole } from "./core/navigation.js?v=session-shell-4";
 import { createApiClient } from "./core/api-client.js?v=session-shell-4";
 import { listConfigs, inventoryRows, countRows, reportData, documentProducts } from "./data/demo.js?v=session-shell-4";
-import { createProductApi } from "./data/product-api.js?v=session-shell-4";
-import { createInventoryApi } from "./data/inventory-api.js?v=session-shell-4";
-import { createReportApi } from "./data/report-api.js?v=session-shell-4";
-import { createDocumentApi } from "./data/document-api.js?v=session-shell-4";
-import { createIdentityApi } from "./data/identity-api.js?v=session-shell-4";
-import { createLiveProducts } from "./features/live-products.js?v=session-shell-4";
-import { createLiveInventory } from "./features/live-inventory.js?v=session-shell-4";
-import { createLiveReport } from "./features/live-report.js?v=session-shell-4";
-import { createLiveDocuments } from "./features/live-documents.js?v=session-shell-4";
-import { createLiveIdentity } from "./features/live-identity.js?v=session-shell-4";
-import { createMasterApi } from "./data/master-api.js?v=session-shell-4";
-import { createLiveMasters, masterScreens } from "./features/live-masters.js?v=session-shell-5";
-import { createLivePermissions } from "./features/live-permissions.js?v=session-shell-4";
-import { createInsightApi } from "./data/insight-api.js?v=session-shell-4";
-import { createLiveInsights } from "./features/live-insights.js?v=session-shell-4";
+import { createProductApi } from "./data/product-api.js?v=session-shell-6";
+import { createInventoryApi } from "./data/inventory-api.js?v=session-shell-6";
+import { createReportApi } from "./data/report-api.js?v=session-shell-6";
+import { createDocumentApi } from "./data/document-api.js?v=session-shell-6";
+import { createIdentityApi } from "./data/identity-api.js?v=session-shell-6";
+import { createLiveProducts } from "./features/live-products.js?v=session-shell-6";
+import { createLiveInventory } from "./features/live-inventory.js?v=session-shell-6";
+import { createLiveReport } from "./features/live-report.js?v=session-shell-6";
+import { createLiveDocuments } from "./features/live-documents.js?v=session-shell-6";
+import { createLiveIdentity } from "./features/live-identity.js?v=session-shell-6";
+import { createMasterApi, nextCode } from "./data/master-api.js?v=session-shell-6";
+import { createLiveMasters, masterScreens } from "./features/live-masters.js?v=session-shell-6";
+import { createLivePermissions } from "./features/live-permissions.js?v=session-shell-6";
+import { createInsightApi } from "./data/insight-api.js?v=session-shell-6";
+import { createLiveInsights } from "./features/live-insights.js?v=session-shell-6";
 
 const USE_DUMMY_DATA = new URLSearchParams(window.location.search).get("mode") !== "api";
 const requestedApiPort = new URLSearchParams(window.location.search).get("apiPort");
@@ -70,9 +70,13 @@ let previousSessionRole = null;
 let apiViewsReady = false;
 const readyApiFeatures = new Set();
 const unavailableApiPages = new Set();
+const productApi = USE_DUMMY_DATA ? null : createProductApi(apiClient);
+const inventoryApi = USE_DUMMY_DATA ? null : createInventoryApi(apiClient);
+const masterApi = USE_DUMMY_DATA ? null : createMasterApi(apiClient);
+const identityApi = USE_DUMMY_DATA ? null : createIdentityApi(apiClient);
 const liveProducts = USE_DUMMY_DATA ? null : createLiveProducts({
   client: apiClient,
-  products: createProductApi(apiClient),
+  products: productApi,
   escapeHtml,
   formatCurrency,
   showToast,
@@ -105,13 +109,16 @@ const liveProducts = USE_DUMMY_DATA ? null : createLiveProducts({
 });
 if (!USE_DUMMY_DATA) {
   liveInventory = createLiveInventory({
-    inventory: createInventoryApi(apiClient),
+    inventory: inventoryApi,
+    masters: masterApi,
+    products: productApi,
     escapeHtml,
     isAuthenticated: liveProducts.isAuthenticated,
     requireLogin: liveProducts.requireLogin
   });
   liveReport = createLiveReport({
     reports: createReportApi(apiClient),
+    masters: masterApi,
     escapeHtml,
     isAuthenticated: liveProducts.isAuthenticated,
     requireLogin: liveProducts.requireLogin
@@ -119,22 +126,25 @@ if (!USE_DUMMY_DATA) {
   liveDocuments = createLiveDocuments({
     escapeHtml,
     documents: createDocumentApi(apiClient),
+    masters: masterApi,
+    products: productApi,
+    inventory: inventoryApi,
     isAuthenticated: liveProducts.isAuthenticated,
     getRole: liveProducts.getRole,
     requireLogin: liveProducts.requireLogin
   });
   liveIdentity = createLiveIdentity({
-    identity: createIdentityApi(apiClient),
+    identity: identityApi,
     escapeHtml,
     getRole: liveProducts.getRole,
     requireLogin: liveProducts.requireLogin,
     showToast
   });
-  liveMasters = createLiveMasters({ masters: createMasterApi(apiClient), getRole: liveProducts.getRole,
+  liveMasters = createLiveMasters({ masters: masterApi, products: productApi, getRole: liveProducts.getRole,
     requireLogin: liveProducts.requireLogin, escapeHtml, showToast });
-  livePermissions = createLivePermissions({ identity: createIdentityApi(apiClient), getRole: liveProducts.getRole,
+  livePermissions = createLivePermissions({ identity: identityApi, getRole: liveProducts.getRole,
     requireLogin: liveProducts.requireLogin, escapeHtml, navigate: showView });
-  liveInsights = createLiveInsights({ insights: createInsightApi(apiClient), getRole: liveProducts.getRole,
+  liveInsights = createLiveInsights({ insights: createInsightApi(apiClient), masters: masterApi, products: productApi, inventory: inventoryApi, identity: identityApi, getRole: liveProducts.getRole,
     requireLogin: liveProducts.requireLogin, escapeHtml, navigate: showView, pagesForRole: apiPagesForRole });
 }
 
@@ -439,6 +449,19 @@ function clearListFilters() {
   renderList();
 }
 
+const demoPrefixes = {
+  products: "SP",
+  categories: "LSP",
+  units: "DVT",
+  warehouses: "KHO",
+  zones: "KV",
+  locations: "VT",
+  suppliers: "NCC",
+  recipients: "DT",
+  employees: "NV",
+  accounts: "TK"
+};
+
 function openRecordEditor() {
   if (!USE_DUMMY_DATA) {
     liveProducts.openEditor();
@@ -447,10 +470,13 @@ function openRecordEditor() {
   const config = listConfigs[activeList] || listConfigs.products;
   document.querySelector("#recordEditorTitle").textContent = config.addLabel;
   elements.recordForm.reset();
+  const recordCode = document.querySelector("#recordCode");
+  recordCode.value = nextCode(demoPrefixes[activeList] || "SP", config.rows.map((row) => ({ code: row[0] })), "code");
+  recordCode.readOnly = true;
   elements.recordEditor.hidden = false;
   elements.editorOverlay.hidden = false;
   document.body.style.overflow = "hidden";
-  window.setTimeout(() => document.querySelector("#recordCode").focus(), 0);
+  window.setTimeout(() => document.querySelector("#recordName").focus(), 0);
 }
 
 function closeRecordEditor() {

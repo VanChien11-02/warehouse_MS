@@ -63,7 +63,7 @@ public class PositionController {
         return ResponseEntity.noContent().build();
     }
 
-    public record CreatePositionRequest(@NotBlank String maViTri,
+    public record CreatePositionRequest(String maViTri,
         @NotBlank String maKhuVuc,
         @NotBlank @Size(max = 255) String tenViTri,
         @NotNull @Min(0) Integer sucChua,

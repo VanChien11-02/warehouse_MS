@@ -1,10 +1,36 @@
-export function createLiveInventory({ inventory, escapeHtml, isAuthenticated, requireLogin }) {
+import { selectOptions } from "../data/master-api.js?v=session-shell-4";
+
+export function createLiveInventory({ inventory, masters, products, escapeHtml, isAuthenticated, requireLogin }) {
   const view = document.querySelector("#inventoryView");
   const table = document.querySelector("#inventoryTable");
   const toolbar = view.querySelector(".data-toolbar");
   const refresh = document.querySelector("#refreshInventoryButton");
   let page = 0;
   let requestId = 0;
+  let refsLoaded = false;
+  const cache = { warehouses: [], products: [], lots: [] };
+
+  function syncFilterOptions() {
+    const form = document.querySelector("#inventoryFilters");
+    if (!form) return;
+    const wh = form.elements.namedItem("maKho");
+    const prod = form.elements.namedItem("maSanPham");
+    const lot = form.elements.namedItem("maLo");
+    if (wh) wh.innerHTML = selectOptions(cache.warehouses, "maKho", (w) => `${w.maKho} · ${w.tenKho}`, wh.value, "Tất cả kho", escapeHtml);
+    if (prod) prod.innerHTML = selectOptions(cache.products, "maSanPham", (p) => `${p.maSanPham} · ${p.tenSanPham}`, prod.value, "Tất cả sản phẩm", escapeHtml);
+    if (lot) lot.innerHTML = selectOptions(cache.lots, "maLo", (l) => `${l.maLo}${l.tenSanPham ? ` · ${l.tenSanPham}` : ""}`, lot.value, "Tất cả lô", escapeHtml);
+  }
+
+  async function loadRefs() {
+    if (refsLoaded || !isAuthenticated()) return;
+    refsLoaded = true;
+    await Promise.all([
+      masters?.warehouses?.all ? masters.warehouses.all().then((items) => { cache.warehouses = items; }).catch(() => {}) : Promise.resolve(),
+      products?.all ? products.all().then((items) => { cache.products = items; }).catch(() => {}) : Promise.resolve(),
+      inventory?.all ? inventory.all().then((items) => { cache.lots = items; }).catch(() => {}) : Promise.resolve()
+    ]);
+    syncFilterOptions();
+  }
 
   function setMessage(message, error = false) {
     const node = document.querySelector("#inventoryMessage");
@@ -25,6 +51,10 @@ export function createLiveInventory({ inventory, escapeHtml, isAuthenticated, re
   }
 
   function showPage(result) {
+    if (!cache.lots.length && result.items?.length) {
+      cache.lots = result.items;
+      syncFilterOptions();
+    }
     table.querySelector("tbody").innerHTML = result.items.map((item) => `
       <tr><td><span class="cell-primary">${escapeHtml(item.maSanPham)}</span><br>${escapeHtml(item.tenSanPham)}</td>
       <td>${escapeHtml(item.maLo)}</td>
@@ -57,6 +87,7 @@ export function createLiveInventory({ inventory, escapeHtml, isAuthenticated, re
     }
     refresh.disabled = true;
     setMessage("Đang tải tồn kho...");
+    loadRefs();
     try {
       const result = await inventory.list({ page, size: 20, ...filters() });
       if (current !== requestId) return;
@@ -79,9 +110,9 @@ export function createLiveInventory({ inventory, escapeHtml, isAuthenticated, re
     view.querySelector(".live-indicator").textContent = "Dữ liệu API";
     view.querySelector(".section-toolbar p").textContent = "Tồn theo lô và vị trí từ hệ thống; số khả dụng được kiểm tra lại khi ghi sổ.";
     toolbar.innerHTML = `<form id="inventoryFilters" class="filter-row">
-      <label><span>Mã kho</span><input name="maKho" maxlength="6" pattern="[A-Za-z0-9]{1,6}"></label>
-      <label><span>Mã sản phẩm</span><input name="maSanPham" maxlength="6" pattern="[A-Za-z0-9]{1,6}"></label>
-      <label><span>Mã lô</span><input name="maLo" maxlength="6" pattern="[A-Za-z0-9]{1,6}"></label>
+      <label><span>Kho</span><select name="maKho"><option value="">Tất cả kho</option></select></label>
+      <label><span>Sản phẩm</span><select name="maSanPham"><option value="">Tất cả sản phẩm</option></select></label>
+      <label><span>Lô hàng</span><select name="maLo"><option value="">Tất cả lô</option></select></label>
       <label><span>Hạn đến ngày</span><input name="hanSuDungTruoc" type="date"></label>
       <label><span>Chỉ khả dụng</span><input name="chiKhaDung" type="checkbox"></label>
       <button class="button button-secondary" type="submit">Lọc tồn kho</button>
@@ -94,6 +125,7 @@ export function createLiveInventory({ inventory, escapeHtml, isAuthenticated, re
       event.preventDefault();
       if (event.currentTarget.reportValidity()) render(0);
     });
+    document.querySelector("#inventoryFilters").addEventListener("change", () => render(0));
     document.querySelector("#inventoryPrevious").addEventListener("click", () => render(page - 1));
     document.querySelector("#inventoryNext").addEventListener("click", () => render(page + 1));
     refresh.addEventListener("click", () => render(page));

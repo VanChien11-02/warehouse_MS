@@ -49,13 +49,14 @@ foreach ($relativePath in $requiredFiles) {
 
 Write-Host '2/4 Kiểm tra JavaScript frontend...'
 $node = (Get-Command node -ErrorAction Stop).Source
+$webRoot = Join-Path $root 'apps\web'
 foreach ($scriptFile in @('app.js', 'core\navigation.js', 'core\api-client.js',
         'data\demo.js', 'data\product-api.js', 'data\inventory-api.js', 'data\report-api.js',
         'data\document-api.js', 'data\identity-api.js', 'data\master-api.js', 'data\document-models.js', 'data\insight-api.js',
         'features\live-products.js', 'features\live-inventory.js', 'features\live-report.js',
         'features\live-documents.js', 'features\live-identity.js', 'features\live-masters.js',
         'features\live-permissions.js', 'features\live-insights.js')) {
-    & $node --check (Join-Path $root 'apps\web' $scriptFile)
+    & $node --check (Join-Path $webRoot $scriptFile)
     if ($LASTEXITCODE -ne 0) { throw "JavaScript frontend không hợp lệ: $scriptFile" }
 }
 & $node --test (Join-Path $root 'apps\web\core\api-client.test.mjs')
@@ -116,7 +117,8 @@ if (Test-Path -LiteralPath $apiWrapper) {
     Push-Location (Split-Path -Parent $apiWrapper)
     try {
         $installedMaven = Get-Command mvn -ErrorAction SilentlyContinue
-        if ($IsWindows -and $installedMaven) {
+        $runningOnWindows = ($env:OS -eq 'Windows_NT')
+        if ($runningOnWindows -and $installedMaven) {
             & $installedMaven.Source test
         }
         else {
@@ -174,7 +176,7 @@ if ($WithDatabase) {
 
 if ($WithConcurrency) {
     if (-not $WithDatabase) { throw 'Dùng -WithConcurrency cùng -WithDatabase.' }
-    & pwsh -File (Join-Path $root 'scripts\verify-concurrency.ps1') `
+    & powershell -File (Join-Path $root 'scripts\verify-concurrency.ps1') `
         -SqlServer $SqlServer -SqlUser $SqlUser -DatabaseName $DatabaseName
     if ($LASTEXITCODE -ne 0) { throw 'Concurrency test thất bại.' }
 }

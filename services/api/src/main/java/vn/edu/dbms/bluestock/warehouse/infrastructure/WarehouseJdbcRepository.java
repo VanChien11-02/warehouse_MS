@@ -123,6 +123,30 @@ public class WarehouseJdbcRepository {
             .stream().findFirst();
     }
 
+    public String nextWarehouseCode() {
+        Integer next = jdbc.queryForObject("""
+            SELECT COALESCE(MAX(TRY_CAST(SUBSTRING(RTRIM(MaKho), 4, 10) AS INT)), 0) + 1
+            FROM dbo.KHO WHERE MaKho LIKE 'KHO%'
+            """, Integer.class);
+        return String.format("KHO%03d", Math.min(999, next == null ? 1 : next));
+    }
+
+    public String nextAreaCode() {
+        Integer next = jdbc.queryForObject("""
+            SELECT COALESCE(MAX(TRY_CAST(SUBSTRING(RTRIM(MaKhuVuc), 3, 10) AS INT)), 0) + 1
+            FROM dbo.KHU_VUC WHERE MaKhuVuc LIKE 'KV%'
+            """, Integer.class);
+        return String.format("KV%04d", Math.min(9999, next == null ? 1 : next));
+    }
+
+    public String nextPositionCode() {
+        Integer next = jdbc.queryForObject("""
+            SELECT COALESCE(MAX(TRY_CAST(SUBSTRING(RTRIM(MaViTri), 3, 10) AS INT)), 0) + 1
+            FROM dbo.VI_TRI_KHO WHERE MaViTri LIKE 'VT%'
+            """, Integer.class);
+        return String.format("VT%04d", Math.min(9999, next == null ? 1 : next));
+    }
+
     public void insertWarehouse(String code, String name, String address) {
         jdbc.update("INSERT INTO dbo.KHO (MaKho, TenKho, DiaChi) VALUES (?, ?, ?)",
             code, name, address);

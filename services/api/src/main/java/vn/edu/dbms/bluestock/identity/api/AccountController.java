@@ -65,7 +65,7 @@ public class AccountController {
         return ResponseEntity.noContent().build();
     }
 
-    public record CreateAccountRequest(@NotBlank String maTaiKhoan,
+    public record CreateAccountRequest(String maTaiKhoan,
         @NotBlank String maNhanVien,
         @NotBlank @Size(max = 100) String tenTaiKhoan,
         @NotBlank String role,

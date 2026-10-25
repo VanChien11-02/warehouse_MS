@@ -56,7 +56,7 @@ public class UnitController {
         return ResponseEntity.noContent().build();
     }
 
-    public record CreateUnitRequest(@NotBlank String maDonViTinh,
+    public record CreateUnitRequest(String maDonViTinh,
         @NotBlank @Size(max = 100) String tenDonViTinh) {}
 
     public record UpdateUnitRequest(@NotBlank @Size(max = 100) String tenDonViTinh) {}

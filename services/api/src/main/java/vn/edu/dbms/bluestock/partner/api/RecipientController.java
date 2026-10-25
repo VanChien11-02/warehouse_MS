@@ -81,7 +81,7 @@ public class RecipientController {
         return ResponseEntity.noContent().build();
     }
 
-    public record CreateRecipientRequest(@NotBlank String maDoiTacNhanHang,
+    public record CreateRecipientRequest(String maDoiTacNhanHang,
         @NotBlank @Size(max = 255) String tenDoiTac,
         @NotBlank @Size(max = 50) String loaiDoiTac,
         @Size(max = 500) String diaChi,

@@ -226,7 +226,7 @@
 
   <aside class="record-editor" id="recordEditor" aria-labelledby="recordEditorTitle" hidden>
     <div class="editor-header"><div><h2 id="recordEditorTitle">Thêm sản phẩm</h2><p>Tạo bản ghi mới trong dữ liệu demo.</p></div><button class="icon-button" id="closeRecordEditor" type="button" aria-label="Đóng bảng nhập">×</button></div>
-    <form id="recordForm"><div class="editor-body"><label class="field"><span>Mã bản ghi *</span><input id="recordCode" required maxlength="12" placeholder="VD: SP0129"></label><label class="field"><span>Tên hiển thị *</span><input id="recordName" required maxlength="120"></label><label class="field"><span>Phân loại</span><select id="recordCategory"><option>Thực phẩm</option><option>Đồ uống</option><option>Gia dụng</option><option>Khác</option></select></label><label class="field"><span>Trạng thái</span><select id="recordStatus"><option>Đang hoạt động</option><option>Chờ xử lý</option><option>Ngừng hoạt động</option></select></label><label class="field"><span>Ghi chú</span><textarea id="recordNote" rows="4" placeholder="Thông tin bổ sung..."></textarea></label></div><div class="editor-footer"><button class="button button-secondary" id="cancelRecordButton" type="button">Hủy</button><button class="button button-secondary" id="liveDeleteButton" type="button" hidden>Xóa sản phẩm</button><button class="button button-primary" id="liveSaveButton" type="submit">Lưu bản ghi</button></div></form>
+    <form id="recordForm"><div class="editor-body"><label class="field"><span>Mã bản ghi (tự tạo)</span><input id="recordCode" required maxlength="12" readonly placeholder="Mã tự động"></label><label class="field"><span>Tên hiển thị *</span><input id="recordName" required maxlength="120"></label><label class="field"><span>Phân loại</span><select id="recordCategory"><option>Thực phẩm</option><option>Đồ uống</option><option>Gia dụng</option><option>Khác</option></select></label><label class="field"><span>Trạng thái</span><select id="recordStatus"><option>Đang hoạt động</option><option>Chờ xử lý</option><option>Ngừng hoạt động</option></select></label><label class="field"><span>Ghi chú</span><textarea id="recordNote" rows="4" placeholder="Thông tin bổ sung..."></textarea></label></div><div class="editor-footer"><button class="button button-secondary" id="cancelRecordButton" type="button">Hủy</button><button class="button button-secondary" id="liveDeleteButton" type="button" hidden>Xóa sản phẩm</button><button class="button button-primary" id="liveSaveButton" type="submit">Lưu bản ghi</button></div></form>
   </aside>
 
   <dialog class="login-dialog" id="loginDialog" aria-labelledby="loginTitle">
@@ -244,6 +244,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
   <div class="editor-overlay" id="editorOverlay" hidden></div>
-  <script type="module" src="app.js?v=session-shell-5"></script>
+  <script type="module" src="app.js?v=session-shell-6"></script>
 </body>
 </html>

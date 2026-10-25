@@ -52,6 +52,22 @@ public class PartnerJdbcRepository {
             """, SUPPLIER_MAPPER, code).stream().findFirst();
     }
 
+    public String nextSupplierCode() {
+        Integer next = jdbc.queryForObject("""
+            SELECT COALESCE(MAX(TRY_CAST(SUBSTRING(RTRIM(MaNCC), 4, 10) AS INT)), 0) + 1
+            FROM dbo.NHA_CUNG_CAP WHERE MaNCC LIKE 'NCC%'
+            """, Integer.class);
+        return String.format("NCC%03d", Math.min(999, next == null ? 1 : next));
+    }
+
+    public String nextRecipientCode() {
+        Integer next = jdbc.queryForObject("""
+            SELECT COALESCE(MAX(TRY_CAST(SUBSTRING(RTRIM(MaDTNH), 3, 10) AS INT)), 0) + 1
+            FROM dbo.DOI_TAC_NHAN_HANG WHERE MaDTNH LIKE 'DT%'
+            """, Integer.class);
+        return String.format("DT%04d", Math.min(9999, next == null ? 1 : next));
+    }
+
     public void insertSupplier(String code, String name, String address, String phone, String email) {
         jdbc.update("""
             INSERT INTO dbo.NHA_CUNG_CAP (MaNCC, TenNCC, DiaChi, SDT, Email)

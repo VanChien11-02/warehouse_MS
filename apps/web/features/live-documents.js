@@ -1,7 +1,11 @@
 import { documentScreens, draftBody, actualBody } from "../data/document-models.js?v=session-shell-4";
+import { nextCode, selectOptions } from "../data/master-api.js?v=session-shell-4";
 
-export function createLiveDocuments({ documents, isAuthenticated, getRole, requireLogin, escapeHtml: esc }) {
+const docPrefixes = { inbound: "PN", outbound: "PX", transfer: "PC", count: "KK", return: "TH" };
+
+export function createLiveDocuments({ documents, masters, products, inventory, isAuthenticated, getRole, requireLogin, escapeHtml: esc }) {
   let mode = "inbound", current = null, pending = false, page = 0, generation = 0, reconciliationTicket = 0;
+  const cache = { products: [], locations: [], suppliers: [], recipients: [], stocks: [], outbounds: [], listItems: [], sourceLines: [] };
   const view = document.createElement("section");
   view.className = "view"; view.id = "liveDocumentView"; view.hidden = true;
   const el = (id) => view.querySelector(`#${id}`);
@@ -13,6 +17,81 @@ export function createLiveDocuments({ documents, isAuthenticated, getRole, requi
   function message(text, error = false) {
     el("liveDocMessage").textContent = text;
     el("liveDocMessage").classList.toggle("text-danger", error);
+  }
+  function productOptions(selected = "") {
+    return selectOptions(cache.products, "maSanPham", (p) => `${p.maSanPham} · ${p.tenSanPham}`, selected, "Chọn sản phẩm", esc);
+  }
+  function locationOptions(selected = "") {
+    return selectOptions(cache.locations, "maViTri", (l) => `${l.maViTri} · ${l.tenViTri}${l.maKho ? ` (${l.maKho})` : ""}`, selected, "Chọn vị trí", esc);
+  }
+  function lotOptions(selected = "") {
+    const source = mode === "return" && cache.sourceLines.length
+      ? cache.sourceLines.map((line) => ({
+        maLo: line.maLo,
+        label: `${line.maLo} · Vị trí ${line.maViTri} (Đã xuất: ${line.soLuong})`
+      }))
+      : cache.stocks.map((s) => ({
+        maLo: s.maLo,
+        label: `${s.maLo} · ${s.maSanPham} - ${s.tenSanPham} (${s.maViTri} · Tồn: ${s.soLuongTon})`
+      }));
+    return selectOptions(source, "maLo", (item) => item.label, selected, "Chọn mã lô", esc);
+  }
+  function partnerOptions(selected = "") {
+    if (mode === "inbound") {
+      return selectOptions(cache.suppliers, "maNhaCungCap", (s) => `${s.maNhaCungCap} · ${s.tenNhaCungCap}`, selected, "Chọn nhà cung cấp", esc);
+    }
+    if (mode === "outbound") {
+      return selectOptions(cache.recipients, "maDoiTacNhanHang", (r) => `${r.maDoiTacNhanHang} · ${r.tenDoiTac}`, selected, "Chọn đối tác nhận", esc);
+    }
+    if (mode === "count") {
+      return selectOptions(cache.locations, "maViTri", (l) => `${l.maViTri} · ${l.tenViTri}${l.maKho ? ` (${l.maKho})` : ""}`, selected, "Chọn vị trí kiểm kê", esc);
+    }
+    if (mode === "return") {
+      return selectOptions(cache.outbounds, "maPhieuXuat", (o) => `${o.maPhieuXuat}${o.maDoiTacNhanHang ? ` · ${o.maDoiTacNhanHang}` : ""}`, selected, "Chọn phiếu xuất gốc", esc);
+    }
+    return '<option value="">Không yêu cầu</option>';
+  }
+  function syncCodeDisplay() {
+    const autoCode = code() || nextCode(docPrefixes[mode] || "PN", cache.listItems, screen().code);
+    if (el("liveDocCode")) el("liveDocCode").value = code() || `${autoCode} (Tự tạo)`;
+    if (!current) {
+      el("liveDocState").textContent = writable() ? `Phiếu mới · Mã tự tạo: ${autoCode}` : "Chọn phiếu trong danh sách để xem";
+    }
+  }
+  function syncSelects() {
+    if (el("liveDocPartner") && screen().partner) {
+      const currentPartner = el("liveDocPartner").value || current?.[screen().partner] || "";
+      el("liveDocPartner").innerHTML = partnerOptions(currentPartner);
+    }
+    if (el("liveDocLoadCode")) {
+      const selectedDoc = el("liveDocLoadCode").value || code() || "";
+      el("liveDocLoadCode").innerHTML = selectOptions(cache.listItems, screen().code,
+        (item) => `${item[screen().code]} · ${item.trangThai}`, selectedDoc, "Chọn mã phiếu...", esc);
+    }
+    for (const select of view.querySelectorAll('#liveDocRows select, #liveDocAllocations select, #liveDocFefoForm select')) {
+      const val = select.value;
+      if (select.name === "maSanPham" || select.name === "product") select.innerHTML = productOptions(val);
+      else if (select.name === "maLo") select.innerHTML = lotOptions(val);
+      else if (["maViTri", "maViTriNguon", "maViTriDich"].includes(select.name)) select.innerHTML = locationOptions(val);
+    }
+    syncCodeDisplay();
+    actions();
+  }
+  async function loadReferences() {
+    if (!isAuthenticated()) return;
+    const tasks = [];
+    if (products?.all) tasks.push(products.all().then((items) => { cache.products = items; }).catch(() => {}));
+    if (masters?.locations?.all) tasks.push(masters.locations.all().then((items) => { cache.locations = items; }).catch(() => {}));
+    if (mode === "inbound" && masters?.suppliers?.all) tasks.push(masters.suppliers.all().then((items) => { cache.suppliers = items; }).catch(() => {}));
+    if (mode === "outbound" && masters?.recipients?.all) tasks.push(masters.recipients.all().then((items) => { cache.recipients = items; }).catch(() => {}));
+    if (["outbound", "transfer", "count", "return"].includes(mode) && inventory?.all) {
+      tasks.push(inventory.all({ chiKhaDung: mode === "outbound" }).then((items) => { cache.stocks = items; }).catch(() => {}));
+    }
+    if (mode === "return" && documents?.outbound?.all) {
+      tasks.push(documents.outbound.all({ trangThai: "DA_HOAN_THANH" }).then((items) => { cache.outbounds = items; }).catch(() => {}));
+    }
+    await Promise.all(tasks);
+    syncSelects();
   }
   function actions() {
     const draft = current?.trangThai === "NHAP";
@@ -35,13 +114,16 @@ export function createLiveDocuments({ documents, isAuthenticated, getRole, requi
       input.disabled = !editable() || input.dataset.type === "snapshot" || mode === "count" && input.name === "maLo" && input.dataset.persisted === "true";
     }
     for (const button of el("liveDocRows").querySelectorAll("button")) button.hidden = !editable() || mode === "count";
-    for (const input of el("liveDocAllocations").querySelectorAll("input")) input.disabled = !editable();
+    for (const input of el("liveDocAllocations").querySelectorAll("input, select")) input.disabled = !editable();
     for (const button of el("liveDocAllocations").querySelectorAll("button")) button.hidden = !editable();
   }
   const trash = '<svg aria-hidden="true"><use href="#icon-trash"/></svg>';
   function input(key, type, value = "", persisted = false) {
     const shared = `name="${key}" data-type="${type || "code"}" data-persisted="${persisted}" aria-label="${esc(key)}"`;
     if (type === "condition") return `<select ${shared}><option${value === "Tốt" ? " selected" : ""}>Tốt</option><option${value === "Hư hỏng" ? " selected" : ""}>Hư hỏng</option></select>`;
+    if (key === "maSanPham") return `<select ${shared} required>${productOptions(value)}</select>`;
+    if (key === "maLo") return `<select ${shared} required>${lotOptions(value)}</select>`;
+    if (["maViTri", "maViTriNguon", "maViTriDich"].includes(key)) return `<select ${shared} required>${locationOptions(value)}</select>`;
     const number = ["quantity", "actual", "snapshot", "money"].includes(type);
     return `<input ${shared} value="${esc(value ?? "")}" ${type !== "reason" ? "required" : ""}
       ${number ? `type="number" min="${type === "quantity" ? 1 : 0}" step="${type === "money" ? "0.0001" : "1"}"` : `maxlength="${type === "reason" ? 500 : 6}" ${type === "reason" ? "" : 'pattern="[A-Za-z0-9]{1,6}"'}`}>`;
@@ -52,7 +134,9 @@ export function createLiveDocuments({ documents, isAuthenticated, getRole, requi
     actions();
   }
   function addAllocation(part = {}) {
-    el("liveDocAllocations").insertAdjacentHTML("beforeend", `<tr>${[["maSanPham"], ["maViTri"], ["soLuong", "quantity"]].map(([key, type]) => `<td>${input(key, type, part[key])}</td>`).join("")}
+    const defaultLoc = part.maViTri || cache.locations[0]?.maViTri || "";
+    el("liveDocAllocations").insertAdjacentHTML("beforeend", `<tr>${[["maSanPham"], ["maViTri"], ["soLuong", "quantity"]].map(([key, type]) =>
+      `<td>${input(key, type, key === "maViTri" ? defaultLoc : part[key])}</td>`).join("")}
       <td><input name="ngaySanXuat" type="date" aria-label="Ngày sản xuất" value="${esc(part.ngaySanXuat || "")}"></td>
       <td><input name="hanSuDung" type="date" aria-label="Hạn sử dụng" value="${esc(part.hanSuDung || "")}"></td>
       <td><button type="button" class="row-action" data-remove aria-label="Xóa phân bổ">${trash}</button></td></tr>`);
@@ -63,8 +147,12 @@ export function createLiveDocuments({ documents, isAuthenticated, getRole, requi
     reconciliationTicket++;
     current = data;
     el("liveDocState").textContent = `${code()} · ${data.trangThai} · ${data.chiTiet.length} dòng`;
-    el("liveDocLoadCode").value = code();
-    el("liveDocPartner").value = data[screen().partner] || "";
+    if (el("liveDocCode")) el("liveDocCode").value = code();
+    el("liveDocLoadCode").innerHTML = selectOptions(cache.listItems, screen().code,
+      (item) => `${item[screen().code]} · ${item.trangThai}`, code(), "Chọn mã phiếu...", esc);
+    if (screen().partner) {
+      el("liveDocPartner").innerHTML = partnerOptions(data[screen().partner] || "");
+    }
     el("liveDocNote").value = data.ghiChu || "";
     el("liveDocRows").replaceChildren();
     for (const line of data.chiTiet) addLine(line, true);
@@ -100,12 +188,14 @@ export function createLiveDocuments({ documents, isAuthenticated, getRole, requi
   function reset() {
     reconciliationTicket++;
     current = null;
+    cache.sourceLines = [];
     el("liveDocForm").reset();
+    if (screen().partner) el("liveDocPartner").innerHTML = partnerOptions("");
     el("liveDocLoadCode").value = "";
-    el("liveDocState").textContent = writable() ? "Phiếu mới" : "Chọn phiếu trong danh sách để xem";
     el("liveDocRows").replaceChildren(); el("liveDocAllocations").replaceChildren();
     el("liveDocFefoResult").replaceChildren();
     if (mode !== "count" && writable()) addLine();
+    syncCodeDisplay();
     message(""); actions();
   }
   async function loadList(nextPage = page) {
@@ -118,6 +208,10 @@ export function createLiveDocuments({ documents, isAuthenticated, getRole, requi
       const filters = el("liveDocStatus").value ? { trangThai: el("liveDocStatus").value } : {};
       const result = await documents[mode].list(page, 10, filters);
       if (ticket !== generation) return;
+      cache.listItems = result.items || [];
+      syncCodeDisplay();
+      el("liveDocLoadCode").innerHTML = selectOptions(cache.listItems, screen().code,
+        (item) => `${item[screen().code]} · ${item.trangThai}`, code() || "", "Chọn mã phiếu...", esc);
       el("liveDocListRows").innerHTML = result.items.map((item) => `<tr><td>${esc(item[screen().code])}</td>
         <td>${esc(item[screen().date] || "—")}</td><td>${esc(item.trangThai)}</td><td>${esc(item.maNhanVien)}</td>
         <td><button class="row-action" data-load="${esc(item[screen().code])}" aria-label="Mở ${esc(item[screen().code])}"><svg aria-hidden="true"><use href="#icon-chevron"/></svg></button></td></tr>`).join("");
@@ -162,21 +256,25 @@ export function createLiveDocuments({ documents, isAuthenticated, getRole, requi
   function show(nextMode) {
     if (pending) return;
     generation++; mode = nextMode;
+    cache.listItems = [];
+    cache.sourceLines = [];
     el("liveDocTitle").textContent = screen().title;
     el("liveDocPartnerLabel").textContent = screen().label || "";
     el("liveDocPartner").required = !!screen().partner;
     el("liveDocHead").innerHTML = `<tr>${screen().fields.map(([, label]) => `<th>${esc(label)}</th>`).join("")}<th></th></tr>`;
     el("liveDocStatus").value = "";
-    reset(); loadList(0);
+    reset();
+    loadReferences();
+    loadList(0);
   }
   function start() {
     view.innerHTML = `<div class="section-toolbar"><h2 id="liveDocTitle"></h2><button class="button button-primary" id="liveDocNew">Phiếu mới</button></div>
       <div class="live-filters"><label class="field"><span>Trạng thái</span><select id="liveDocStatus"><option value="">Tất cả</option><option value="NHAP">Nháp</option><option value="DA_HOAN_THANH">Đã hoàn thành</option><option value="DA_HUY">Đã hủy</option></select></label><button class="button button-secondary" id="liveDocRefresh">Làm mới</button>
-      <label class="field"><span>Mã phiếu</span><input id="liveDocLoadCode" maxlength="6" pattern="[A-Za-z0-9]{1,6}"></label><button class="button button-secondary" id="liveDocLoad">Tải phiếu</button></div>
+      <label class="field"><span>Mã phiếu</span><select id="liveDocLoadCode"><option value="">Chọn mã phiếu...</option></select></label><button class="button button-secondary" id="liveDocLoad">Tải phiếu</button></div>
       <div class="table-wrap"><table><thead><tr><th>Mã phiếu</th><th>Thời điểm tạo</th><th>Trạng thái</th><th>Nhân viên</th><th>Chi tiết</th></tr></thead><tbody id="liveDocListRows"></tbody></table></div>
       <footer class="pagination"><span id="liveDocRange"></span><div><button id="liveDocPrevious" aria-label="Trang trước">&lt;</button><button id="liveDocNext" aria-label="Trang sau">&gt;</button></div></footer>
       <section class="live-document-editor"><h3 id="liveDocState">Phiếu mới</h3><p id="liveDocMessage" role="status" aria-live="polite"></p>
-      <form id="liveDocForm"><div class="form-grid"><label class="field" id="liveDocPartnerField"><span id="liveDocPartnerLabel"></span><input id="liveDocPartner" maxlength="6" pattern="[A-Za-z0-9]{1,6}"></label>
+      <form id="liveDocForm"><div class="form-grid"><label class="field"><span>Mã phiếu</span><input id="liveDocCode" readonly></label><label class="field" id="liveDocPartnerField"><span id="liveDocPartnerLabel"></span><select id="liveDocPartner"></select></label>
       <label class="field"><span>Ghi chú</span><textarea id="liveDocNote" maxlength="1000" rows="2"></textarea></label></div>
       <div class="table-wrap"><table class="live-lines"><thead id="liveDocHead"></thead><tbody id="liveDocRows"></tbody></table></div>
       <button class="button button-secondary" id="liveDocAdd" type="button">Thêm dòng</button>
@@ -184,7 +282,7 @@ export function createLiveDocuments({ documents, isAuthenticated, getRole, requi
       <button class="button button-primary" id="liveDocCreateCount" type="button">Tạo phiếu kiểm kê</button>
       <button class="button button-primary" id="liveDocComplete" type="button">Hoàn tất</button><button class="button button-quiet" id="liveDocCancel" type="button">Hủy nháp</button></div></form>
       <section id="liveDocAllocationSection" class="mapping-section"><h3>Phân bổ nhập kho</h3><div class="table-wrap"><table class="live-lines"><thead><tr><th>Sản phẩm</th><th>Vị trí</th><th>Số lượng</th><th>Ngày sản xuất</th><th>Hạn sử dụng</th><th></th></tr></thead><tbody id="liveDocAllocations"></tbody></table></div><button class="button button-secondary" id="liveDocAddAllocation">Thêm phân bổ</button></section>
-      <section id="liveDocFefo" class="mapping-section"><h3>Gợi ý FEFO</h3><form id="liveDocFefoForm" class="live-filters"><label class="field"><span>Sản phẩm</span><input name="product" maxlength="6" pattern="[A-Za-z0-9]{1,6}" required></label>
+      <section id="liveDocFefo" class="mapping-section"><h3>Gợi ý FEFO</h3><form id="liveDocFefoForm" class="live-filters"><label class="field"><span>Sản phẩm</span><select name="product" required><option value="">Chọn sản phẩm</option></select></label>
       <label class="field"><span>Số lượng</span><input name="quantity" type="number" min="1" step="1" required></label><button class="button button-secondary" type="submit">Tra cứu FEFO</button></form><div id="liveDocFefoResult"></div></section>
       <section id="liveDocReconciliation" class="mapping-section" hidden><h3>Đối soát giá trị</h3><p id="liveDocReconciliationState" role="status" aria-live="polite"></p>
       <form id="liveDocReconciliationForm" class="live-reconciliation-form" hidden><label class="field"><span>Giá trị kế toán đối soát (₫)</span><input name="giaTriDoiSoat" type="number" min="0" step="0.0001" required></label>
@@ -197,7 +295,44 @@ export function createLiveDocuments({ documents, isAuthenticated, getRole, requi
     el("liveDocPrevious").addEventListener("click", () => loadList(page - 1));
     el("liveDocNext").addEventListener("click", () => loadList(page + 1));
     function load(codeValue) { if (codeValue) run(async () => { display(await documents[mode].get(codeValue)); message(""); }); }
-    el("liveDocLoad").addEventListener("click", () => { if (el("liveDocLoadCode").reportValidity()) load(el("liveDocLoadCode").value.trim()); });
+    el("liveDocLoad").addEventListener("click", () => { if (el("liveDocLoadCode").value) load(el("liveDocLoadCode").value.trim()); });
+    el("liveDocLoadCode").addEventListener("change", () => { if (el("liveDocLoadCode").value) load(el("liveDocLoadCode").value.trim()); });
+    el("liveDocPartner").addEventListener("change", async () => {
+      if (mode === "return" && el("liveDocPartner").value) {
+        try {
+          const outboundDoc = await documents.outbound.get(el("liveDocPartner").value);
+          cache.sourceLines = outboundDoc.chiTiet || [];
+          syncSelects();
+        } catch { cache.sourceLines = []; }
+      }
+    });
+    el("liveDocRows").addEventListener("change", (event) => {
+      const target = event.target;
+      const row = target.closest("tr");
+      if (!row) return;
+      if (target.name === "maSanPham") {
+        const prod = cache.products.find((p) => p.maSanPham === target.value);
+        const priceInput = row.querySelector('[name="donGiaNhap"]');
+        if (prod && priceInput && (!priceInput.value || Number(priceInput.value) === 0)) {
+          priceInput.value = String(prod.giaNhapMacDinh ?? 0);
+        }
+      } else if (target.name === "maLo") {
+        const stock = cache.stocks.find((s) => s.maLo === target.value)
+          || cache.sourceLines.find((s) => s.maLo === target.value);
+        if (stock) {
+          const locSelect = row.querySelector('[name="maViTri"], [name="maViTriNguon"]');
+          if (locSelect && stock.maViTri) {
+            locSelect.innerHTML = locationOptions(stock.maViTri);
+            locSelect.value = stock.maViTri;
+          }
+          const priceInput = row.querySelector('[name="donGiaXuat"]');
+          const prod = cache.products.find((p) => p.maSanPham === stock.maSanPham);
+          if (prod && priceInput && (!priceInput.value || Number(priceInput.value) === 0)) {
+            priceInput.value = String(prod.giaBanMacDinh ?? 0);
+          }
+        }
+      }
+    });
     el("liveDocListRows").addEventListener("click", (event) => { const button = event.target.closest("[data-load]"); if (button) load(button.dataset.load); });
     el("liveDocAdd").addEventListener("click", () => { if (editable()) addLine(); });
     el("liveDocAddAllocation").addEventListener("click", () => { if (editable()) addAllocation(); });

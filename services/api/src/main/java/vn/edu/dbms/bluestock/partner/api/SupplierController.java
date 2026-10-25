@@ -81,7 +81,7 @@ public class SupplierController {
         return ResponseEntity.noContent().build();
     }
 
-    public record CreateSupplierRequest(@NotBlank String maNhaCungCap,
+    public record CreateSupplierRequest(String maNhaCungCap,
         @NotBlank @Size(max = 255) String tenNhaCungCap,
         @Size(max = 500) String diaChi,
         @Size(max = 20) String soDienThoai,

@@ -34,6 +34,24 @@ class ProductServiceTest {
     }
 
     @Test
+    void autoGeneratesCodeWhenBlank() {
+        var repository = mock(ProductJdbcRepository.class);
+        var service = new ProductService(repository);
+        var data = new ProductData("Sản phẩm tự tạo mã", BigDecimal.ZERO, BigDecimal.ONE);
+        when(repository.nextCode()).thenReturn("SP0009");
+        when(repository.categoryExists("LSP001")).thenReturn(true);
+        when(repository.unitExists("DVT001")).thenReturn(true);
+        when(repository.findByCode("SP0009")).thenReturn(java.util.Optional.of(
+            new ProductView("SP0009", "Sản phẩm tự tạo mã", "LSP001", "Loại mẫu",
+                "DVT001", "Hộp", BigDecimal.ZERO, BigDecimal.ONE)));
+
+        ProductView created = service.create(null, "LSP001", "DVT001", data);
+
+        assertEquals("SP0009", created.maSanPham());
+        verify(repository).insert("SP0009", "LSP001", "DVT001", data);
+    }
+
+    @Test
     void mapsDuplicateCodeToConflict() {
         var repository = mock(ProductJdbcRepository.class);
         var service = new ProductService(repository);
