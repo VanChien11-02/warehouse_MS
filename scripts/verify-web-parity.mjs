@@ -125,7 +125,8 @@ try {
     const dialog = manager.locator("dialog[open]");
     await dialog.waitFor();
     assert.equal(await dialog.locator("input, select").count() >= 2, true);
-    if (["zones", "locations"].includes(key)) assert.equal(await dialog.locator(`[name="${key === "zones" ? "maKho" : "sucChua"}"]`).isDisabled(), true);
+    if (key === "zones") assert.equal(await dialog.locator('[name="maKho"]').isDisabled(), true);
+    if (key === "locations") assert.equal(await dialog.locator('[name="sucChua"]').isDisabled(), false);
     if (masterScreens[key].mapping) await dialog.locator("[data-mappings] li").first().waitFor();
     await dialog.locator("[data-close]").click();
   }

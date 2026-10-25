@@ -1,10 +1,12 @@
 package vn.edu.dbms.bluestock.warehouse.application;
 
 import java.util.Locale;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.dbms.bluestock.platform.infrastructure.SqlErrorNumbers;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseException.Kind;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.AreaView;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.Page;
@@ -166,14 +168,36 @@ public class WarehouseService {
 
     @Transactional
     public PositionView updatePosition(String code, String name) {
+        return updatePosition(code, name, null, null, null);
+    }
+
+    @Transactional
+    public PositionView updatePosition(String code, String name, String areaCode, Integer capacity, String type) {
         String normalizedCode = normalizeCode(code);
+        String normalizedAreaCode = areaCode == null || areaCode.isBlank() ? null : normalizeCode(areaCode);
+        String normalizedType = optionalText(type);
+        if (normalizedAreaCode != null && repository.area(normalizedAreaCode).isEmpty()) {
+            throw new WarehouseException(Kind.VALIDATION, "INVALID_AREA", "Khu vực không tồn tại");
+        }
         try {
-            if (repository.updatePosition(normalizedCode, name.trim()) == 0) {
+            int updated = normalizedAreaCode == null && capacity == null && normalizedType == null
+                ? repository.updatePosition(normalizedCode, name.trim())
+                : repository.updatePosition(normalizedCode, name.trim(), normalizedAreaCode, capacity, normalizedType);
+            if (updated == 0) {
                 throw new WarehouseException(Kind.NOT_FOUND, "POSITION_NOT_FOUND", "Không tìm thấy vị trí");
             }
         } catch (DuplicateKeyException exception) {
             throw new WarehouseException(Kind.CONFLICT, "POSITION_NAME_EXISTS",
                 "Tên vị trí đã tồn tại trong khu vực");
+        } catch (DataAccessException exception) {
+            if (SqlErrorNumbers.from(exception) == 52101) {
+                throw new WarehouseException(Kind.CONFLICT, "POSITION_STOCK_PROTECTED",
+                    "Vị trí có tồn không thể giảm sức chứa dưới tồn hoặc đổi khu vực/loại.");
+            }
+            if (exception instanceof DataIntegrityViolationException) {
+                throw new WarehouseException(Kind.VALIDATION, "INVALID_AREA", "Khu vực không tồn tại");
+            }
+            throw exception;
         }
         return position(normalizedCode);
     }
