@@ -59,7 +59,7 @@ public class CategoryController {
     }
 
     public record CreateCategoryRequest(
-        @NotBlank String maLoai,
+        String maLoai,
         @NotBlank @Size(max = 255) String tenLoai,
         @Size(max = 1000) String moTa,
         @Pattern(regexp = "Khô|Mát|Đông lạnh") String yeuCauBaoQuan

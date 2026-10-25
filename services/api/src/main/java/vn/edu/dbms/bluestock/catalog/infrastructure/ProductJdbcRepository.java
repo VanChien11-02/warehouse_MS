@@ -64,6 +64,14 @@ public class ProductJdbcRepository {
             .stream().findFirst();
     }
 
+    public String nextCode() {
+        Integer next = jdbc.queryForObject("""
+            SELECT COALESCE(MAX(TRY_CAST(SUBSTRING(RTRIM(MaSP), 3, 10) AS INT)), 0) + 1
+            FROM dbo.SAN_PHAM WHERE MaSP LIKE 'SP%'
+            """, Integer.class);
+        return String.format("SP%04d", Math.min(9999, next == null ? 1 : next));
+    }
+
     public boolean categoryExists(String code) {
         Integer count = jdbc.queryForObject(
             "SELECT COUNT(*) FROM dbo.LOAI_SAN_PHAM WHERE MaLoai = ?", Integer.class, code);

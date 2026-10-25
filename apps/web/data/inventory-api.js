@@ -9,6 +9,18 @@ export function createInventoryApi(client) {
       if (hanSuDungTruoc) params.set("hanSuDungTruoc", hanSuDungTruoc);
       if (chiKhaDung) params.set("chiKhaDung", "true");
       return client.send(`/ton-kho?${params}`);
+    },
+    async all(filters = {}) {
+      const items = [];
+      let page = 0;
+      let totalPages = 1;
+      do {
+        const response = await this.list({ ...filters, page, size: 100 });
+        items.push(...(response?.items || []));
+        totalPages = response?.totalPages || 0;
+        page += 1;
+      } while (page < totalPages && page < 20);
+      return items;
     }
   };
 }

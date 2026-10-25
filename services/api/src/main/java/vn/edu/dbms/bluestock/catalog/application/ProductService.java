@@ -41,7 +41,7 @@ public class ProductService {
 
     @Transactional
     public ProductView create(String code, String category, String unit, ProductData data) {
-        String productCode = normalizeCode(code);
+        String productCode = resolveCode(code);
         String categoryCode = normalizeCode(category);
         String unitCode = normalizeCode(unit);
         if (!repository.categoryExists(categoryCode) || !repository.unitExists(unitCode)) {
@@ -80,6 +80,14 @@ public class ProductService {
             throw new ProductException(ProductException.Kind.CONFLICT,
                 "PRODUCT_IN_USE", "Sản phẩm đã được tham chiếu");
         }
+    }
+
+    private String resolveCode(String code) {
+        if (code == null || code.isBlank()) {
+            String generated = repository.nextCode();
+            return generated == null || generated.isBlank() ? "SP0001" : normalizeCode(generated);
+        }
+        return normalizeCode(code);
     }
 
     private static String normalizeCode(String code) {

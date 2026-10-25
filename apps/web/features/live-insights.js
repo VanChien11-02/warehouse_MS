@@ -1,16 +1,40 @@
+import { selectOptions } from "../data/master-api.js?v=session-shell-4";
+
 const screens = {
   expiry: { title: "Lô sắp hết hạn", columns: [["maKho", "Kho"], ["maViTri", "Vị trí"], ["maLo", "Lô"], ["tenSanPham", "Sản phẩm"], ["soLuongTon", "Tồn"], ["hanSuDung", "Hạn sử dụng"], ["soNgayConLai", "Số ngày còn lại"]] },
   discrepancies: { title: "Chênh lệch kiểm kê", columns: [["maPhieuKiemKe", "Phiếu"], ["maKho", "Kho"], ["maViTri", "Vị trí"], ["maLo", "Lô"], ["tenSanPham", "Sản phẩm"], ["soLuongHeThong", "Hệ thống"], ["soLuongThucTe", "Thực tế"], ["chenhLech", "Chênh lệch"], ["lyDoChenhLech", "Lý do"]] },
   audit: { title: "Nhật ký thao tác", columns: [["maTaiKhoan", "Tài khoản"], ["thoiGian", "Thời gian"], ["hanhDong", "Hành động"], ["tenBang", "Đối tượng"], ["maBanGhi", "Mã bản ghi"], ["duLieuCu", "Trước"], ["duLieuMoi", "Sau"]] }
 };
-export function createLiveInsights({ insights, getRole, requireLogin, escapeHtml: esc, navigate, pagesForRole }) {
+export function createLiveInsights({ insights, masters, identity, getRole, requireLogin, escapeHtml: esc, navigate, pagesForRole }) {
   const view = document.createElement("section");
   view.id = "liveInsightView"; view.className = "view"; view.hidden = true;
   let mode = "dashboard", page = 0, generation = 0;
+  const cache = { warehouses: [], locations: [], accounts: [] };
   const el = (selector) => view.querySelector(selector);
+  async function loadFilterRefs() {
+    if (mode === "dashboard") return;
+    const tasks = [];
+    if (mode !== "audit" && masters?.warehouses?.all) {
+      tasks.push(masters.warehouses.all().then((items) => { cache.warehouses = items; }).catch(() => {}));
+    }
+    if (mode === "discrepancies" && masters?.locations?.all) {
+      tasks.push(masters.locations.all().then((items) => { cache.locations = items; }).catch(() => {}));
+    }
+    if (mode === "audit" && getRole() === "ADMIN" && identity?.accounts?.all) {
+      tasks.push(identity.accounts.all().then((items) => { cache.accounts = items; }).catch(() => {}));
+    }
+    await Promise.all(tasks);
+    const wh = el('[name="maKho"]');
+    if (wh) wh.innerHTML = selectOptions(cache.warehouses, "maKho", (w) => `${w.maKho} · ${w.tenKho}`, wh.value, "Tất cả kho", esc);
+    const loc = el('[name="maViTri"]');
+    if (loc) loc.innerHTML = selectOptions(cache.locations, "maViTri", (l) => `${l.maViTri} · ${l.tenViTri}`, loc.value, "Tất cả vị trí", esc);
+    const acc = el('[name="maTaiKhoan"]');
+    if (acc) acc.innerHTML = selectOptions(cache.accounts, "maTaiKhoan", (a) => `${a.maTaiKhoan} · ${a.tenTaiKhoan}`, acc.value, "Tất cả tài khoản", esc);
+  }
   function start() {
     document.querySelector("#mainContent").append(view);
     view.addEventListener("submit", (event) => { event.preventDefault(); if (event.target.reportValidity()) load(0); });
+    view.addEventListener("change", (event) => { if (event.target.matches("select")) load(0); });
     view.addEventListener("click", (event) => {
       const button = event.target.closest("button"); if (!button) return;
       if (button.dataset.target) navigate(button.dataset.target);
@@ -50,7 +74,7 @@ export function createLiveInsights({ insights, getRole, requireLogin, escapeHtml
         el("[data-metrics]").setAttribute("aria-busy", "false");
         el("[data-updated]").textContent = `Cập nhật ${new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit" }).format(new Date())}`;
       } else {
-        const filters = Object.fromEntries([...view.querySelectorAll("input")].filter((i) => i.value).map((i) => [i.name, i.value]));
+        const filters = Object.fromEntries([...view.querySelectorAll("input, select")].filter((i) => i.value).map((i) => [i.name, i.value]));
         const result = await insights.query(mode, filters, page);
         if (ticket !== generation) return;
         el("tbody").innerHTML = result.items.map((r) => `<tr>${screens[mode].columns.map(([key]) => `<td>${esc(r[key] ?? "—")}</td>`).join("")}</tr>`).join("");
@@ -88,11 +112,12 @@ export function createLiveInsights({ insights, getRole, requireLogin, escapeHtml
     view.innerHTML = `<div class="section-toolbar"><h2>${esc(screens[mode].title)}</h2><button class="button button-secondary" data-refresh>Làm mới</button></div>
       <form class="live-filters">${mode === "expiry" ? '<label class="field"><span>Số ngày</span><input name="soNgay" type="number" min="0" max="3650" step="1" value="30" required></label>'
         : `<label class="field"><span>Từ ngày</span><input name="tuNgay" type="date" value="${local(date)}" required></label><label class="field"><span>Đến ngày</span><input name="denNgay" type="date" value="${today}" required></label>`}
-        <label class="field"><span>${mode === "audit" ? "Mã tài khoản" : "Mã kho"}</span><input name="${mode === "audit" ? "maTaiKhoan" : "maKho"}" maxlength="6" pattern="[A-Za-z0-9]{1,6}"></label>
-        ${mode === "discrepancies" ? '<label class="field"><span>Mã vị trí</span><input name="maViTri" maxlength="6" pattern="[A-Za-z0-9]{1,6}"></label>' : ""}
+        <label class="field"><span>${mode === "audit" ? "Tài khoản" : "Kho"}</span><select name="${mode === "audit" ? "maTaiKhoan" : "maKho"}"><option value="">${mode === "audit" ? "Tất cả tài khoản" : "Tất cả kho"}</option></select></label>
+        ${mode === "discrepancies" ? '<label class="field"><span>Vị trí</span><select name="maViTri"><option value="">Tất cả vị trí</option></select></label>' : ""}
         <button class="button button-primary" type="submit">Xem kết quả</button></form>
       <p data-message role="status" aria-live="polite"></p><div class="table-wrap"><table><thead><tr>${columns.map(([, label]) => `<th>${esc(label)}</th>`).join("")}</tr></thead><tbody></tbody></table></div>
       <footer class="pagination"><span data-range></span><div><button data-prev aria-label="Trang trước">&lt;</button><button data-next aria-label="Trang sau">&gt;</button></div></footer>`;
+    loadFilterRefs();
     load(0);
   }
   function clear() { generation++; view.replaceChildren(); }

@@ -2,6 +2,7 @@ package vn.edu.dbms.bluestock.identity.application;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class IdentityService {
 
     @Transactional
     public EmployeeView createEmployee(String code, EmployeeData data, String actorAccount) {
-        String normalizedCode = normalizeCode(code);
+        String normalizedCode = resolveCode(code, repository::nextEmployeeCode, "NV0001");
         EmployeeData normalized = normalizeEmployee(data);
         try {
             repository.insertEmployee(normalizedCode, normalized);
@@ -90,7 +91,7 @@ public class IdentityService {
     @Transactional
     public AccountView createAccount(String code, String employee, String username,
         String role, String password, String actorAccount) {
-        String normalizedCode = normalizeCode(code);
+        String normalizedCode = resolveCode(code, repository::nextAccountCode, "TK0001");
         String normalizedEmployee = normalizeCode(employee);
         String normalizedRole = normalizeRole(role);
         String normalizedUsername = requireUsername(username);
@@ -196,6 +197,14 @@ public class IdentityService {
             throw new IdentityException(Kind.VALIDATION, "INVALID_PAGINATION",
                 "page hoặc size không hợp lệ");
         }
+    }
+
+    private static String resolveCode(String code, Supplier<String> generator, String fallback) {
+        if (code == null || code.isBlank()) {
+            String generated = generator.get();
+            return generated == null || generated.isBlank() ? fallback : normalizeCode(generated);
+        }
+        return normalizeCode(code);
     }
 
     private static String normalizeCode(String code) {

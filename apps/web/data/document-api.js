@@ -7,6 +7,19 @@ export function createDocumentApi(client) {
         const params = new URLSearchParams({ page, size, ...filters });
         return client.send(`${path}?${params}`);
       },
+      async all(filters = {}) {
+        const items = [];
+        let page = 0;
+        let totalPages = 1;
+        do {
+          const params = new URLSearchParams({ page, size: 100, ...filters });
+          const response = await client.send(`${path}?${params}`);
+          items.push(...(response?.items || []));
+          totalPages = response?.totalPages || 0;
+          page += 1;
+        } while (page < totalPages && page < 20);
+        return items;
+      },
       get(code) {
         return client.send(`${path}/${encodeURIComponent(code)}`);
       },

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createMasterApi, masterResources } from "./master-api.js";
+import { createMasterApi, masterPrefixes, masterResources, nextCode, selectOptions } from "./master-api.js";
 import { createDocumentApi } from "./document-api.js";
 import { draftBody, actualBody } from "./document-models.js";
 import { createIdentityApi } from "./identity-api.js";
@@ -27,6 +27,14 @@ test("all master resources support paginated search, create, update, delete", as
     assert.equal(calls[3].options.method, "PUT");
     assert.equal(calls[4].options.method, "DELETE");
   }
+});
+
+test("nextCode and selectOptions generate sequential codes and combobox options", () => {
+  assert.equal(nextCode(masterPrefixes.warehouses, [{ maKho: "KHO001" }, { maKho: "KHO004" }], "maKho"), "KHO005");
+  assert.equal(nextCode("SP", [], "maSanPham"), "SP0001");
+  const html = selectOptions([{ maKho: "KHO001", tenKho: "Kho chính" }], "maKho", (item) => `${item.maKho} · ${item.tenKho}`, "KHO002", "-- Chọn kho --");
+  assert.match(html, /value="KHO002" selected/);
+  assert.match(html, /KHO001 · Kho chính/);
 });
 
 test("partner mappings and permission matrix use server endpoints", async () => {

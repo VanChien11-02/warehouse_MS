@@ -61,6 +61,22 @@ public class CatalogReferenceJdbcRepository {
             UNIT_MAPPER, code).stream().findFirst();
     }
 
+    public String nextCategoryCode() {
+        Integer next = jdbc.queryForObject("""
+            SELECT COALESCE(MAX(TRY_CAST(SUBSTRING(RTRIM(MaLoai), 4, 10) AS INT)), 0) + 1
+            FROM dbo.LOAI_SAN_PHAM WHERE MaLoai LIKE 'LSP%'
+            """, Integer.class);
+        return String.format("LSP%03d", Math.min(999, next == null ? 1 : next));
+    }
+
+    public String nextUnitCode() {
+        Integer next = jdbc.queryForObject("""
+            SELECT COALESCE(MAX(TRY_CAST(SUBSTRING(RTRIM(MaDVT), 4, 10) AS INT)), 0) + 1
+            FROM dbo.DON_VI_TINH WHERE MaDVT LIKE 'DVT%'
+            """, Integer.class);
+        return String.format("DVT%03d", Math.min(999, next == null ? 1 : next));
+    }
+
     public void insertCategory(String code, String name, String description, String storageRequirement) {
         jdbc.update("""
             INSERT INTO dbo.LOAI_SAN_PHAM (MaLoai, TenLoai, MoTa, YeuCauBaoQuan)

@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import { mkdir } from "node:fs/promises";
 import { documentScreens } from "../apps/web/data/document-models.js";
 import { masterScreens } from "../apps/web/features/live-masters.js";
-import { masterResources } from "../apps/web/data/master-api.js";
+import { masterPrefixes, masterResources, nextCode } from "../apps/web/data/master-api.js";
 import { apiPagesForRole } from "../apps/web/core/navigation.js";
 
 // Optional browser gate: Playwright is supplied by the caller, not a web dependency.
@@ -76,7 +76,8 @@ async function session(role, width = 1440) {
     if (master) {
       if (path[2] === "san-pham") return reply(method === "GET" ? ["SP0001"] : null, method === "DELETE" ? 204 : method === "POST" ? 201 : 200);
       if (method === "DELETE") return reply(null, 204);
-      const item = Object.fromEntries(masterScreens[master[0]].fields.map((f, index) => [f.key, f.options?.[0] || (f.type === "number" ? 100 : index === 0 ? "AB0001" : "Kho trung tâm")]));
+      const defaultCode = nextCode(masterPrefixes[master[0]], [], "code");
+      const item = Object.fromEntries(masterScreens[master[0]].fields.map((f, index) => [f.key, f.options?.[0] || (f.type === "number" ? 100 : index === 0 ? defaultCode : "Kho trung tâm")]));
       return reply(path.length > 1 || method !== "GET" ? { ...item, ...body } : pageResult([item]), method === "POST" ? 201 : 200);
     }
     return reply(pageResult([]));
@@ -125,13 +126,14 @@ try {
     const dialog = manager.locator("dialog[open]");
     await dialog.waitFor();
     assert.equal(await dialog.locator("input, select").count() >= 2, true);
-    if (["zones", "locations"].includes(key)) assert.equal(await dialog.locator(`[name="${key === "zones" ? "maKho" : "sucChua"}"]`).isDisabled(), true);
+    if (key === "zones") assert.equal(await dialog.locator('[name="maKho"]').isDisabled(), true);
+    if (key === "locations") assert.equal(await dialog.locator('[name="sucChua"]').isDisabled(), false);
     if (masterScreens[key].mapping) await dialog.locator("[data-mappings] li").first().waitFor();
     await dialog.locator("[data-close]").click();
   }
   await go(manager, "warehouses");
   await manager.locator("#liveMasterView [data-add]").click();
-  await manager.locator('dialog[open] [name="maKho"]').fill("KHO002");
+  assert.equal(await manager.locator('dialog[open] [name="maKho"]').inputValue(), "KHO002");
   await manager.locator('dialog[open] [name="tenKho"]').fill("Kho mới");
   await manager.locator('dialog[open] button[type="submit"]').click();
   await manager.locator("dialog[open]").waitFor({ state: "hidden" });
@@ -141,7 +143,7 @@ try {
     await loadDocument(manager, kind);
     if (kind === "inbound") {
       assert.equal(await manager.locator("#liveDocRows tr").count(), 2);
-      for (const input of await manager.locator('#liveDocAllocations [name="maViTri"]').all()) await input.fill("VT0001");
+      for (const select of await manager.locator('#liveDocAllocations [name="maViTri"]').all()) await select.selectOption("VT0001");
     }
     if (kind === "count") {
       await manager.locator('#liveDocRows [name="soLuongThucTe"]').fill("4");

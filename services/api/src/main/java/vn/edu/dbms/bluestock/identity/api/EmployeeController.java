@@ -62,7 +62,7 @@ public class EmployeeController {
             principal.maTaiKhoan());
     }
 
-    public record CreateEmployeeRequest(@NotBlank String maNhanVien,
+    public record CreateEmployeeRequest(String maNhanVien,
         @NotBlank @Size(max = 255) String tenNhanVien,
         @Size(max = 20) String soDienThoai, String gioiTinh,
         LocalDate ngaySinh, @Size(max = 500) String diaChi,

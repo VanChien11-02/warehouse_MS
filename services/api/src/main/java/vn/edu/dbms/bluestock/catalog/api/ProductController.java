@@ -69,7 +69,7 @@ public class ProductController {
     }
 
     public record CreateProductRequest(
-        @NotBlank String maSanPham,
+        String maSanPham,
         @NotBlank @Size(max = 255) String tenSanPham,
         @NotBlank String maLoai,
         @NotBlank String maDonViTinh,

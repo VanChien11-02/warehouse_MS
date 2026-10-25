@@ -102,7 +102,14 @@ GO
 
 IF (SELECT COUNT(*) FROM dbo.LO_HANG WHERE MaPN = 'PND001') <> 3
     THROW 52141, N'Seed phải tạo ba lô mẫu.', 1;
-IF (SELECT SUM(SoLuongTon) FROM dbo.TON_KHO ton
-    JOIN dbo.LO_HANG lot ON lot.MaLo = ton.MaLo WHERE lot.MaPN = 'PND001') <> 40
-    THROW 52142, N'Seed phải tạo 40 đơn vị tồn mẫu.', 1;
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.BIEN_DONG_TON_KHO b
+    JOIN dbo.LO_HANG l ON l.MaLo = b.MaLo
+    WHERE l.MaPN = 'PND001' AND b.MaChungTu <> 'PND001'
+)
+BEGIN
+    IF (SELECT SUM(SoLuongTon) FROM dbo.TON_KHO ton
+        JOIN dbo.LO_HANG lot ON lot.MaLo = ton.MaLo WHERE lot.MaPN = 'PND001') <> 40
+        THROW 52142, N'Seed phải tạo 40 đơn vị tồn mẫu.', 1;
+END;
 PRINT N'Demo seed ready.';

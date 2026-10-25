@@ -2,6 +2,7 @@ package vn.edu.dbms.bluestock.partner.application;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ public class PartnerService {
     @Transactional
     public SupplierView createSupplier(String code, String name, String address,
         String phone, String email) {
-        String normalizedCode = normalizeCode(code);
+        String normalizedCode = resolveCode(code, repository::nextSupplierCode, "NCC001");
         try {
             repository.insertSupplier(normalizedCode, name.trim(), optionalText(address),
                 optionalText(phone), optionalText(email));
@@ -118,7 +119,7 @@ public class PartnerService {
     @Transactional
     public RecipientView createRecipient(String code, String name, String type,
         String address, String phone, String email) {
-        String normalizedCode = normalizeCode(code);
+        String normalizedCode = resolveCode(code, repository::nextRecipientCode, "DT0001");
         try {
             repository.insertRecipient(normalizedCode, name.trim(), type.trim(),
                 optionalText(address), optionalText(phone), optionalText(email));
@@ -186,6 +187,14 @@ public class PartnerService {
             throw new PartnerException(Kind.NOT_FOUND, "RECIPIENT_PRODUCT_NOT_FOUND",
                 "Không tìm thấy liên kết sản phẩm");
         }
+    }
+
+    private static String resolveCode(String code, Supplier<String> generator, String fallback) {
+        if (code == null || code.isBlank()) {
+            String generated = generator.get();
+            return generated == null || generated.isBlank() ? fallback : normalizeCode(generated);
+        }
+        return normalizeCode(code);
     }
 
     private static String normalizeCode(String code) {
