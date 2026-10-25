@@ -73,10 +73,12 @@ Mục tiêu: hoàn thành luồng nhập lô → tồn theo vị trí → xuất
 
 | ID | Nội dung | Owner hiện tại | Điều kiện hoàn thành |
 | --- | --- | --- | --- |
-| DB-R01 | Constraint, trigger, view, index | TV1 Chiến | Đủ số lượng, có ý nghĩa và test/minh chứng |
-| DB-R02 | Stored procedure và function | TV2 Thi | Đủ số lượng, xử lý lỗi và được ứng dụng gọi |
-| DB-R03 | Transaction và concurrency | TV3 Trung | 5 nghiệp vụ, rollback và demo tranh chấp |
-| DB-R04 | Login, role và quyền | TV4 Phát | 4 role, ma trận quyền và GRANT/REVOKE/DENY |
+| DB-R01 | Constraint, trigger, view, index | Cả bốn owner theo luồng | Đủ số lượng toàn nhóm; mỗi người có object, test và giải thích index trong luồng mình |
+| DB-R02 | Stored procedure và function | Cả bốn owner theo luồng | Đủ số lượng toàn nhóm; mỗi người kiểm chứng procedure/function, lỗi và đường gọi từ ứng dụng |
+| DB-R03 | Transaction và concurrency | Cả bốn owner theo luồng | Năm nghiệp vụ ghi sổ toàn nhóm; mỗi người có ca commit, rollback, chống lặp và hai phiên/quyền phù hợp |
+| DB-R04 | Login, role và quyền | TV4 giữ cấu hình chung; cả bốn kiểm thử theo luồng | Bốn role, ma trận quyền và GRANT/REVOKE/DENY; mỗi người chứng minh cho phép/từ chối trong module mình |
+
+Chi tiết object, ca demo và bằng chứng cá nhân nằm trong [`DBMS_WORK_ASSIGNMENT.md`](DBMS_WORK_ASSIGNMENT.md); trạng thái là đề xuất đến khi nhóm chốt `GOV-02`. Không suy ra tác giả code đã tích hợp từ bảng owner mới.
 
 ## Sprint 4 - Hoàn thiện và bảo vệ
 
@@ -91,7 +93,7 @@ sạch/migration và test theo [`../../../contracts/accounting-reconciliation.md
 
 | ID | Backlog item | Ưu tiên | Owner | Phụ thuộc | Tiêu chí chấp nhận |
 | --- | --- | ---: | --- | --- | --- |
-| PERF-01 | Hoàn thiện index và đo hiệu năng | P0 | TV1 Chiến | Dữ liệu demo đủ lớn | Lưu query/plan hoặc số đo trước-sau |
+| PERF-01 | Hoàn thiện index và đo hiệu năng | P0 | Cả bốn owner theo luồng; TV2 tổng hợp | Dữ liệu demo đủ lớn | Mỗi người lưu query/plan hoặc logical reads trước-sau cho index mình nhận; TV2 tổng hợp kết quả |
 | DOC-01 | Báo cáo, sơ đồ và traceability | P0 | Cả nhóm | QA-03 | Yêu cầu → thiết kế → code → test có liên kết |
 | REL-01 | Bản chạy sạch và kịch bản demo | P0 | Cả nhóm | DOC-01 | Setup mới chạy được DB/API/web; mỗi thành viên demo phần mình |
 

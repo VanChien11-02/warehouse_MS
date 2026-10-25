@@ -21,7 +21,7 @@ Bốn vai trò dự kiến:
 | Backend | Spring Boot/Maven Wrapper, session/RBAC, CRUD nền tảng, năm luồng chứng từ, tra cứu tồn, báo cáo nhập–xuất–tồn/chênh lệch/hạn dùng, audit và đối soát giá trị | [`../services/api/README.md`](../services/api/README.md) |
 | Database | `init.sql` dựng 28 bảng, năm procedure hoàn tất, năm function, bảy view, năm trigger, index và bốn database role; seed demo riêng; migration 028 cho đối soát và phân vai | [`../database/README.md`](../database/README.md) |
 | API contract | Baseline tổng thể còn Draft; các contract chi tiết cho API đã triển khai nằm trong `contracts/` | [`../contracts/BASELINE.md`](../contracts/BASELINE.md) |
-| Phân công | Có đề xuất bốn workstream, còn chờ nhóm xác nhận | [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md) |
+| Phân công | Có đề xuất bốn workstream theo luồng, mỗi người thực hành đủ các chủ đề DBMS; còn chờ nhóm xác nhận | [`project/governance/DBMS_WORK_ASSIGNMENT.md`](project/governance/DBMS_WORK_ASSIGNMENT.md) |
 
 Không mô tả phần chưa được tạo như thể đã chạy được. Khi hiện trạng thay đổi, cập nhật bảng này trong cùng PR.
 
@@ -102,7 +102,7 @@ Tài liệu có nhãn `Draft`, `Cần chốt` hoặc `Proposed` không được 
 | Sửa backend | [`../services/api/AGENTS.md`](../services/api/AGENTS.md), module catalog, API catalog |
 | Sửa frontend | [`../apps/web/AGENTS.md`](../apps/web/AGENTS.md), API catalog, contract của resource |
 | Làm transaction kho | Business rules, ERD, contract procedure và test strategy |
-| Chia việc/merge | Workstreams, TEAM, backlog và tài liệu quyết định còn mở |
+| Chia việc/merge | DBMS work assignment, workstreams, TEAM, backlog và tài liệu quyết định còn mở |
 
 ## Các quyết định triển khai
 

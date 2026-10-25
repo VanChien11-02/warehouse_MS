@@ -28,8 +28,9 @@ Tài liệu trong `docs/` là nguồn hiện hành của dự án quản lý kho
 ## Quản lý dự án
 
 - [`project/governance/BACKLOG.md`](project/governance/BACKLOG.md): phạm vi, ưu tiên và phụ thuộc.
-- [`project/governance/TEAM.md`](project/governance/TEAM.md): phân công hiện tại theo rubric và module.
+- [`project/governance/TEAM.md`](project/governance/TEAM.md): bảng owner bốn luồng nghiệp vụ và reviewer đề xuất.
 - [`project/governance/WORKSTREAMS.md`](project/governance/WORKSTREAMS.md): đề xuất chia bốn workstream, branch, ranh giới file và baseline để phát triển song song.
+- [`project/governance/DBMS_WORK_ASSIGNMENT.md`](project/governance/DBMS_WORK_ASSIGNMENT.md): ma trận công việc, object SQL, test và luyện vấn đáp để cả bốn người học đủ các mảng DBMS theo luồng nghiệp vụ.
 - [`project/governance/SCRUM.md`](project/governance/SCRUM.md): Ready, Done, nhánh và Pull Request.
 
 GitHub Issues/Project giữ trạng thái làm việc hằng ngày. Backlog Markdown chỉ giữ phạm vi, ưu tiên và quan hệ phụ thuộc để không phải cập nhật trạng thái ở hai nơi.

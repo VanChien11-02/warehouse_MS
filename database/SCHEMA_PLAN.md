@@ -53,11 +53,13 @@ Thứ tự chi tiết phải tôn trọng FK:
 
 | Nhóm object | Owner module đề xuất | Reviewer chuyên môn |
 | --- | --- | --- |
-| Identity, role, security, audit | TV4 | TV1 constraint/trigger; TV2 error handling |
-| Catalog, partner, warehouse | TV1 | TV4 permission; consumer module |
-| Inbound, batch, inventory, reporting view | TV2 | TV1 index/view; TV3 transaction |
-| Outbound, transfer, count, returning | TV3 | TV2 procedure; TV1 constraint/index |
+| Identity, role, security, audit, accounting và returning | TV4 | TV1 review ràng buộc; consumer module review quyền |
+| Catalog, partner, warehouse và inbound | TV1 | TV2 review tồn/read model; TV4 review quyền |
+| Inventory, outbound và báo cáo xuất/hạn | TV2 | TV1 review nguồn lô; TV3 review concurrency |
+| Transfer, count và báo cáo chênh lệch | TV3 | TV2 review tồn; TV4 review quyền/audit |
 | `init.sql` và thứ tự tích hợp | Trưởng nhóm/người được chỉ định | Ít nhất một reviewer khác |
+
+Ma trận object SQL và bài test cá nhân trong [`../docs/project/governance/DBMS_WORK_ASSIGNMENT.md`](../docs/project/governance/DBMS_WORK_ASSIGNMENT.md) thay thế cách chia một người một mảng rubric. Mọi người đều thực hành constraint, trigger, view, index, function, procedure, transaction và quyền trong luồng của mình.
 
 ## Data dictionary cần chốt
 

@@ -1,9 +1,11 @@
 package vn.edu.dbms.bluestock.warehouse.application;
 
+import java.sql.SQLException;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.UncategorizedSQLException;
 import vn.edu.dbms.bluestock.warehouse.application.WarehouseModels.AreaView;
 import vn.edu.dbms.bluestock.warehouse.infrastructure.WarehouseJdbcRepository;
 
@@ -68,5 +70,19 @@ class WarehouseServiceTest {
         var error = assertThrows(WarehouseException.class,
             () -> service.createPosition("VT0002", "KV0001", "Kệ 1", 100, "Lưu trữ"));
         assertEquals("POSITION_NAME_EXISTS", error.code());
+    }
+
+    @Test
+    void triggerStockProtectionReturnsConflict() {
+        var repository = mock(WarehouseJdbcRepository.class);
+        var service = new WarehouseService(repository);
+        when(repository.area("KV0001"))
+            .thenReturn(Optional.of(new AreaView("KV0001", "KHO001", "Kho chính", "Khu khô", "Khô")));
+        var sqlException = new SQLException("Vị trí có tồn không thể giảm sức chứa dưới tồn hoặc đổi khu vực/loại.", "S0001", 52101);
+        doThrow(new UncategorizedSQLException("updatePosition", "UPDATE dbo.VI_TRI_KHO", sqlException))
+            .when(repository).updatePosition("VT0001", "Kệ 1", "KV0001", 1, "Lưu trữ");
+        var error = assertThrows(WarehouseException.class,
+            () -> service.updatePosition("VT0001", "Kệ 1", "KV0001", 1, "Lưu trữ"));
+        assertEquals("POSITION_STOCK_PROTECTED", error.code());
     }
 }

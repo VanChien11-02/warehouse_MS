@@ -1,125 +1,50 @@
-# Kế hoạch phát triển song song theo workstream
+# Kế hoạch phát triển song song theo luồng nghiệp vụ
 
-> Trạng thái: **Draft để nhóm thảo luận**. Chỉ chuyển thành `Accepted` sau khi bốn thành viên xác nhận owner, reviewer, phạm vi và baseline contract.
+> Trạng thái: **Draft để nhóm xác nhận**. Chỉ chuyển thành `Accepted` sau khi bốn thành viên chốt owner, reviewer, phạm vi và commit baseline. Ma trận object SQL, test và vấn đáp nằm trong [`DBMS_WORK_ASSIGNMENT.md`](DBMS_WORK_ASSIGNMENT.md).
 
-## Mục tiêu
+## Bốn workstream
 
-Cho phép bốn thành viên phát triển song song theo module dọc mà không cần chia dự án thành nhiều đợt bàn giao. Mỗi owner chịu trách nhiệm từ database, backend, contract, frontend đến test trong phạm vi của mình.
-
-Việc phát triển song song chỉ bắt đầu sau khi nhóm chốt một commit baseline chung. Baseline này không cần chứa toàn bộ nghiệp vụ, nhưng phải khóa tên, ranh giới module và các interface công khai để tránh mỗi branch tự đặt một kiểu.
-
-## Bốn workstream đề xuất
-
-```text
-Nhóm 4 thành viên
-├─ TV4 Phát: Nền tảng, xác thực và phân quyền
-├─ TV1 Chiến: Danh mục, đối tác và cấu trúc kho
-├─ TV2 Thi: Nhập kho, lô hàng và tra cứu tồn
-└─ TV3 Trung: Xuất kho và kiểm soát biến động tồn
-```
-
-| Workstream | Owner đề xuất | Branch làm việc | Module nhỏ | Đầu ra xuyên suốt |
+| Luồng | Owner đề xuất | Branch đề xuất | Module chính | Đầu ra xuyên suốt |
 | --- | --- | --- | --- | --- |
-| Nền tảng và bảo mật | TV4 Phát | `workstream/platform-security` | Nhân viên, tài khoản, đăng nhập, role, audit, Spring Security, app shell | SQL security, Auth API, UI đăng nhập/quản trị và test quyền |
-| Danh mục và cấu trúc kho | TV1 Chiến | `workstream/master-data-warehouse` | Loại sản phẩm, đơn vị tính, sản phẩm, nhà cung cấp, đối tác, kho, khu vực, vị trí | Schema/ràng buộc, CRUD API/UI, view/index và test validation |
-| Nhập kho và tồn | TV2 Thi | `workstream/inbound-inventory` | Phiếu nhập, chi tiết nhập, lô hàng, put-away, tồn theo lô/vị trí, báo cáo tồn | Procedure/function, API/UI nhập-tồn và test hoàn tất lặp |
-| Xuất và kiểm soát tồn | TV3 Trung | `workstream/outbound-stock-control` | Xuất FEFO, chuyển kho, kiểm kê, trả hàng | Transaction/procedure, API/UI và test rollback/concurrency |
+| Danh mục → nhập lô | TV1 Chiến | `workstream/master-inbound` | `catalog`, `partner`, `warehouse`, `inbound` | Schema/ràng buộc, nhập tạo lô, API/UI, test rollback |
+| Tồn → xuất FEFO | TV2 Thi | `workstream/inventory-outbound` | `inventory`, `outbound`, báo cáo xuất/hạn | Tra cứu tồn, xuất FEFO, API/UI, concurrency và hiệu năng |
+| Chuyển → kiểm kê | TV3 Trung | `workstream/transfer-count` | `transfer`, `inventorycount`, báo cáo chênh lệch | Hai ghi sổ nguyên tử, snapshot, API/UI, test hai phiên |
+| Trả hàng → đối soát và quyền | TV4 Phát | `workstream/return-security` | `returning`, `accounting`, `auth`, `audit` | Trả tốt/hỏng, đối soát, role/audit, API/UI, test quyền |
 
-Workstream cuối có nhiều nghiệp vụ hơn. Owner thực hiện theo thứ tự `Xuất kho → Chuyển kho → Kiểm kê → Trả hàng`; `Kiểm kê` và `Trả hàng` không được làm chậm luồng P0 nhập-tồn-xuất.
+Owner chịu trách nhiệm đi hết yêu cầu → contract → SQL → backend → frontend → test → tài liệu của module. **Tất cả bốn người** phải làm và giải thích constraint, trigger, view, index, function, procedure, transaction, concurrency và quyền trong phạm vi được giao; không còn vai trò độc quyền theo một chủ đề rubric. Module cuối có phần nền tảng dùng chung, nhưng chỉ TV4 sửa cấu hình auth/role; các owner khác viết test quyền cho luồng của mình.
 
-## Hai trục trách nhiệm
+## Baseline trước khi tách branch
 
-Owner module chịu trách nhiệm làm cho luồng của mình chạy được. Trách nhiệm rubric trong [`TEAM.md`](TEAM.md) là trục chuyên môn thứ hai, dùng để tạo template và review chéo:
+Nhóm chốt một commit/tag chung và ghi vào issue `GOV-02` sau khi review: ERD/tên bảng và cột; URL/JSON/lỗi API; trạng thái chứng từ; request/response P0; public interface Java; chữ ký procedure; cấu trúc thư mục và owner file dùng chung. Bản draft cần chốt tại [`../../../contracts/BASELINE.md`](../../../contracts/BASELINE.md). Bốn branch tạo từ **cùng commit**; không tạo branch từ trạng thái khác nhau rồi tự đổi contract.
 
-| Thành viên | Module dọc sở hữu | Trách nhiệm chuyên môn xuyên suốt |
+## Ranh giới file và object
+
+| Phạm vi | Owner chính | Quy tắc phối hợp |
 | --- | --- | --- |
-| TV1 | Danh mục và cấu trúc kho | Constraint, trigger, view, index |
-| TV2 | Nhập kho và tồn | Stored procedure, function, `TRY...CATCH` |
-| TV3 | Xuất và kiểm soát tồn | Transaction, rollback, concurrency |
-| TV4 | Nền tảng và bảo mật | Login, role, permission, audit |
+| `services/api/.../catalog`, `partner`, `warehouse`, `inbound` và SQL nhập | TV1 | Thay đổi danh mục/kho ảnh hưởng nghiệp vụ khác cần reviewer consumer. |
+| `services/api/.../inventory`, `outbound` và SQL đọc tồn/xuất | TV2 | Tồn cuối cùng do database/backend xác nhận; thay đổi read model cần reviewer TV1/TV3/TV4. |
+| `services/api/.../transfer`, `inventorycount` và SQL chuyển/kiểm kê | TV3 | Chỉ gọi public interface tồn; không import repository/module khác. |
+| `services/api/.../returning`, `accounting`, `auth`, `audit` và SQL liên quan | TV4 | Ma trận quyền phải khớp contract, role SQL, Spring Security và test. |
+| `contracts/`, `database/init.sql`, build/config gốc, router/app shell | Trưởng nhóm hoặc người được chỉ định | Chỉ sửa qua PR nhỏ có reviewer của module tiêu thụ; tránh nhiều branch cùng sửa file chung. |
 
-Trách nhiệm chuyên môn không cho phép một thành viên tự sửa file thuộc workstream khác. Khi cần thay đổi, owner module viết thay đổi hoặc hai người thống nhất một PR nhỏ có đồng tác giả/reviewer rõ ràng.
+Object SQL cụ thể và bài test thuộc từng người được liệt kê trong [`DBMS_WORK_ASSIGNMENT.md`](DBMS_WORK_ASSIGNMENT.md). Khi object như `TON_KHO`, view báo cáo hoặc trigger bảo vệ chung chạm nhiều luồng, owner object mở PR và mời các consumer review. Trigger chỉ bảo vệ dữ liệu, không tạo đường ghi sổ thứ hai bên cạnh procedure. Nên giữ một object chính trên một file; `init.sql` chỉ là điểm vào dựng database sạch.
 
-## Baseline bắt buộc trước khi tách branch
+Frontend baseline hiện dùng Vanilla JavaScript. `GOV-03` tách dần `apps/web/app.js` và `styles.css` theo core/feature, giữ hành vi đang chạy; owner cụ thể còn chờ nhóm chốt. Trước khi tách xong, thay đổi UI ở file chung phải qua PR nhỏ và reviewer liên quan. Không đổi framework trong kế hoạch này.
 
-Trưởng nhóm tạo một commit/tag baseline sau khi nhóm chốt các mục sau:
+## Thứ tự tích hợp và PR
 
-1. ERD, tên bảng/cột và data dictionary tối thiểu.
-2. Quy ước URL, JSON, ngày giờ, phân trang và lỗi API.
-3. Trạng thái chứng từ và chuyển trạng thái hợp lệ.
-4. Request/response và mã lỗi của các luồng P0.
-5. Chữ ký interface Java được dùng giữa các module.
-6. Chữ ký stored procedure hoàn tất chứng từ.
-7. Cấu trúc thư mục theo feature và owner của các file dùng chung.
+Các thành viên có thể chuẩn bị code/test song song trên contract đã chốt. Khi ghép bản chạy, thứ tự dependency là: danh mục/kho và auth → nhập/lô/tồn → xuất FEFO → chuyển/kiểm kê/trả hàng → báo cáo và đối soát. Đây là thứ tự tích hợp, không buộc người làm luồng sau chờ mới được bắt đầu.
 
-Nội dung draft để chốt nằm tại [`contracts/BASELINE.md`](../../../contracts/BASELINE.md). Sau khi baseline được chấp nhận, bốn branch phải được tạo từ đúng cùng commit đó.
+- Mỗi PR hoàn thành một lát dọc hoặc một ca kiểm chứng; ghi owner, reviewer, acceptance criteria, mã `BR-*`, lệnh test và kết quả.
+- Không merge branch workstream của người khác vào branch mình; đồng bộ từ nhánh tích hợp đã chốt. Không force-push branch dùng chung.
+- API/schema thay đổi phải cập nhật contract, migration/script, test và tài liệu cùng PR. Module khác chỉ dùng public interface/DTO, không import repository hoặc JPA entity nội bộ.
+- Trước bàn giao chạy `pwsh -File scripts/verify.ps1`; nếu có SQL Server, chạy gate DB và concurrency theo hướng dẫn. Chỉ ghi những kiểm tra đã chạy thật.
+- Việc đứng tên object hiện hữu là **trách nhiệm kiểm chứng/bảo trì tiếp**, không phải bằng chứng đã tự viết; phụ lục báo cáo lấy PR/test và review thực tế.
 
-## Ranh giới sở hữu file
+## Việc nhóm cần xác nhận
 
-| Phạm vi | Owner chính | Quy tắc |
-| --- | --- | --- |
-| `services/api/.../auth`, cấu hình security và lỗi HTTP chung | TV4 | Module khác chỉ dùng public interface/DTO |
-| `services/api/.../catalog`, `partner`, `warehouse` | TV1 | Không truy cập repository từ module khác |
-| `services/api/.../inbound`, `inventory`, `reporting` | TV2 | Tồn cuối cùng do database/backend xác nhận |
-| `services/api/.../outbound`, `transfer`, `inventorycount`, `returning` | TV3 | Mọi ghi sổ dùng transaction và chống xử lý lặp |
-| `contracts/` | Trưởng nhóm + hai phía dùng contract | Thay đổi public contract phải được duyệt trước khi code phụ thuộc |
-| `database/init.sql`, build/config gốc, router/app shell | Trưởng nhóm hoặc người được chỉ định | Không để nhiều branch sửa song song |
-
-Database nên dùng một file cho một table/procedure/view/index và chia tiếp theo module. Không gom mọi object vào một script lớn ngoài `init.sql`, vì file lớn sẽ trở thành điểm xung đột của cả nhóm.
-
-## Frontend cần tách trước khi phát triển song song
-
-Baseline hiện tập trung phần lớn hành vi trong `apps/web/app.js` và style trong `apps/web/styles.css`. Trước khi bốn người cùng sửa UI, cần tách dần thành cấu trúc tương đương:
-
-```text
-apps/web/
-├─ index.html
-├─ app.js                       bootstrap tạm thời
-├─ src/
-│  ├─ core/
-│  │  ├─ api-client.js
-│  │  ├─ router.js
-│  │  ├─ session.js
-│  │  └─ errors.js
-│  └─ features/
-│     ├─ auth/
-│     ├─ master-data/
-│     ├─ inbound-inventory/
-│     └─ outbound-control/
-└─ styles/
-   ├─ tokens.css
-   ├─ components.css
-   └─ features/
-```
-
-Việc tách file phải giữ nguyên hành vi baseline và được thực hiện trong backlog `GOV-03`. Không đồng thời đổi framework.
-
-## Quy tắc phối hợp tối thiểu
-
-- Branch workstream là vùng làm việc của một owner, không phải nơi gom một PR khổng lồ.
-- Mỗi PR chỉ nên hoàn thành một module nhỏ hoặc một lát dọc có thể kiểm tra.
-- Không merge trực tiếp branch workstream của người này vào branch workstream của người khác.
-- Thay đổi breaking ở schema/API/interface phải cập nhật contract và được duyệt trước khi code phụ thuộc được merge.
-- Không import repository, JPA entity hoặc implementation nội bộ của module khác.
-- Các branch đồng bộ thường xuyên từ nhánh tích hợp đã thống nhất; không force-push branch dùng chung.
-- Trước khi bàn giao chạy `pwsh -File scripts/verify.ps1` và ghi kết quả thật.
-
-## Thứ tự tích hợp, không phải thứ tự phát triển
-
-Bốn người có thể code cùng lúc bằng contract/stub. Khi ghép bản chạy, thứ tự an toàn là:
-
-1. Nền tảng/security và danh mục/cấu trúc kho.
-2. Nhập kho, tạo lô và tồn.
-3. Xuất kho FEFO.
-4. Chuyển kho, kiểm kê, trả hàng và báo cáo hoàn thiện.
-
-Đây chỉ là thứ tự ghép dependency, không yêu cầu thành viên sau phải chờ thành viên trước mới bắt đầu code.
-
-## Các quyết định cần nhóm xác nhận
-
-- [ ] Đồng ý bốn workstream và owner đề xuất.
-- [ ] Đồng ý tên bốn branch hoặc chọn tên khác.
-- [ ] Chọn nhánh tích hợp: `main` trực tiếp qua PR hay thêm `develop`.
-- [ ] Chốt các mục đang đánh dấu `Cần chốt` trong contract baseline.
-- [ ] Chỉ định reviewer chính cho từng workstream.
-- [ ] Chọn người thực hiện `GOV-03` trước khi frontend được sửa song song.
+- [ ] Bốn luồng, owner và cân bằng thời gian thực tế.
+- [ ] Reviewer vòng đề xuất trong [`TEAM.md`](TEAM.md).
+- [ ] Tên branch và nhánh tích hợp (`DEC-019`).
+- [ ] Commit baseline và các mục `Cần chốt` trong contract.
+- [ ] Người thực hiện `GOV-03` và owner file dùng chung.
