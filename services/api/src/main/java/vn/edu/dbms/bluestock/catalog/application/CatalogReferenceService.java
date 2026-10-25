@@ -1,6 +1,7 @@
 package vn.edu.dbms.bluestock.catalog.application;
 
 import java.util.Locale;
+import java.util.function.Supplier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class CatalogReferenceService {
 
     @Transactional
     public CategoryView createCategory(String code, String name, String description, String storageRequirement) {
-        String normalizedCode = normalizeCode(code);
+        String normalizedCode = resolveCode(code, repository::nextCategoryCode, "LSP001");
         try {
             repository.insertCategory(normalizedCode, name.trim(), optionalText(description), storageRequirement);
         } catch (DuplicateKeyException exception) {
@@ -79,7 +80,7 @@ public class CatalogReferenceService {
 
     @Transactional
     public UnitView createUnit(String code, String name) {
-        String normalizedCode = normalizeCode(code);
+        String normalizedCode = resolveCode(code, repository::nextUnitCode, "DVT001");
         try {
             repository.insertUnit(normalizedCode, name.trim());
         } catch (DuplicateKeyException exception) {
@@ -120,6 +121,14 @@ public class CatalogReferenceService {
             throw new CatalogReferenceException(Kind.CONFLICT, "UNIT_IN_USE",
                 "Đơn vị tính đã được tham chiếu");
         }
+    }
+
+    private static String resolveCode(String code, Supplier<String> generator, String fallback) {
+        if (code == null || code.isBlank()) {
+            String generated = generator.get();
+            return generated == null || generated.isBlank() ? fallback : normalizeCode(generated);
+        }
+        return normalizeCode(code);
     }
 
     private static String normalizeCode(String code) {

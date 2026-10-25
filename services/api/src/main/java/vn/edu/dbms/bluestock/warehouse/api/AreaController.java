@@ -60,7 +60,7 @@ public class AreaController {
         return ResponseEntity.noContent().build();
     }
 
-    public record CreateAreaRequest(@NotBlank String maKhuVuc,
+    public record CreateAreaRequest(String maKhuVuc,
         @NotBlank String maKho,
         @NotBlank @Size(max = 255) String tenKhuVuc,
         @NotBlank @Pattern(regexp = "Khô|Mát|Đông lạnh") String loaiKhuVuc) {}

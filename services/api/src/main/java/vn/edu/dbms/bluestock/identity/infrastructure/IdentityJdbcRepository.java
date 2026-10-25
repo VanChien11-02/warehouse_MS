@@ -40,6 +40,22 @@ public class IdentityJdbcRepository {
             """, (row, index) -> employee(row), code).stream().findFirst();
     }
 
+    public String nextEmployeeCode() {
+        Integer next = jdbc.queryForObject("""
+            SELECT COALESCE(MAX(TRY_CAST(SUBSTRING(RTRIM(MaNV), 3, 10) AS INT)), 0) + 1
+            FROM dbo.NHAN_VIEN WHERE MaNV LIKE 'NV%'
+            """, Integer.class);
+        return String.format("NV%04d", Math.min(9999, next == null ? 1 : next));
+    }
+
+    public String nextAccountCode() {
+        Integer next = jdbc.queryForObject("""
+            SELECT COALESCE(MAX(TRY_CAST(SUBSTRING(RTRIM(MaTK), 3, 10) AS INT)), 0) + 1
+            FROM dbo.TAI_KHOAN WHERE MaTK LIKE 'TK%'
+            """, Integer.class);
+        return String.format("TK%04d", Math.min(9999, next == null ? 1 : next));
+    }
+
     public Optional<Boolean> lockedEmployeeActive(String code) {
         return jdbc.queryForList("""
             SELECT DangLamViec FROM dbo.NHAN_VIEN WITH (UPDLOCK, HOLDLOCK) WHERE MaNV = ?

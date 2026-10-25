@@ -1,6 +1,7 @@
 package vn.edu.dbms.bluestock.warehouse.application;
 
 import java.util.Locale;
+import java.util.function.Supplier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -62,7 +63,7 @@ public class WarehouseService {
 
     @Transactional
     public WarehouseView createWarehouse(String code, String name, String address) {
-        String normalizedCode = normalizeCode(code);
+        String normalizedCode = resolveCode(code, repository::nextWarehouseCode, "KHO001");
         try {
             repository.insertWarehouse(normalizedCode, name.trim(), optionalText(address));
         } catch (DuplicateKeyException exception) {
@@ -102,7 +103,7 @@ public class WarehouseService {
 
     @Transactional
     public AreaView createArea(String code, String warehouseCode, String name, String type) {
-        String normalizedCode = normalizeCode(code);
+        String normalizedCode = resolveCode(code, repository::nextAreaCode, "KV0001");
         String normalizedWarehouseCode = normalizeCode(warehouseCode);
         if (repository.warehouse(normalizedWarehouseCode).isEmpty()) {
             throw new WarehouseException(Kind.VALIDATION, "INVALID_WAREHOUSE", "Kho không tồn tại");
@@ -147,7 +148,7 @@ public class WarehouseService {
 
     @Transactional
     public PositionView createPosition(String code, String areaCode, String name, int capacity, String type) {
-        String normalizedCode = normalizeCode(code);
+        String normalizedCode = resolveCode(code, repository::nextPositionCode, "VT0001");
         String normalizedAreaCode = normalizeCode(areaCode);
         if (repository.area(normalizedAreaCode).isEmpty()) {
             throw new WarehouseException(Kind.VALIDATION, "INVALID_AREA", "Khu vực không tồn tại");
@@ -212,6 +213,14 @@ public class WarehouseService {
         } catch (DataIntegrityViolationException exception) {
             throw new WarehouseException(Kind.CONFLICT, "POSITION_IN_USE", "Vị trí đã được tồn hoặc chứng từ tham chiếu");
         }
+    }
+
+    private static String resolveCode(String code, Supplier<String> generator, String fallback) {
+        if (code == null || code.isBlank()) {
+            String generated = generator.get();
+            return generated == null || generated.isBlank() ? fallback : normalizeCode(generated);
+        }
+        return normalizeCode(code);
     }
 
     private static String normalizeCode(String code) {

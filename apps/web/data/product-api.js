@@ -31,6 +31,9 @@ export function createProductApi(client) {
     remove(code) {
       return client.send(`/san-pham/${encodeURIComponent(code)}`, { method: "DELETE" });
     },
+    all() {
+      return all("/san-pham");
+    },
     async references() {
       const [categories, units] = await Promise.all([
         all("/loai-san-pham"),

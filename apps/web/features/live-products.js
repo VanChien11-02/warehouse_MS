@@ -1,3 +1,5 @@
+import { nextCode } from "../data/master-api.js?v=session-shell-4";
+
 export function createLiveProducts({ client, products, escapeHtml, formatCurrency, showToast,
   onSessionChange = () => {},
   closeEditor }) {
@@ -12,6 +14,7 @@ export function createLiveProducts({ client, products, escapeHtml, formatCurrenc
   let user = null;
   let editingCode = null;
   let requestId = 0;
+  let cachedItems = [];
 
   function canWrite() {
     return user && ["ADMIN", "QLKHO"].includes(user.role);
@@ -40,6 +43,7 @@ export function createLiveProducts({ client, products, escapeHtml, formatCurrenc
   }
 
   function showPage(page) {
+    cachedItems = page.items || [];
     const totalPages = Math.max(1, page.totalPages);
     const number = page.page + 1;
     table.querySelector("thead").innerHTML = "<tr><th>Mã sản phẩm</th><th>Tên sản phẩm</th><th>Loại</th><th>Đơn vị</th><th>Giá bán</th><th>Chi tiết</th></tr>";
@@ -95,11 +99,12 @@ export function createLiveProducts({ client, products, escapeHtml, formatCurrenc
   async function openEditor(code = null) {
     editingCode = code;
     const writable = canWrite();
+    const initialCode = code || nextCode("SP", cachedItems, "maSanPham");
     document.querySelector("#recordEditorTitle").textContent = code ? "Chi tiết sản phẩm" : "Thêm sản phẩm";
     editor.querySelector(".editor-header p").textContent = code
-      ? "Thông tin sản phẩm hiện tại." : "Tạo sản phẩm mới.";
+      ? "Thông tin sản phẩm hiện tại." : "Tạo sản phẩm mới (mã sản phẩm tự động tạo).";
     recordForm.querySelector(".editor-body").innerHTML = `
-      <label class="field"><span>Mã sản phẩm *</span><input id="liveCode" maxlength="6" pattern="[A-Za-z0-9]{1,6}" required></label>
+      <label class="field"><span>Mã sản phẩm *</span><input id="liveCode" maxlength="6" pattern="[A-Za-z0-9]{1,6}" value="${escapeHtml(initialCode)}" required><small>${code ? "Không đổi sau khi tạo" : "Mã tự động tạo"}</small></label>
       <label class="field"><span>Tên sản phẩm *</span><input id="liveName" maxlength="255" required></label>
       <label class="field"><span>Loại sản phẩm *</span><select id="liveCategory" required></select></label>
       <label class="field"><span>Đơn vị tính *</span><select id="liveUnit" required></select></label>
@@ -112,15 +117,17 @@ export function createLiveProducts({ client, products, escapeHtml, formatCurrenc
     document.querySelector("#editorOverlay").hidden = false;
     document.body.style.overflow = "hidden";
     try {
-      const [references, item] = await Promise.all([
-        products.references(), code ? products.get(code) : Promise.resolve(null)
+      const [references, item, allProducts] = await Promise.all([
+        products.references(),
+        code ? products.get(code) : Promise.resolve(null),
+        code ? Promise.resolve(null) : (products.all ? products.all().catch(() => cachedItems) : Promise.resolve(cachedItems))
       ]);
       const category = document.querySelector("#liveCategory");
       const unit = document.querySelector("#liveUnit");
       category.innerHTML = '<option value="">Chọn loại</option>' + references.categories.map((entry) =>
-        `<option value="${escapeHtml(entry.maLoai)}">${escapeHtml(entry.tenLoai)}</option>`).join("");
+        `<option value="${escapeHtml(entry.maLoai)}">${escapeHtml(entry.maLoai)} · ${escapeHtml(entry.tenLoai)}</option>`).join("");
       unit.innerHTML = '<option value="">Chọn đơn vị</option>' + references.units.map((entry) =>
-        `<option value="${escapeHtml(entry.maDonViTinh)}">${escapeHtml(entry.tenDonViTinh)}</option>`).join("");
+        `<option value="${escapeHtml(entry.maDonViTinh)}">${escapeHtml(entry.maDonViTinh)} · ${escapeHtml(entry.tenDonViTinh)}</option>`).join("");
       if (item) {
         document.querySelector("#liveCode").value = item.maSanPham;
         document.querySelector("#liveName").value = item.tenSanPham;
@@ -128,14 +135,20 @@ export function createLiveProducts({ client, products, escapeHtml, formatCurrenc
         unit.value = item.maDonViTinh;
         document.querySelector("#liveImportPrice").value = item.giaNhapMacDinh;
         document.querySelector("#liveSalePrice").value = item.giaBanMacDinh;
+      } else if (allProducts) {
+        cachedItems = allProducts;
+        const codeInput = document.querySelector("#liveCode");
+        if (!codeInput.value || codeInput.value === initialCode) {
+          codeInput.value = nextCode("SP", allProducts, "maSanPham");
+        }
       }
-      document.querySelector("#liveCode").readOnly = !!code;
+      document.querySelector("#liveCode").readOnly = true;
       category.disabled = !!code || !writable;
       unit.disabled = !!code || !writable;
       for (const field of recordForm.querySelectorAll("input")) {
         if (!writable) field.readOnly = true;
       }
-      document.querySelector("#liveCode").focus();
+      document.querySelector("#liveName").focus();
     } catch (error) {
       const message = document.querySelector("#liveFormError");
       message.textContent = error.message || "Không tải được thông tin sản phẩm.";

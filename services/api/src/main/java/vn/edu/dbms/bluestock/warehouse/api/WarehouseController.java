@@ -55,7 +55,7 @@ public class WarehouseController {
         return ResponseEntity.noContent().build();
     }
 
-    public record CreateWarehouseRequest(@NotBlank String maKho,
+    public record CreateWarehouseRequest(String maKho,
         @NotBlank @Size(max = 255) String tenKho, @Size(max = 255) String diaChi) {}
 
     public record UpdateWarehouseRequest(@NotBlank @Size(max = 255) String tenKho,

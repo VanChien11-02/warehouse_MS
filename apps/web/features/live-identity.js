@@ -1,3 +1,5 @@
+import { nextCode, selectOptions } from "../data/master-api.js?v=session-shell-4";
+
 export function createLiveIdentity({ identity, escapeHtml, getRole, requireLogin, showToast }) {
   const view = document.createElement("section");
   view.className = "view";
@@ -9,6 +11,15 @@ export function createLiveIdentity({ identity, escapeHtml, getRole, requireLogin
   let page = 0;
   let editingCode = null;
   let requestId = 0;
+  const cache = { employees: [], accounts: [] };
+
+  function employeeOptions(selected = "") {
+    const usedEmployees = new Set(cache.accounts.map((a) => a.maNhanVien));
+    const activeEmployees = cache.employees.filter((e) => e.dangLamViec !== false);
+    const available = activeEmployees.filter((e) => !usedEmployees.has(e.maNhanVien));
+    const list = available.length ? available : activeEmployees;
+    return selectOptions(list, "maNhanVien", (e) => `${e.maNhanVien} · ${e.tenNhanVien}`, selected, "Chọn nhân viên", escapeHtml);
+  }
 
   function field(name) {
     return dialog.querySelector(`[name="${name}"]`);
@@ -33,7 +44,7 @@ export function createLiveIdentity({ identity, escapeHtml, getRole, requireLogin
 
   function formFields() {
     if (mode === "employees") {
-      return `<label class="field identity-create-only"><span>Mã nhân viên *</span><input name="maNhanVien" maxlength="6" pattern="[A-Za-z0-9]{1,6}" required></label>
+      return `<label class="field identity-create-only"><span>Mã nhân viên *</span><input name="maNhanVien" maxlength="6" pattern="[A-Za-z0-9]{1,6}" readonly required><small>Mã tự động tạo</small></label>
         <label class="field"><span>Họ tên *</span><input name="tenNhanVien" maxlength="255" required></label>
         <label class="field"><span>Điện thoại</span><input name="soDienThoai" maxlength="20"></label>
         <label class="field"><span>Giới tính</span><select name="gioiTinh"><option value="">Không chọn</option><option>Nam</option><option>Nữ</option><option>Khác</option></select></label>
@@ -43,8 +54,8 @@ export function createLiveIdentity({ identity, escapeHtml, getRole, requireLogin
         <label class="field"><span>Trạng thái</span><select name="dangLamViec"><option value="true">Đang làm việc</option><option value="false">Ngừng làm việc</option></select></label>
         <label class="field field-wide"><span>Địa chỉ</span><input name="diaChi" maxlength="500"></label>`;
     }
-    return `<label class="field identity-create-only"><span>Mã tài khoản *</span><input name="maTaiKhoan" maxlength="6" pattern="[A-Za-z0-9]{1,6}" required></label>
-      <label class="field identity-create-only"><span>Mã nhân viên *</span><input name="maNhanVien" maxlength="6" pattern="[A-Za-z0-9]{1,6}" required></label>
+    return `<label class="field identity-create-only"><span>Mã tài khoản *</span><input name="maTaiKhoan" maxlength="6" pattern="[A-Za-z0-9]{1,6}" readonly required><small>Mã tự động tạo</small></label>
+      <label class="field identity-create-only"><span>Nhân viên *</span><select name="maNhanVien" required>${employeeOptions("")}</select></label>
       <label class="field"><span>Tên đăng nhập *</span><input name="tenTaiKhoan" maxlength="100" autocomplete="off" required></label>
       <label class="field"><span>Vai trò *</span><select name="role" required><option value="ADMIN">Quản trị viên</option><option value="QLKHO">Quản lý kho</option><option value="NVKHO">Nhân viên kho</option><option value="KETOAN">Kế toán</option></select></label>
       <label class="field identity-create-only"><span>Mật khẩu ban đầu *</span><input name="matKhau" type="password" minlength="12" maxlength="72" autocomplete="new-password" required></label>
@@ -61,8 +72,8 @@ export function createLiveIdentity({ identity, escapeHtml, getRole, requireLogin
     formError("");
     for (const label of dialog.querySelectorAll(".identity-create-only")) {
       label.hidden = !!item;
-      const input = label.querySelector("input");
-      if (input) input.required = !item;
+      const control = label.querySelector("input, select");
+      if (control) control.required = !item;
     }
     dialog.querySelector("#identityResetSection").hidden = mode !== "accounts" || !item;
     dialog.querySelector("#identityResetPassword").value = "";
@@ -78,10 +89,34 @@ export function createLiveIdentity({ identity, escapeHtml, getRole, requireLogin
       field("trangThai").value = String(item.trangThai);
     } else if (mode === "employees") {
       const today = new Date();
+      field("maNhanVien").value = nextCode("NV", cache.employees, "maNhanVien");
       field("ngayVaoLam").value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      identity.employees.all?.().then((items) => {
+        cache.employees = items;
+        if (dialog.open && !editingCode && field("maNhanVien")) {
+          field("maNhanVien").value = nextCode("NV", items, "maNhanVien");
+        }
+      }).catch(() => {});
+    } else {
+      field("maTaiKhoan").value = nextCode("TK", cache.accounts, "maTaiKhoan");
+      Promise.all([
+        identity.employees.all ? identity.employees.all().catch(() => cache.employees) : Promise.resolve(cache.employees),
+        identity.accounts.all ? identity.accounts.all().catch(() => cache.accounts) : Promise.resolve(cache.accounts)
+      ]).then(([employees, accounts]) => {
+        cache.employees = employees;
+        cache.accounts = accounts;
+        if (dialog.open && !editingCode) {
+          if (field("maTaiKhoan")) field("maTaiKhoan").value = nextCode("TK", accounts, "maTaiKhoan");
+          const empSelect = field("maNhanVien");
+          if (empSelect) {
+            empSelect.innerHTML = employeeOptions(empSelect.value);
+            if (!empSelect.value && empSelect.options.length > 1) empSelect.selectedIndex = 1;
+          }
+        }
+      }).catch(() => {});
     }
     dialog.showModal();
-    dialog.querySelector("label:not([hidden]) input")?.focus();
+    dialog.querySelector("label:not([hidden]) input:not([readonly]), label:not([hidden]) select")?.focus();
   }
 
   function employeeBody() {
@@ -117,6 +152,7 @@ export function createLiveIdentity({ identity, escapeHtml, getRole, requireLogin
     try {
       const result = await identity[mode].list(page, 20);
       if (current !== requestId || !isAdmin()) return;
+      cache[mode] = result.items || [];
       const employeeMode = mode === "employees";
       view.querySelector("thead").innerHTML = employeeMode
         ? "<tr><th>Mã</th><th>Nhân viên</th><th>Điện thoại</th><th>Ngày vào làm</th><th>Trạng thái</th><th></th></tr>"

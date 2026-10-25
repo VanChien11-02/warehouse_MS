@@ -4,6 +4,18 @@ export function createIdentityApi(client) {
       list(page = 0, size = 20) {
         return client.send(`/${path}?page=${page}&size=${size}`);
       },
+      async all() {
+        const items = [];
+        let page = 0;
+        let totalPages = 1;
+        do {
+          const response = await client.send(`/${path}?page=${page}&size=100`);
+          items.push(...(response?.items || []));
+          totalPages = response?.totalPages || 0;
+          page += 1;
+        } while (page < totalPages && page < 20);
+        return items;
+      },
       get(code) {
         return client.send(`/${path}/${encodeURIComponent(code)}`);
       },
