@@ -138,7 +138,8 @@ if ($WithDatabase) {
     if ($SqlUser -and [string]::IsNullOrWhiteSpace($env:SQLCMDPASSWORD)) {
         throw 'Đặt SQLCMDPASSWORD trong terminal khi dùng -SqlUser.'
     }
-    $sqlAuth = if ($SqlUser) { @('-U', $SqlUser) } else { @('-E') }
+    $sqlAuth = @('-E')
+    if ($SqlUser) { $sqlAuth = @('-U', $SqlUser) }
     $databaseTests = @(
         'database\tests\001_catalog_warehouse_constraints.sql',
         'database\tests\002_auth_constraints.sql',

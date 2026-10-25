@@ -1,8 +1,9 @@
 # Database roles
 
-`001_application_roles.sql` tạo bốn role SQL Server; `002_role_policy_20261022.sql`
-điều chỉnh quyền theo quyết định hiện hành và cấp quyền đối soát. `init.sql`
-chạy cả hai script; migration 028 chạy phần điều chỉnh cho database cũ.
+[`001_application_roles.sql`](001_application_roles.sql) gom bốn role SQL
+Server, quyền nền và phần điều chỉnh quyền ngày 2026-10-22, kèm quyền đối soát.
+Giữ nguyên các câu lệnh và thứ tự áp dụng. `init.sql` chạy file chung;
+migration 025 và 028 giữ riêng nội dung SQL tương ứng với từng bước cũ.
 Các script không tạo login/user và không chứa mật khẩu. Người vận hành
 tạo user riêng, rồi gán bằng `ALTER ROLE ... ADD MEMBER ...` khi cần truy cập
 database trực tiếp. Có thể chạy lại script sau migration; quyền được cấp theo

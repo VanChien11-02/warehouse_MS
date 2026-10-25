@@ -75,27 +75,50 @@ Sau migration 024, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database
 
 Sau migration 025, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/026_inventory_indexes.sql` để thêm index tra cứu lô, tồn và danh sách chứng từ. Test 023 và cách đo trước/sau ở [`indexes/README.md`](indexes/README.md).
 
-Sau migration 026, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/027_inventory_guard_triggers.sql` để cài bốn trigger mới vào database **đã tồn tại** trên Windows. Database dựng mới bằng `init.sql` đã có các trigger này; không chạy lại `init.sql` trên database cũ. Với Compose, `db-init` chạy migration 027 theo cách lặp lại được mỗi lần khởi động, kể cả khi volume cũ đã tồn tại. Test `database/tests/024_inventory_guard_triggers.sql` kiểm tra nhiều dòng hợp lệ/không hợp lệ và rollback. Trigger chạy tự động khi API gọi các procedure ghi lô, tồn, sổ; Java không gọi trigger theo tên. Xem [`programmability/triggers/README.md`](programmability/triggers/README.md) để giải thích từng trigger và kịch bản báo cáo.
+Sau migration 026, chạy `sqlcmd -S localhost -E -C -b -d BlueStock -i database/migrations/027_inventory_guard_triggers.sql` để cài bốn trigger mới vào database **đã tồn tại** trên Windows. Database dựng mới bằng `init.sql` đã có các trigger này; không chạy lại `init.sql` trên database cũ. Với Compose, `db-init` chạy migration 027 theo cách lặp lại được mỗi lần khởi động, kể cả khi volume cũ đã tồn tại. Test `database/tests/024_inventory_guard_triggers.sql` kiểm tra nhiều dòng hợp lệ/không hợp lệ và rollback. Trigger chạy tự động khi API gọi các procedure ghi lô, tồn, sổ; Java không gọi trigger theo tên. Xem [`triggers/README.md`](triggers/README.md) để giải thích từng trigger và kịch bản báo cáo.
 
 Sau migration 027, chạy migration 028 để thêm kết quả đối soát giá trị phiếu nhập/xuất và áp dụng lại quyền SQL hiện hành. Với Compose, `db-init` tự chạy migration 028 trên volume đã tồn tại. Test `database/tests/025_accounting_reconciliation.sql` kiểm tra cấu trúc và ràng buộc bảng.
 
-## Cấu trúc mục tiêu
+## Cấu trúc script hiện hành
+
+SQL dựng mới được gom theo loại object, có comment giải thích mục đích từng
+object. Giữ nguyên tên và logic SQL; bảng vẫn tách theo file như trước.
+Các PK/FK/CHECK/UNIQUE/DEFAULT được chuyển sang `ALTER TABLE ADD` trong
+[`constraints/constraints.sql`](constraints/constraints.sql), giữ nguyên tên,
+cột, điều kiện và giá trị mặc định. `NOT NULL` vẫn nằm trong định nghĩa cột.
 
 ```text
 database/
-  schema/                 Bảng, PK, FK, CHECK, UNIQUE, DEFAULT
-  migrations/             Bổ sung schema cho database local đã tồn tại
-  programmability/
-    procedures/           Stored procedure
-    functions/            User-defined function
-    triggers/             Trigger
-    views/                View
-  indexes/                Index và script đo hiệu năng
-  security/               Login, user, role, GRANT/REVOKE/DENY
+  schema/                 Mỗi bảng một file như trước
+    015_sequences.sql     Toàn bộ sáu sequence sinh mã
+  constraints/
+    constraints.sql       Toàn bộ 139 PK/FK/CHECK/UNIQUE/DEFAULT
+  migrations/             SQL nâng cấp database cũ, giữ nguyên phạm vi từng bước
+  procedures/procedures.sql    Năm stored procedure
+  functions/functions.sql      Năm user-defined function
+  triggers/triggers.sql        Năm trigger
+  views/views.sql              Bảy view
+  indexes/
+    001_inventory_lookup.sql   Toàn bộ tám index tường minh
+    measure_inventory_lookup.sql  Script đo riêng, không chạy khi khởi tạo
+  security/
+    001_application_roles.sql  Bốn role và toàn bộ GRANT/REVOKE/DENY
   seed/                   Dữ liệu demo
   tests/                  Script kiểm tra constraint, transaction và concurrency
   init.sql                Điểm vào chạy theo đúng thứ tự
 ```
+
+Thứ tự chạy vẫn do [`init.sql`](init.sql) quản lý: tạo các bảng → thêm ràng
+buộc và sequence trong transaction schema → view/function → procedure →
+trigger → quyền → index. `views.sql` nạp `functions.sql` sau khi đã tạo
+`vw_TonKhoChiTiet` và trước `vw_LoSapHetHan`, vì function đọc view chi tiết
+và view cảnh báo gọi `fn_LoSapHetHan`. Các câu `GO` phân batch vẫn được giữ.
+
+Migration 001–028 đã bung nội dung các lệnh `:r` cũ ngay trong từng file để
+giữ nguyên SQL và thứ tự chạy của từng bước nâng cấp. Chúng không nạp toàn
+bộ file gom vì database ở bước cũ có thể chưa có đủ bảng cho các object mới.
+Không chạy migration trên database vừa dựng bằng `init.sql`; seed, test và
+script đo hiệu năng tiếp tục chạy riêng như trước.
 
 ## Quy tắc
 

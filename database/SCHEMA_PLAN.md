@@ -5,34 +5,40 @@
 ## Mục tiêu
 
 - Dựng SQL Server 2022 từ database sạch bằng một điểm vào `database/init.sql`.
-- Chia object theo file/module để bốn workstream hạn chế xung đột merge.
+- Gom object theo loại để dễ đọc và trình bày; các bảng vẫn tách theo file.
 - Đủ constraint, procedure, function, trigger, view, index, security và test có ý nghĩa cho rubric.
 
-## Cấu trúc file mục tiêu
+## Cấu trúc file hiện hành
 
 ```text
 database/
 ├─ init.sql
 ├─ schema/
-│  ├─ 001_auth.sql
-│  ├─ 010_catalog.sql
-│  ├─ 020_partner.sql
-│  ├─ 030_warehouse.sql
-│  ├─ 040_inbound_inventory.sql
-│  ├─ 050_outbound.sql
-│  └─ 060_stock_control.sql
+│  ├─ auth/                  Các bảng định danh, mỗi bảng một file
+│  ├─ 001_loai_san_pham.sql   Các bảng nghiệp vụ giữ tên file hiện tại
+│  ├─ ...
+│  └─ 015_sequences.sql      Toàn bộ sequence sinh mã
+├─ constraints/constraints.sql
 ├─ programmability/
-│  ├─ procedures/
-│  ├─ functions/
-│  ├─ triggers/
-│  └─ views/
-├─ indexes/
-├─ security/
+│  ├─ procedures/procedures.sql
+│  ├─ functions/functions.sql
+│  ├─ triggers/triggers.sql
+│  └─ views/views.sql
+├─ indexes/001_inventory_lookup.sql
+├─ security/001_application_roles.sql
+├─ migrations/
 ├─ seed/
 └─ tests/
 ```
 
-Khi số object tăng, ưu tiên một object chính trên một file trong thư mục module, ví dụ `procedures/inbound/sp_HoanTatPhieuNhap.sql`. Không để nhiều thành viên cùng sửa một script khổng lồ.
+Theo quyết định Project Owner ngày 2026-10-25, mỗi loại object dùng một file
+chung với comment giải thích từng object; không đổi tên hoặc logic SQL.
+PK/FK/CHECK/UNIQUE/DEFAULT nằm trong `constraints/constraints.sql` dưới dạng
+`ALTER TABLE ADD`; `NOT NULL` giữ tại cột. Các bảng vẫn tách file như cũ.
+Migration giữ SQL nâng cấp của từng bước bằng cách bung các lệnh `:r` cũ,
+không phụ thuộc các file object đã được gom. Seed, test và đo index tách riêng.
+`init.sql` quản lý thứ tự phụ thuộc; `views.sql` nạp `functions.sql` giữa
+view tồn chi tiết và view cảnh báo hạn dùng.
 
 ## Thứ tự tạo bảng
 

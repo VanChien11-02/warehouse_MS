@@ -1,6 +1,11 @@
 # Trigger bảo vệ dữ liệu kho
 
-Năm trigger trong thư mục này là lớp chặn cuối ở SQL Server. Procedure vẫn chịu trách nhiệm kiểm tra nghiệp vụ, khóa tồn và ghi sổ trong transaction. `AFTER` trigger chạy tự động trong chính transaction của câu `INSERT`/`UPDATE`; `THROW` làm câu ghi thất bại và procedure rollback. Không gọi `EXEC trigger` từ Java.
+Năm trigger được gom trong [`triggers.sql`](triggers.sql), có comment giải thích
+từng trigger và giữ nguyên tên, nội dung SQL. Chúng là lớp chặn cuối ở SQL
+Server. Procedure vẫn chịu trách nhiệm kiểm tra nghiệp vụ, khóa tồn và ghi sổ
+trong transaction. `AFTER` trigger chạy tự động trong chính transaction của
+câu `INSERT`/`UPDATE`; `THROW` làm câu ghi thất bại và procedure rollback.
+Không gọi `EXEC trigger` từ Java.
 
 | Trigger | Khi nào chạy | Quy tắc và ví dụ chứng minh |
 | --- | --- | --- |

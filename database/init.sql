@@ -27,47 +27,27 @@ BEGIN TRANSACTION;
 :r database/schema/012_ct_phieu_nhap.sql
 :r database/schema/013_lo_hang.sql
 :r database/schema/014_ton_kho.sql
-:r database/schema/015_sequences.sql
 :r database/schema/016_phieu_xuat.sql
 :r database/schema/017_ct_phieu_xuat.sql
-:r database/schema/018_outbound_sequence.sql
 :r database/schema/019_bien_dong_ton_kho.sql
 :r database/schema/020_phieu_chuyen_kho.sql
 :r database/schema/021_ct_phieu_chuyen_kho.sql
-:r database/schema/022_transfer_sequence.sql
 :r database/schema/023_phieu_kiem_ke.sql
 :r database/schema/024_ct_kiem_ke.sql
-:r database/schema/025_count_sequence.sql
 :r database/schema/026_phieu_tra_hang.sql
 :r database/schema/027_ct_phieu_tra_hang.sql
-:r database/schema/028_return_sequence.sql
 :r database/schema/029_lich_su_thao_tac.sql
 :r database/schema/030_doi_soat_gia_tri.sql
+
+-- Áp dụng ràng buộc sau khi mọi bảng đã tồn tại, trước khi commit schema.
+:r database/constraints/constraints.sql
+:r database/schema/015_sequences.sql
 COMMIT TRANSACTION;
 GO
-:r database/programmability/procedures/inbound/sp_HoanTatPhieuNhap.sql
-:r database/programmability/views/vw_TonKhoChiTiet.sql
-:r database/programmability/procedures/outbound/sp_HoanTatPhieuXuat.sql
-:r database/programmability/views/vw_BienDongTonKhoChiTiet.sql
-:r database/programmability/procedures/transfer/sp_HoanTatChuyenKho.sql
-:r database/programmability/procedures/count/sp_HoanTatKiemKe.sql
-:r database/programmability/views/vw_ChenhLechKiemKe.sql
-:r database/programmability/procedures/returning/sp_HoanTatTraHang.sql
 
-:r database/programmability/functions/fn_TonTheoSanPham.sql
-:r database/programmability/functions/fn_TonTheoLo.sql
-:r database/programmability/functions/fn_TonKhaDungTaiViTri.sql
-:r database/programmability/functions/fn_GiaTriTonKho.sql
-:r database/programmability/functions/fn_LoSapHetHan.sql
-:r database/programmability/views/vw_TonKhoTheoSanPham.sql
-:r database/programmability/views/vw_LichSuNhapKho.sql
-:r database/programmability/views/vw_LichSuXuatKho.sql
-:r database/programmability/views/vw_LoSapHetHan.sql
-:r database/programmability/triggers/trg_ViTriKho_BaoVeTon.sql
-:r database/programmability/triggers/trg_LoHang_GioiHanPhanBo.sql
-:r database/programmability/triggers/trg_CtPhieuNhap_GioiHanLo.sql
-:r database/programmability/triggers/trg_TonKho_BaoVeViTri.sql
-:r database/programmability/triggers/trg_BienDongTonKho_DungChieu.sql
+-- views.sql nạp functions.sql sau view tồn chi tiết và trước view cảnh báo hạn.
+:r database/views/views.sql
+:r database/procedures/procedures.sql
+:r database/triggers/triggers.sql
 :r database/security/001_application_roles.sql
-:r database/security/002_role_policy_20261022.sql
 :r database/indexes/001_inventory_lookup.sql

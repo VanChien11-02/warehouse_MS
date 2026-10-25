@@ -1,6 +1,12 @@
 # Index phục vụ tra cứu kho
 
-`001_inventory_lookup.sql` thêm bốn index cho đường đọc đang dùng:
+[`001_inventory_lookup.sql`](001_inventory_lookup.sql) gom toàn bộ tám
+index tường minh, giữ nguyên câu SQL và thêm comment mục đích từng index.
+Index do PK/UNIQUE tạo nằm trong `../constraints/constraints.sql`.
+File này dùng khi dựng mới qua `init.sql`; bốn index chuyển từ file tạo bảng
+vẫn dùng `CREATE INDEX` như trước, nên không chạy lại toàn bộ file trên
+database đã có các index đó. Migration 026 giữ nguyên bốn index tra cứu có
+`IF NOT EXISTS`, không bị mở rộng thành tám index.
 
 | Index | Truy vấn |
 | --- | --- |
@@ -8,6 +14,10 @@
 | `IX_TON_KHO_LO_VI_TRI` | Nối tồn từ lô sang vị trí, cộng tồn theo lô |
 | `IX_PHIEU_NHAP_NGAY_MA` | Phân trang phiếu nhập mới nhất |
 | `IX_PHIEU_XUAT_NGAY_MA` | Phân trang phiếu xuất mới nhất |
+| `IX_BIEN_DONG_TON_KHO_NGAY` | Lọc sổ biến động theo thời gian, vị trí và lô |
+| `IX_PHIEU_TRA_HANG_PX` | Tra phiếu trả theo phiếu xuất gốc và trạng thái |
+| `IX_LICH_SU_THAO_TAC_THOI_GIAN` | Tra audit theo thời gian và tài khoản |
+| `IX_DOI_SOAT_GIA_TRI_THOI_GIAN` | Tra lịch sử đối soát theo thời gian và Kế toán |
 
 Test `023_inventory_indexes.sql` kiểm tra object, khóa đầu và truy vấn đại diện.
 Các index này tăng chi phí ghi khi thêm lô/chứng từ; chỉ giữ nếu workload demo và
