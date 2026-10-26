@@ -10,6 +10,12 @@ export function createInventoryApi(client) {
       if (chiKhaDung) params.set("chiKhaDung", "true");
       return client.send(`/ton-kho?${params}`);
     },
+    summaryByProduct({ page = 0, size = 20, maKho = "", maSanPham = "" } = {}) {
+      const params = new URLSearchParams({ page: String(page), size: String(size) });
+      if (maKho) params.set("maKho", maKho.trim());
+      if (maSanPham) params.set("maSanPham", maSanPham.trim());
+      return client.send(`/ton-kho/theo-san-pham?${params}`);
+    },
     async all(filters = {}) {
       const items = [];
       let page = 0;

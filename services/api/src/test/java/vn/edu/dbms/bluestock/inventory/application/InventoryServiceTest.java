@@ -28,6 +28,14 @@ class InventoryServiceTest {
     }
 
     @Test
+    void normalizesProductSummaryFiltersBeforeQuery() {
+        var repository = mock(InventoryJdbcRepository.class);
+        var service = new InventoryService(repository);
+        service.listByProduct(0, 20, " kho001 ", " sp0001 ");
+        verify(repository).findProductSummaryPage(0, 20, "KHO001", "SP0001");
+    }
+
+    @Test
     void invalidPageDoesNotReachDatabase() {
         var service = new InventoryService(mock(InventoryJdbcRepository.class));
         var error = assertThrows(InventoryException.class,

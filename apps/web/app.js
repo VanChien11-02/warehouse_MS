@@ -4,12 +4,12 @@ import { roleProfiles, navDefinition, pageMeta, apiPagesForRole, apiLandingPageF
 import { createApiClient } from "./core/api-client.js?v=session-shell-4";
 import { listConfigs, inventoryRows, countRows, reportData, documentProducts } from "./data/demo.js?v=session-shell-4";
 import { createProductApi } from "./data/product-api.js?v=session-shell-6";
-import { createInventoryApi } from "./data/inventory-api.js?v=session-shell-6";
+import { createInventoryApi } from "./data/inventory-api.js?v=session-shell-7";
 import { createReportApi } from "./data/report-api.js?v=session-shell-6";
 import { createDocumentApi } from "./data/document-api.js?v=session-shell-6";
 import { createIdentityApi } from "./data/identity-api.js?v=session-shell-6";
 import { createLiveProducts } from "./features/live-products.js?v=session-shell-6";
-import { createLiveInventory } from "./features/live-inventory.js?v=session-shell-6";
+import { createLiveInventory } from "./features/live-inventory.js?v=session-shell-8";
 import { createLiveReport } from "./features/live-report.js?v=session-shell-6";
 import { createLiveDocuments } from "./features/live-documents.js?v=session-shell-6";
 import { createLiveIdentity } from "./features/live-identity.js?v=session-shell-6";

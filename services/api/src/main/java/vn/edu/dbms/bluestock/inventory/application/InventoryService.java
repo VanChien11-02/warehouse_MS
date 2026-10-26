@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.dbms.bluestock.inventory.application.InventoryModels.ProductStockSummaryPage;
 import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockFilter;
 import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockPage;
 import vn.edu.dbms.bluestock.inventory.infrastructure.InventoryJdbcRepository;
@@ -30,8 +31,17 @@ public class InventoryService {
         return repository.findPage(page, size, normalized, businessDate);
     }
 
+    @Transactional(readOnly = true)
+    public ProductStockSummaryPage listByProduct(int page, int size, String maKho, String maSanPham) {
+        if (page < 0 || page > 1_000_000 || size < 1 || size > 100) {
+            throw new InventoryException("INVALID_PAGINATION", "page hoặc size không hợp lệ");
+        }
+        return repository.findProductSummaryPage(page, size,
+            normalizeOptional(maKho), normalizeOptional(maSanPham));
+    }
+
     private static String normalizeOptional(String code) {
-        if (code == null) return null;
+        if (code == null || code.isBlank()) return null;
         String normalized = code.trim().toUpperCase(Locale.ROOT);
         if (!normalized.matches("[A-Z0-9]{1,6}")) {
             throw new InventoryException("INVALID_CODE", "Mã lọc phải gồm 1–6 ký tự chữ hoặc số");

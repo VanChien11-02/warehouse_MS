@@ -8,9 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockFilter;
 import vn.edu.dbms.bluestock.inventory.application.AvailableStockQuery;
 import vn.edu.dbms.bluestock.inventory.application.AvailableStockQuery.StockCandidate;
+import vn.edu.dbms.bluestock.inventory.application.InventoryModels.ProductStockSummaryPage;
+import vn.edu.dbms.bluestock.inventory.application.InventoryModels.ProductStockSummaryView;
+import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockFilter;
 import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockPage;
 import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockView;
 
@@ -71,6 +73,38 @@ public class InventoryJdbcRepository implements AvailableStockQuery {
                     unitPrice, unitPrice.multiply(BigDecimal.valueOf(quantity)), available);
             }, args.toArray());
         return new StockPage(items, page, size, total, (total + size - 1) / size);
+    }
+
+    public ProductStockSummaryPage findProductSummaryPage(int page, int size,
+        String warehouseCode, String productCode) {
+        var where = new StringBuilder("WHERE 1 = 1 ");
+        var args = new ArrayList<Object>();
+        addCodeFilter(where, args, "MaKho", warehouseCode);
+        addCodeFilter(where, args, "MaSP", productCode);
+        Long count = jdbc.queryForObject("SELECT COUNT(*) FROM dbo.vw_TonKhoTheoSanPham " + where,
+            Long.class, args.toArray());
+        long total = count == null ? 0 : count;
+        args.add(page * size);
+        args.add(size);
+        List<ProductStockSummaryView> items = jdbc.query("""
+            SELECT MaKho, TenKho, MaSP, TenSP, MaDVT, SoLuongTon,
+                   dbo.fn_TonTheoSanPham(MaSP) AS TongTonToanHeThong,
+                   GiaTriTon
+            FROM dbo.vw_TonKhoTheoSanPham
+            """ + where + """
+            ORDER BY MaKho, MaSP
+            OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+            """, (row, index) -> new ProductStockSummaryView(
+                row.getString("MaKho").trim(),
+                row.getString("TenKho"),
+                row.getString("MaSP").trim(),
+                row.getString("TenSP"),
+                row.getString("MaDVT").trim(),
+                row.getLong("SoLuongTon"),
+                row.getLong("TongTonToanHeThong"),
+                row.getBigDecimal("GiaTriTon")
+            ), args.toArray());
+        return new ProductStockSummaryPage(items, page, size, total, (total + size - 1) / size);
     }
 
     @Override

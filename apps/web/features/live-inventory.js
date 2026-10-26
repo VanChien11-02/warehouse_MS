@@ -8,6 +8,7 @@ export function createLiveInventory({ inventory, masters, products, escapeHtml, 
   let page = 0;
   let requestId = 0;
   let refsLoaded = false;
+  let summaryMode = false;
   const cache = { warehouses: [], products: [], lots: [] };
 
   function syncFilterOptions() {
@@ -50,11 +51,49 @@ export function createLiveInventory({ inventory, masters, products, escapeHtml, 
     };
   }
 
+  function syncModeControls() {
+    const toggle = document.querySelector("#toggleInventoryModeButton");
+    const form = document.querySelector("#inventoryFilters");
+    if (toggle) {
+      toggle.textContent = summaryMode ? "Xem chi tiết theo lô" : "Tổng hợp theo SP";
+    }
+    if (form) {
+      for (const name of ["maLo", "hanSuDungTruoc", "chiKhaDung"]) {
+        const field = form.elements.namedItem(name)?.closest("label");
+        if (field) field.hidden = summaryMode;
+      }
+    }
+  }
+
+  function showSummaryPage(result) {
+    table.querySelector("thead").innerHTML =
+      '<tr><th>Kho</th><th>Sản phẩm</th><th>Đơn vị tính</th><th class="number-cell">Tồn tại kho</th><th class="number-cell">Tổng tồn SP (toàn hệ thống)</th><th class="number-cell">Tổng giá trị tồn</th></tr>';
+    table.querySelector("tbody").innerHTML = result.items.map((item) => `
+      <tr>
+        <td><span class="cell-primary">${escapeHtml(item.maKho)}</span><br>${escapeHtml(item.tenKho)}</td>
+        <td><span class="cell-primary">${escapeHtml(item.maSanPham)}</span><br>${escapeHtml(item.tenSanPham)}</td>
+        <td>${escapeHtml(item.maDonViTinh)}</td>
+        <td class="number-cell"><strong>${escapeHtml(item.soLuongTon)} ${escapeHtml(item.maDonViTinh)}</strong></td>
+        <td class="number-cell"><strong>${escapeHtml(item.tongTonToanHeThong ?? item.soLuongTon)} ${escapeHtml(item.maDonViTinh)}</strong></td>
+        <td class="number-cell"><strong>${escapeHtml(item.giaTriTon)}</strong></td>
+      </tr>`).join("");
+    table.hidden = result.items.length === 0;
+    document.querySelector("#inventoryEmpty").hidden = result.items.length !== 0;
+    const pagination = document.querySelector("#inventoryPagination");
+    pagination.hidden = result.totalElements === 0;
+    document.querySelector("#inventoryRange").textContent =
+      `Hiển thị ${result.page * result.size + 1}–${result.page * result.size + result.items.length} trong ${result.totalElements} dòng tổng hợp`;
+    document.querySelector("#inventoryPrevious").disabled = result.page <= 0;
+    document.querySelector("#inventoryNext").disabled = result.page + 1 >= result.totalPages;
+  }
+
   function showPage(result) {
     if (!cache.lots.length && result.items?.length) {
       cache.lots = result.items;
       syncFilterOptions();
     }
+    table.querySelector("thead").innerHTML =
+      '<tr><th>Sản phẩm</th><th>Lô</th><th>Kho · vị trí</th><th>Hạn dùng</th><th class="number-cell">Số lượng</th><th class="number-cell">Giá trị tồn</th><th>Trạng thái</th><th>Phiếu nhập</th></tr>';
     table.querySelector("tbody").innerHTML = result.items.map((item) => `
       <tr><td><span class="cell-primary">${escapeHtml(item.maSanPham)}</span><br>${escapeHtml(item.tenSanPham)}</td>
       <td>${escapeHtml(item.maLo)}</td>
@@ -77,6 +116,7 @@ export function createLiveInventory({ inventory, masters, products, escapeHtml, 
   async function render(nextPage = page) {
     const current = ++requestId;
     page = nextPage;
+    syncModeControls();
     if (!isAuthenticated()) {
       refresh.disabled = false;
       table.hidden = true;
@@ -89,9 +129,18 @@ export function createLiveInventory({ inventory, masters, products, escapeHtml, 
     setMessage("Đang tải tồn kho...");
     loadRefs();
     try {
-      const result = await inventory.list({ page, size: 20, ...filters() });
-      if (current !== requestId) return;
-      showPage(result);
+      const currentFilters = filters();
+      if (summaryMode && inventory.summaryByProduct) {
+        const result = await inventory.summaryByProduct({
+          page, size: 20, maKho: currentFilters.maKho, maSanPham: currentFilters.maSanPham
+        });
+        if (current !== requestId) return;
+        showSummaryPage(result);
+      } else {
+        const result = await inventory.list({ page, size: 20, ...currentFilters });
+        if (current !== requestId) return;
+        showPage(result);
+      }
       setMessage("");
     } catch (error) {
       if (current !== requestId) return;
@@ -109,6 +158,8 @@ export function createLiveInventory({ inventory, masters, products, escapeHtml, 
     view.querySelector(".inventory-summary").hidden = true;
     view.querySelector(".live-indicator").textContent = "Dữ liệu API";
     view.querySelector(".section-toolbar p").textContent = "Tồn theo lô và vị trí từ hệ thống; số khả dụng được kiểm tra lại khi ghi sổ.";
+    refresh.insertAdjacentHTML("beforebegin",
+      '<button class="button button-secondary" id="toggleInventoryModeButton" type="button">Tổng hợp theo SP</button>');
     toolbar.innerHTML = `<form id="inventoryFilters" class="filter-row">
       <label><span>Kho</span><select name="maKho"><option value="">Tất cả kho</option></select></label>
       <label><span>Sản phẩm</span><select name="maSanPham"><option value="">Tất cả sản phẩm</option></select></label>
@@ -121,6 +172,13 @@ export function createLiveInventory({ inventory, masters, products, escapeHtml, 
     table.insertAdjacentHTML("beforebegin", '<p class="list-message" id="inventoryMessage" role="status" aria-live="polite" hidden></p>');
     table.closest(".table-wrap").insertAdjacentHTML("afterend", `<div class="empty-state" id="inventoryEmpty" hidden><h3>Không có tồn phù hợp</h3><p>Thử thay đổi bộ lọc.</p></div>
       <footer class="pagination" id="inventoryPagination" hidden><span id="inventoryRange"></span><div><button id="inventoryPrevious" type="button" aria-label="Trang trước">‹</button><button id="inventoryNext" type="button" aria-label="Trang sau">›</button></div></footer>`);
+    document.querySelector("#toggleInventoryModeButton").addEventListener("click", () => {
+      summaryMode = !summaryMode;
+      view.querySelector(".section-toolbar p").textContent = summaryMode
+        ? "Tổng hợp tồn theo từng cặp (Kho, Sản phẩm) từ vw_TonKhoTheoSanPham và tổng tồn toàn hệ thống từ fn_TonTheoSanPham."
+        : "Tồn theo lô và vị trí từ hệ thống; số khả dụng được kiểm tra lại khi ghi sổ.";
+      render(0);
+    });
     document.querySelector("#inventoryFilters").addEventListener("submit", (event) => {
       event.preventDefault();
       if (event.currentTarget.reportValidity()) render(0);

@@ -115,7 +115,7 @@ public class SecurityConfig {
                     .hasAnyAuthority("ROLE_QLKHO", "ROLE_NVKHO")
                 .requestMatchers(HttpMethod.POST, "/api/phieu-nhap/*/hoan-tat")
                     .hasAuthority("ROLE_QLKHO")
-                .requestMatchers(HttpMethod.GET, "/api/ton-kho")
+                .requestMatchers(HttpMethod.GET, "/api/ton-kho", "/api/ton-kho/theo-san-pham")
                     .hasAnyAuthority("ROLE_QLKHO", "ROLE_NVKHO", "ROLE_KETOAN")
                 .requestMatchers(HttpMethod.GET, "/api/phieu-xuat", "/api/phieu-xuat/*")
                     .hasAnyAuthority("ROLE_QLKHO", "ROLE_NVKHO", "ROLE_KETOAN")

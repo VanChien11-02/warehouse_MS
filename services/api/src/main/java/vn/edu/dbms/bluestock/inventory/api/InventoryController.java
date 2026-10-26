@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import vn.edu.dbms.bluestock.inventory.application.InventoryModels.ProductStockSummaryPage;
 import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockFilter;
 import vn.edu.dbms.bluestock.inventory.application.InventoryModels.StockPage;
 import vn.edu.dbms.bluestock.inventory.application.InventoryService;
@@ -31,5 +32,13 @@ public class InventoryController {
         @RequestParam(defaultValue = "false") boolean chiKhaDung) {
         return service.list(page, size, new StockFilter(maKho, maViTri, maSanPham,
             maLo, hanSuDungTruoc, chiKhaDung));
+    }
+
+    @GetMapping("/theo-san-pham")
+    public ProductStockSummaryPage listByProduct(@RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String maKho,
+        @RequestParam(required = false) String maSanPham) {
+        return service.listByProduct(page, size, maKho, maSanPham);
     }
 }

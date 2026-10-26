@@ -20,4 +20,11 @@ public final class InventoryModels {
 
     public record StockFilter(String maKho, String maViTri, String maSanPham,
         String maLo, LocalDate hanSuDungTruoc, boolean chiKhaDung) {}
+
+    public record ProductStockSummaryView(String maKho, String tenKho,
+        String maSanPham, String tenSanPham, String maDonViTinh,
+        long soLuongTon, long tongTonToanHeThong, BigDecimal giaTriTon) {}
+
+    public record ProductStockSummaryPage(List<ProductStockSummaryView> items,
+        int page, int size, long totalElements, long totalPages) {}
 }
