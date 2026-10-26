@@ -3,7 +3,7 @@ BEGIN TRANSACTION;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.LOAI_SAN_PHAM WHERE MaLoai = 'LSP001')
     INSERT INTO dbo.LOAI_SAN_PHAM (MaLoai, TenLoai, YeuCauBaoQuan)
-        VALUES ('LSP001', N'Đồ khô mẫu', N'Khô');
+        VALUES ('LSP001', N'Thực phẩm khô đóng gói', N'Khô');
 
 IF NOT EXISTS (SELECT 1 FROM dbo.DON_VI_TINH WHERE MaDVT = 'DVT001')
     INSERT INTO dbo.DON_VI_TINH (MaDVT, TenDVT)
