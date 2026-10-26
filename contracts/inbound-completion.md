@@ -8,6 +8,8 @@
 
 `PHIEU_NHAP` có mã `MaPN CHAR(6)`, nhà cung cấp, nhân viên lập, thời điểm tạo UTC, trạng thái `NHAP`/`DA_HOAN_THANH`/`DA_HUY`, ghi chú và thời điểm hoàn tất UTC. `NgayHoanTat` chỉ có giá trị khi trạng thái là `DA_HOAN_THANH`.
 
+`PhanBoNhapJson` lưu các dòng phân bổ **nháp** dưới dạng JSON array. `POST`/`PUT` nhận `phanBo` tùy chọn, tối đa 100 dòng; mỗi dòng có `maSanPham`, `maViTri`, `soLuong`, `ngaySanXuat`, `hanSuDung` dạng chuỗi, được phép rỗng để lưu bản soạn chưa đủ thông tin. `GET` và response tạo/sửa trả lại `phanBo` theo đúng số dòng và thứ tự. `phanBo: []` xóa bản soạn; bỏ trường khi cập nhật giữ bản soạn trước đó. Phiếu cũ chưa có dữ liệu này trả `phanBo: null`; UI chỉ dựng dòng gợi ý từ chi tiết cho trường hợp cũ đó. Lưu nháp không tạo lô/tồn/sổ; chỉ payload `phanBo` của `/hoan-tat` được kiểm tra nghiệp vụ và ghi sổ.
+
 Mỗi lô/vị trí được tạo khi hoàn tất ghi một dòng `BIEN_DONG_TON_KHO` loại `NHAP`, delta dương và `NgayGhiSo` bằng `NgayHoanTat` của phiếu trong cùng transaction. Hoàn tất thất bại hoặc gọi lại không để lại biến động mới.
 
 `CT_PHIEU_NHAP(MaPN, MaSP)` giữ số lượng nguyên dương và đơn giá nhập thực tế `DECIMAL(19,4)` không âm. `LO_HANG.MaLo` là mã lô; mỗi lô tham chiếu đúng một dòng `(MaPN, MaSP)`, có số lượng nhập nguyên dương, ngày sản xuất/hạn dùng tùy chọn và hạn không trước ngày sản xuất. Tổng lượng lô từ mỗi dòng không được vượt lượng dòng nhập, được trigger trên `LO_HANG` bảo vệ khi thêm/sửa lô. API chỉ sửa dòng của phiếu nháp chưa có lô, không sửa phiếu hoàn tất. Trigger chiều sửa dòng nhập đã được thay theo ADR 0009; không coi trigger trên lô là chốt chặn cho UPDATE trực tiếp bảng chi tiết.
@@ -33,6 +35,14 @@ không cho sửa phiếu hoàn tất.
 
 Mã lỗi SQL ổn định trong dải `51101–51113`: `51101` không thấy phiếu; `51102` trạng thái sai; `51103–51104` JSON/dữ liệu phân bổ sai; `51105` thiếu dòng; `51106` thiếu mapping; `51107` sản phẩm không thuộc phiếu; `51108` phân bổ thiếu; `51109` vị trí không tồn tại; `51110` bảo quản hoặc loại vị trí sai; `51111` trộn đơn vị; `51112` vượt sức chứa; `51113` hết mã lô. Tổng lô vượt dòng do trigger phát `51820`, không kiểm tra trùng điều kiện này trước INSERT lô. JDBC adapter ánh xạ 51820 thành HTTP 422 `ALLOCATION_EXCEEDS_LINE`, 51108 thành 422 `ALLOCATION_INCOMPLETE`; không trả message SQL thô. Lỗi trigger rollback cả nghiệp vụ giống các lỗi procedure.
 
+Từ migration 032, sau khi INSERT tồn của mỗi lô mới và trước khi ghi sổ,
+procedure gọi `dbo.fn_TonTheoLo(@MaLo)` để đối chiếu tổng tồn trên tất cả vị
+trí với lượng phân bổ `@SoLuong`. Nếu lệch, phát SQL `51114` và rollback toàn
+bộ phiếu; API dùng nhánh lỗi nội bộ hiện hành `500 INBOUND_POSTING_FAILED`.
+Đây là kiểm tra tại thời điểm tạo lô mới, không áp đặt tồn luôn bằng lượng
+nhập ban đầu sau xuất, chuyển, kiểm kê hoặc trả hàng. Tham số và result set
+của procedure, JSON và giao diện giữ nguyên.
+
 HTTP API hiện có:
 
 Refactor 2026-10-25 (migration 031) giữ nguyên contract này: chuyển đổi ngày
@@ -53,7 +63,7 @@ Năm bước cùng lời giải thích transaction tại
 Request tạo nháp:
 
 ```json
-{"maNhaCungCap":"NCC001","ghiChu":null,"chiTiet":[{"maSanPham":"SP0001","soLuong":10,"donGiaNhap":12.3400}]}
+{"maNhaCungCap":"NCC001","ghiChu":null,"chiTiet":[{"maSanPham":"SP0001","soLuong":10,"donGiaNhap":12.3400}],"phanBo":[{"maSanPham":"SP0001","maViTri":"VT0001","soLuong":"6","ngaySanXuat":"","hanSuDung":""},{"maSanPham":"SP0001","maViTri":"VT0002","soLuong":"4","ngaySanXuat":"","hanSuDung":""}]}
 ```
 
 Nhân viên lập lấy từ session, client không được gửi `maNhanVien`. Mỗi sản phẩm chỉ có một dòng; số lượng nguyên dương, đơn giá không âm với tối đa bốn chữ số thập phân. Nhà cung cấp/sản phẩm phải tồn tại, nhưng mapping được kiểm tra lại lúc hoàn tất. Mã phiếu do server cấp. Response chi tiết thêm `ngayNhap`, `tenNhaCungCap`, `maNhanVien`, `trangThai`, `ngayHoanTat` và `chiTiet` có `tenSanPham`. Thời điểm trả ISO-8601 UTC với `Z`.

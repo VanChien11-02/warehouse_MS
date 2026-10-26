@@ -1,6 +1,10 @@
 SET NOCOUNT ON;
 SET XACT_ABORT OFF;
 
+DECLARE @TestTriggerCreated BIT = 0;
+IF OBJECT_ID(N'dbo.trg_TestInboundLotStockMismatch', N'TR') IS NOT NULL
+    THROW 51922, N'Trigger giả lập lệch tồn đã tồn tại; không ghi đè.', 1;
+
 BEGIN TRY
     BEGIN TRANSACTION;
     INSERT INTO dbo.NHAN_VIEN (MaNV, TenNV, NgayVaoLam)
@@ -160,7 +164,7 @@ BEGIN TRY
     END TRY
     BEGIN CATCH
         IF ERROR_NUMBER() <> 51820
-            OR ERROR_PROCEDURE() <> N'trg_LoHang_GioiHanPhanBo' THROW;
+            OR PARSENAME(ERROR_PROCEDURE(), 1) <> N'trg_LoHang_GioiHanPhanBo' THROW;
     END CATCH;
     IF EXISTS (SELECT 1 FROM dbo.LO_HANG WHERE MaPN = 'TST905')
         OR EXISTS (SELECT 1 FROM dbo.vw_LichSuNhapKho WHERE MaPN = 'TST905')
@@ -174,6 +178,54 @@ BEGIN TRY
     IF EXISTS (SELECT 1 FROM dbo.BIEN_DONG_TON_KHO
         WHERE MaChungTu IN ('TST902', 'TST903', 'TST904', 'TST905', 'TST906'))
         THROW 51911, N'Phiếu nhập thất bại đã ghi biến động.', 1;
+
+    -- Giả lập lỗi ghi tồn ở phân bổ thứ hai: lô nhập 4 nhưng chỉ lưu tồn 3.
+    -- Function trong procedure phải phát hiện lệch, rollback cả phân bổ 6 trước đó.
+    EXEC(N'CREATE TRIGGER dbo.trg_TestInboundLotStockMismatch
+        ON dbo.TON_KHO AFTER INSERT AS
+        BEGIN
+            SET NOCOUNT ON;
+            UPDATE stock SET SoLuongTon = stock.SoLuongTon - 1
+            FROM dbo.TON_KHO stock
+            JOIN inserted added ON added.MaLo = stock.MaLo AND added.MaViTri = stock.MaViTri
+            JOIN dbo.LO_HANG lot ON lot.MaLo = stock.MaLo
+            WHERE lot.MaPN = ''TST905'' AND added.SoLuongTon = 4;
+        END;');
+    SET @TestTriggerCreated = 1;
+    BEGIN TRY
+        EXEC dbo.sp_HoanTatPhieuNhap @MaPN = 'TST905',
+            @PhanBoJson = N'[{"maSanPham":"TST901","maViTri":"TST902","soLuong":6},{"maSanPham":"TST901","maViTri":"TST902","soLuong":4}]',
+            @MaTK = 'TST901';
+        THROW 51923, N'Hoàn tất nhập không phát hiện tổng tồn của lô bị lệch.', 1;
+    END TRY
+    BEGIN CATCH
+        IF ERROR_NUMBER() <> 51114
+            OR PARSENAME(ERROR_PROCEDURE(), 1) <> N'sp_HoanTatPhieuNhap' THROW;
+    END CATCH;
+    DROP TRIGGER dbo.trg_TestInboundLotStockMismatch;
+    SET @TestTriggerCreated = 0;
+
+    IF EXISTS (SELECT 1 FROM dbo.LO_HANG WHERE MaPN = 'TST905')
+        OR EXISTS (SELECT 1 FROM dbo.TON_KHO WHERE MaViTri = 'TST902')
+        OR EXISTS (SELECT 1 FROM dbo.BIEN_DONG_TON_KHO WHERE MaChungTu = 'TST905')
+        OR EXISTS (SELECT 1 FROM dbo.LICH_SU_THAO_TAC
+            WHERE TenBang = N'PHIEU_NHAP' AND MaBanGhi = 'TST905' AND HanhDong = N'COMPLETE')
+        OR EXISTS (SELECT 1 FROM dbo.vw_LichSuNhapKho WHERE MaPN = 'TST905')
+        OR NOT EXISTS (SELECT 1 FROM dbo.PHIEU_NHAP WHERE MaPN = 'TST905'
+            AND TrangThai = N'NHAP' AND NgayHoanTat IS NULL)
+        THROW 51924, N'Lỗi lệch tồn lô mới không rollback toàn bộ nghiệp vụ nhập.', 1;
+
+    -- Bỏ lỗi giả lập, cùng phân bổ 6+4 phải hoàn tất bình thường.
+    EXEC dbo.sp_HoanTatPhieuNhap @MaPN = 'TST905',
+        @PhanBoJson = N'[{"maSanPham":"TST901","maViTri":"TST902","soLuong":6},{"maSanPham":"TST901","maViTri":"TST902","soLuong":4}]',
+        @MaTK = 'TST901';
+    IF (SELECT COUNT(*) FROM dbo.LO_HANG WHERE MaPN = 'TST905') <> 2
+        OR EXISTS (SELECT 1 FROM dbo.LO_HANG WHERE MaPN = 'TST905'
+            AND dbo.fn_TonTheoLo(MaLo) <> SoLuongNhap)
+        OR (SELECT SUM(SoLuongThayDoi) FROM dbo.BIEN_DONG_TON_KHO WHERE MaChungTu = 'TST905') <> 10
+        OR NOT EXISTS (SELECT 1 FROM dbo.PHIEU_NHAP WHERE MaPN = 'TST905'
+            AND TrangThai = N'DA_HOAN_THANH' AND NgayHoanTat IS NOT NULL)
+        THROW 51925, N'Nhập nhiều lô hợp lệ không giữ đúng tổng tồn và sổ.', 1;
 
     BEGIN TRANSACTION;
     DELETE ton FROM dbo.TON_KHO ton JOIN dbo.LO_HANG lo ON lo.MaLo = ton.MaLo
@@ -198,6 +250,8 @@ BEGIN TRY
 END TRY
 BEGIN CATCH
     IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
+    IF @TestTriggerCreated = 1 AND OBJECT_ID(N'dbo.trg_TestInboundLotStockMismatch', N'TR') IS NOT NULL
+        DROP TRIGGER dbo.trg_TestInboundLotStockMismatch;
     BEGIN TRANSACTION;
     DELETE ton FROM dbo.TON_KHO ton JOIN dbo.LO_HANG lo ON lo.MaLo = ton.MaLo
         WHERE lo.MaPN IN ('TST901', 'TST902', 'TST903', 'TST904', 'TST905', 'TST906');

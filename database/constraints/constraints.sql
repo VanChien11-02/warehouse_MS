@@ -232,6 +232,12 @@ ALTER TABLE dbo.PHIEU_NHAP ADD CONSTRAINT CK_PHIEU_NHAP_HOAN_TAT CHECK (
         OR (TrangThai <> N'DA_HOAN_THANH' AND NgayHoanTat IS NULL)
     );
 
+-- CK_PHIEU_NHAP_PHAN_BO_NHAP: Phân bổ nháp là JSON array; không ghi tồn/lô trước hoàn tất.
+ALTER TABLE dbo.PHIEU_NHAP ADD CONSTRAINT CK_PHIEU_NHAP_PHAN_BO_NHAP CHECK (
+        PhanBoNhapJson IS NULL OR (ISJSON(PhanBoNhapJson) = 1
+            AND LEFT(LTRIM(PhanBoNhapJson), 1) = N'[')
+    );
+
 
 -- ==================== dbo.CT_PHIEU_NHAP ====================
 

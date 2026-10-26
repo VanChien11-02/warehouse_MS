@@ -19,7 +19,7 @@ Database baseline là `BlueStock`, schema ứng dụng là `dbo` theo ADR 0003.
 | `DOI_TAC_NHAN_HANG` | `MaDTNH CHAR(6)` | — | Tên và loại đối tác bắt buộc; thông tin liên hệ tùy chọn |
 | `NHA_CUNG_CAP_SAN_PHAM` | `(MaNCC, MaSP)` | `MaNCC`, `MaSP` | Một nhà cung cấp chỉ mapping một lần với một sản phẩm |
 | `DOI_TAC_SAN_PHAM` | `(MaDTNH, MaSP)` | `MaDTNH`, `MaSP` | Đối tác nhận hàng tham chiếu đúng `DOI_TAC_NHAN_HANG` |
-| `PHIEU_NHAP` | `MaPN CHAR(6)` | `MaNCC`, `MaNV` | Trạng thái nháp/hoàn tất/hủy; `NgayHoanTat` chỉ có khi hoàn tất; thời điểm UTC |
+| `PHIEU_NHAP` | `MaPN CHAR(6)` | `MaNCC`, `MaNV` | Trạng thái nháp/hoàn tất/hủy; `NgayHoanTat` chỉ có khi hoàn tất; thời điểm UTC; `PhanBoNhapJson NVARCHAR(MAX)` giữ các phân bổ đang soạn dưới dạng JSON array |
 | `CT_PHIEU_NHAP` | `(MaPN, MaSP)` | `MaPN`, `MaSP` | Số lượng nguyên dương; `DonGiaNhap DECIMAL(19,4)` không âm |
 | `LO_HANG` | `MaLo CHAR(6)` | `(MaPN, MaSP)` | Số lượng nhập dương; hạn dùng không trước ngày sản xuất |
 | `TON_KHO` | `(MaViTri, MaLo)` | `MaViTri`, `MaLo` | Số lượng tồn không âm, theo đúng cặp vị trí/lô |

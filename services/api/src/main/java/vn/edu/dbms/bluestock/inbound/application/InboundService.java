@@ -15,6 +15,7 @@ import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 import vn.edu.dbms.bluestock.inbound.application.InboundException.Kind;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.AllocationData;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.DraftAllocation;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundView;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundPage;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineData;
@@ -55,7 +56,8 @@ public class InboundService {
     }
 
     @Transactional
-    public InboundView create(String supplierCode, String employeeCode, String note, List<LineData> lines) {
+    public InboundView create(String supplierCode, String employeeCode, String note,
+        List<LineData> lines, List<DraftAllocation> allocations) {
         String normalizedSupplier = normalizeCode(supplierCode);
         String normalizedEmployee = normalizeCode(employeeCode);
         List<LineData> normalizedLines = normalizeLines(lines);
@@ -66,7 +68,8 @@ public class InboundService {
         }
         String code = "PN%04d".formatted(number);
         try {
-            repository.insertHeader(code, normalizedSupplier, normalizedEmployee, optionalText(note));
+            repository.insertHeader(code, normalizedSupplier, normalizedEmployee, optionalText(note),
+                draftAllocationsJson(allocations == null ? List.of() : allocations));
             for (LineData line : normalizedLines) repository.insertLine(code, line);
         } catch (DataIntegrityViolationException exception) {
             throw new InboundException(Kind.VALIDATION, "INVALID_REFERENCE",
@@ -93,13 +96,15 @@ public class InboundService {
     }
 
     @Transactional
-    public InboundView update(String code, String supplierCode, String note, List<LineData> lines) {
+    public InboundView update(String code, String supplierCode, String note,
+        List<LineData> lines, List<DraftAllocation> allocations) {
         String normalizedCode = normalizeCode(code);
         String normalizedSupplier = normalizeCode(supplierCode);
         List<LineData> normalizedLines = normalizeLines(lines);
         requireDraft(normalizedCode);
         try {
-            repository.updateHeader(normalizedCode, normalizedSupplier, optionalText(note));
+            repository.updateHeader(normalizedCode, normalizedSupplier, optionalText(note),
+                allocations == null ? null : draftAllocationsJson(allocations));
             repository.replaceLines(normalizedCode, normalizedLines);
         } catch (DataIntegrityViolationException exception) {
             throw new InboundException(Kind.VALIDATION, "INVALID_REFERENCE",
@@ -145,6 +150,18 @@ public class InboundService {
             normalized.add(new LineData(productCode, line.soLuong(), line.donGiaNhap()));
         }
         return normalized;
+    }
+
+    private String draftAllocationsJson(List<DraftAllocation> allocations) {
+        if (allocations.size() > 100) {
+            throw new InboundException(Kind.VALIDATION, "TOO_MANY_ALLOCATIONS",
+                "Tối đa 100 dòng phân bổ nháp");
+        }
+        try {
+            return objectMapper.writeValueAsString(allocations);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("Không lưu được phân bổ nháp", exception);
+        }
     }
 
     public CompletionView complete(String code, List<AllocationData> allocations,

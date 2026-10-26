@@ -5,5 +5,6 @@ CREATE TABLE dbo.PHIEU_NHAP (
     MaNV CHAR(6) NOT NULL,
     TrangThai NVARCHAR(20) NOT NULL,
     GhiChu NVARCHAR(1000) NULL,
+    PhanBoNhapJson NVARCHAR(MAX) NULL,
     NgayHoanTat DATETIME2(3) NULL
 );

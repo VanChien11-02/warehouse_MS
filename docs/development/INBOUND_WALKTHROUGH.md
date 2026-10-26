@@ -2,8 +2,10 @@
 
 Code chạy thật: [`../../database/procedures/procedures.sql`](../../database/procedures/procedures.sql),
 thủ tục đầu tiên `dbo.sp_HoanTatPhieuNhap`. Database cũ nâng cấp bằng
-[`../../database/migrations/031_simplify_inbound_completion.sql`](../../database/migrations/031_simplify_inbound_completion.sql).
-Không đổi tham số, kết quả trả về hoặc mã lỗi. Không tách validation sang
+[`../../database/migrations/031_simplify_inbound_completion.sql`](../../database/migrations/031_simplify_inbound_completion.sql)
+rồi [`migration 032`](../../database/migrations/032_inbound_lot_stock_check.sql).
+Giữ nguyên tham số, kết quả trả về và các mã lỗi cũ; 032 thêm kiểm tra toàn vẹn
+tồn lô mới với mã `51114`. Không tách validation sang
 procedure phụ và không bỏ quy tắc để làm code ngắn.
 
 ## Đầu vào
@@ -19,13 +21,19 @@ procedure phụ và không bỏ quy tắc để làm code ngắn.
 | 1 | Khóa phiếu, kiểm tra tồn tại và `NHAP` | Hai yêu cầu không thể cùng hoàn tất phiếu thành công |
 | 2 | Đọc JSON vào bảng biến, chuyển ngày, kiểm tra sản phẩm/mapping/lượng | Dữ liệu hợp lệ và phân bổ không thiếu; vượt lượng do trigger lô chặn ở bước 4 |
 | 3 | Khóa loại, vị trí; kiểm tra bảo quản, đơn vị tính, sức chứa | Vị trí nhận phù hợp và dữ liệu được bảo vệ trong lúc ghi sổ |
-| 4 | Duyệt phân bổ; cấp mã và INSERT lô → tồn → sổ biến động | Mỗi phân bổ tạo một lô cùng tồn tại vị trí và một dòng tăng tồn |
+| 4 | Duyệt phân bổ; INSERT lô → tồn → đối chiếu bằng `fn_TonTheoLo` → sổ biến động | Tổng tồn của lô vừa tạo phải bằng lượng phân bổ trước khi ghi sổ |
 | 5 | Đổi trạng thái, ghi audit, COMMIT | Công nhận phiếu hoàn tất sau khi toàn bộ ghi sổ thành công |
 
 `@PhanBo` là bảng biến giữ dữ liệu đầu vào của lời gọi; không phải bảng tồn
 chính thức. `UNION ALL` trong bước 3 ghép đơn vị của hàng sắp nhập với hàng
 đang có tồn dương, rồi `COUNT(DISTINCT MaDVT) > 1` phát hiện trộn đơn vị.
 Các cột ngày được chuyển một lần và dùng lại khi kiểm tra/tạo lô.
+
+`fn_TonTheoLo(@MaLo)` cộng tồn của một lô trên mọi vị trí. Procedure gọi hàm
+ngay sau INSERT tồn, so với `@SoLuong`; sai khác phát `51114`, CATCH rollback
+cả những lô/sổ đã ghi trước đó. Hàm đọc `TON_KHO` trực tiếp nên vẫn thấy tồn
+của phiếu đang nháp trong transaction này. Chỉ kiểm tra lô mới tại thời điểm
+nhập, không so lượng nhập với tồn hiện tại của lô đã xuất hoặc kiểm kê.
 
 ## Khung transaction để nói trước
 

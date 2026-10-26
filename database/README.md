@@ -38,9 +38,23 @@ năm trigger. Compose tự chạy migration 030 sau 027/029, kể cả trên vol
 Phiên bản nhập gọn hơn nằm trong `procedures/procedures.sql`, chia năm bước
 có chú thích tiếng Việt; giữ nguyên tham số, mã lỗi, khóa và tính nguyên tử.
 Database hiện có chạy `database/migrations/031_simplify_inbound_completion.sql`
-sau 030. Compose tự áp dụng 031 cuối cùng. Xem
+sau 030. Compose tự áp dụng 031 trước migration 032. Xem
 [`../docs/development/INBOUND_WALKTHROUGH.md`](../docs/development/INBOUND_WALKTHROUGH.md)
 để trình bày luồng thủ tục và demo commit/rollback trên UI.
+
+Migration [`032_inbound_lot_stock_check.sql`](migrations/032_inbound_lot_stock_check.sql)
+áp dụng `fn_TonTheoLo` trong `sp_HoanTatPhieuNhap`: sau khi thêm tồn của lô
+mới, tổng tồn phải bằng lượng phân bổ trước khi ghi sổ. Lệch phát `51114` và
+rollback toàn bộ phiếu. Database cũ chạy migration 032 sau 031; Compose chạy
+032 trước migration 033, database sạch lấy trực tiếp procedure hiện hành qua `init.sql`.
+Test 009 giả lập ghi lệch ở lô thứ hai để kiểm tra rollback, rồi bỏ giả lập
+và hoàn tất cùng phân bổ 6+4 thành công.
+
+Migration [`033_inbound_draft_allocations.sql`](migrations/033_inbound_draft_allocations.sql)
+thêm cột JSON cho các dòng phân bổ đang soạn trên phiếu nhập; không tạo lô/tồn
+hoặc thay procedure hoàn tất. Chạy sau 032 trên database cũ; Compose tự áp dụng
+033 khi khởi động, database sạch có cột và check constraint trong `init.sql`.
+Test 026 xác nhận lưu hai phân bổ nháp mà không ghi sổ.
 
 Từ thư mục gốc repository, dùng SQL Server có Windows Authentication và `sqlcmd`:
 

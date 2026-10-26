@@ -49,7 +49,8 @@ class InboundControllerTest {
         when(service.get("PN0001")).thenReturn(inbound());
         mvc.perform(get("/api/phieu-nhap/PN0001"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.maPhieuNhap").value("PN0001"));
+            .andExpect(jsonPath("$.maPhieuNhap").value("PN0001"))
+            .andExpect(jsonPath("$.phanBo.length()").value(2));
     }
 
     @Test
@@ -110,12 +111,13 @@ class InboundControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_NVKHO")
     void warehouseStaffCanUpdateDraft() throws Exception {
-        when(service.update(eq("PN0001"), eq("NCC001"), eq(null), any()))
+        when(service.update(eq("PN0001"), eq("NCC001"), eq(null), any(), any()))
             .thenReturn(inbound());
         mvc.perform(put("/api/phieu-nhap/PN0001").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(createBody()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.trangThai").value("NHAP"));
+            .andExpect(jsonPath("$.trangThai").value("NHAP"))
+            .andExpect(jsonPath("$.phanBo.length()").value(2));
     }
 
     @Test
@@ -126,13 +128,14 @@ class InboundControllerTest {
 
     @Test
     void warehouseStaffCanCreateDraft() throws Exception {
-        when(service.create(eq("NCC001"), eq("NV0001"), eq(null), any()))
+        when(service.create(eq("NCC001"), eq("NV0001"), eq(null), any(), any()))
             .thenReturn(inbound());
         mvc.perform(post("/api/phieu-nhap").with(csrf()).with(user(principal("NVKHO")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createBody()))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.trangThai").value("NHAP"));
+            .andExpect(jsonPath("$.trangThai").value("NHAP"))
+            .andExpect(jsonPath("$.phanBo.length()").value(2));
     }
 
     @Test
@@ -209,11 +212,15 @@ class InboundControllerTest {
         return new InboundView("PN0001", OffsetDateTime.parse("2026-10-07T00:00:00Z"),
             "NCC001", "Nhà cung cấp", "NV0001", "NHAP", null, null, List.of(
                 new vn.edu.dbms.bluestock.inbound.application.InboundModels.LineView(
-                    "SP0001", "Sản phẩm", 2, new BigDecimal("1.0000"))));
+                    "SP0001", "Sản phẩm", 2, new BigDecimal("1.0000"))), List.of(
+                new vn.edu.dbms.bluestock.inbound.application.InboundModels.DraftAllocation(
+                    "SP0001", "VT0001", "1", "", ""),
+                new vn.edu.dbms.bluestock.inbound.application.InboundModels.DraftAllocation(
+                    "SP0001", "VT0002", "1", "", "")));
     }
 
     private static String createBody() {
-        return "{\"maNhaCungCap\":\"NCC001\",\"chiTiet\":[{\"maSanPham\":\"SP0001\",\"soLuong\":2,\"donGiaNhap\":1.0000}]}";
+        return "{\"maNhaCungCap\":\"NCC001\",\"chiTiet\":[{\"maSanPham\":\"SP0001\",\"soLuong\":2,\"donGiaNhap\":1.0000}],\"phanBo\":[{\"maSanPham\":\"SP0001\",\"maViTri\":\"VT0001\",\"soLuong\":\"1\"},{\"maSanPham\":\"SP0001\",\"maViTri\":\"VT0002\",\"soLuong\":\"1\"}]}";
     }
 
     private static String completionBody() {

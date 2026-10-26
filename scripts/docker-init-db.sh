@@ -39,9 +39,17 @@ fi
 "$sqlcmd" -S db -U sa -C -b -d BlueStock \
   -i database/migrations/030_category_storage_guard.sql
 
-# Keep the shorter inbound procedure last so older migrations cannot overwrite it.
+# Refresh the shorter inbound procedure before applying the lot stock check.
 "$sqlcmd" -S db -U sa -C -b -d BlueStock \
   -i database/migrations/031_simplify_inbound_completion.sql
+
+# Check newly received lot stock with fn_TonTheoLo inside the posting transaction.
+"$sqlcmd" -S db -U sa -C -b -d BlueStock \
+  -i database/migrations/032_inbound_lot_stock_check.sql
+
+# Preserve all allocation rows while an inbound receipt is still a draft.
+"$sqlcmd" -S db -U sa -C -b -d BlueStock \
+  -i database/migrations/033_inbound_draft_allocations.sql
 
 "$sqlcmd" -S db -U sa -C -b -d BlueStock -i database/seed/demo.sql
 "$sqlcmd" -S db -U sa -C -b -i database/docker-app-login.sql

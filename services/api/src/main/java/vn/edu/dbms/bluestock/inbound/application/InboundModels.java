@@ -13,13 +13,17 @@ public final class InboundModels {
     public record AllocationData(String maSanPham, String maViTri, int soLuong,
         LocalDate ngaySanXuat, LocalDate hanSuDung) {}
 
+    // Draft rows may be incomplete; completion has its own validated AllocationData.
+    public record DraftAllocation(String maSanPham, String maViTri, String soLuong,
+        String ngaySanXuat, String hanSuDung) {}
+
     public record LineView(String maSanPham, String tenSanPham, int soLuong,
         BigDecimal donGiaNhap) {}
 
     public record InboundView(String maPhieuNhap, OffsetDateTime ngayNhap,
         String maNhaCungCap, String tenNhaCungCap, String maNhanVien,
         String trangThai, String ghiChu, OffsetDateTime ngayHoanTat,
-        List<LineView> chiTiet) {}
+        List<LineView> chiTiet, List<DraftAllocation> phanBo) {}
 
     public record InboundSummary(String maPhieuNhap, OffsetDateTime ngayNhap,
         String maNhaCungCap, String tenNhaCungCap, String maNhanVien,

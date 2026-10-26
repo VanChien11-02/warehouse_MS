@@ -25,7 +25,9 @@ const fixtureLines = {
 const ids = { inbound: "PN0001", outbound: "PX0001", transfer: "PC0001", count: "KK0001", return: "TH0001" };
 const fixture = (kind, body = {}) => ({ [documentScreens[kind].code]: ids[kind], [documentScreens[kind].date]: "2026-10-21T12:00:00Z",
   [documentScreens[kind].partner || "unused"]: kind === "count" ? "VT0001" : kind === "return" ? "PX0001" : "NCC001",
-  maNhanVien: "NV0001", trangThai: "NHAP", ghiChu: null, chiTiet: structuredClone(fixtureLines[kind]), ...body });
+  maNhanVien: "NV0001", trangThai: "NHAP", ghiChu: null, chiTiet: structuredClone(fixtureLines[kind]),
+  ...(kind === "inbound" ? { phanBo: fixtureLines.inbound.map((line) => ({ maSanPham: line.maSanPham,
+    maViTri: "VT0001", soLuong: String(line.soLuong), ngaySanXuat: "", hanSuDung: "" })) } : {}), ...body });
 const pageResult = (items) => ({ items, page: 0, size: 20, totalElements: items.length, totalPages: items.length ? 1 : 0 });
 
 async function session(role, width = 1440) {
@@ -71,6 +73,12 @@ async function session(role, width = 1440) {
       else if (path[2] === "chi-tiet") Object.assign(store[kind].chiTiet[0], body);
       else if (["POST", "PUT"].includes(method)) store[kind] = fixture(kind, body);
       return reply(path.length === 1 && method === "GET" ? pageResult([store[kind]]) : store[kind], method === "POST" && path.length === 1 ? 201 : 200);
+    }
+    if (path[0] === "san-pham") {
+      const products = [{ maSanPham: "SP0001", tenSanPham: "Sản phẩm 1", giaNhapMacDinh: 12500 },
+        { maSanPham: "SP0002", tenSanPham: "Sản phẩm 2", giaNhapMacDinh: 15000 }];
+      return reply(method === "GET" && path.length === 1 ? pageResult(products)
+        : method === "GET" ? products.find((product) => product.maSanPham === path[1]) : body);
     }
     const master = Object.entries(masterResources).find(([, p]) => p === path[0]);
     if (master) {
@@ -118,6 +126,35 @@ try {
   await admin.locator(".live-metric").first().waitFor();
   if (output) await admin.screenshot({ path: `${output}/admin-dashboard-desktop.png`, fullPage: true });
   await adminContext.close();
+
+  // A single product split into two allocations must survive Save -> another screen -> reopen.
+  const { page: draftPage, context: draftContext } = await session("QLKHO");
+  await go(draftPage, "inbound");
+  await draftPage.locator("#liveDocNew").click();
+  await draftPage.locator("#liveDocPartner").selectOption("NCC001");
+  const draftLine = draftPage.locator("#liveDocRows tr").first();
+  await draftLine.locator('[name="maSanPham"]').selectOption("SP0001");
+  await draftLine.locator('[name="soLuong"]').fill("10");
+  await draftLine.locator('[name="donGiaNhap"]').fill("12500");
+  await draftPage.locator("#liveDocAddAllocation").click();
+  await draftPage.locator("#liveDocAddAllocation").click();
+  const draftParts = draftPage.locator("#liveDocAllocations tr");
+  for (const [index, quantity] of ["6", "4"].entries()) {
+    await draftParts.nth(index).locator('[name="maSanPham"]').selectOption("SP0001");
+    await draftParts.nth(index).locator('[name="maViTri"]').selectOption("VT0001");
+    await draftParts.nth(index).locator('[name="soLuong"]').fill(quantity);
+  }
+  await draftPage.locator("#liveDocSave").click();
+  await draftPage.locator("#liveDocMessage").getByText("Đã lưu phiếu nháp.", { exact: true }).waitFor();
+  assert.ok(calls.some((call) => call.method === "POST" && call.path === "/api/phieu-nhap"
+    && call.body.phanBo?.length === 2));
+  await draftPage.evaluate(() => window.warehouseUi.showView("products"));
+  await draftPage.waitForFunction(() => document.querySelector("#pageTitle").textContent === "Sản phẩm");
+  await go(draftPage, "inbound");
+  await draftPage.locator('[data-load="PN0001"]').click();
+  await draftPage.waitForFunction(() => document.querySelector("#liveDocAllocations").rows.length === 2);
+  assert.deepEqual(await draftParts.locator('[name="soLuong"]').evaluateAll((inputs) => inputs.map((input) => input.value)), ["6", "4"]);
+  await draftContext.close();
 
   const { page: manager, context: managerContext } = await session("QLKHO");
   for (const key of Object.keys(masterScreens)) {

@@ -98,6 +98,11 @@ rollback nguyên tử; nhập và quyền hiện tại vẫn đạt. Xem
 
 ## Sprint 4 - Hoàn thiện và bảo vệ
 
+Bổ sung buổi học 2026-10-26: ca procedure riêng51112 dùng kệ HS0002 sức chứa5,
+nhập10; giữ ca rollback6+5 riêng. Thêm kiểm tra thiếu cặp dòng nhập trước
+demo trigger để tránh nhầm lỗi FK547 với51820; hướng dẫn chạy file chuẩn bị
+trên đúng database. Script dọn bao gồm kệ nhỏ mới; không đổi object ứng dụng.
+
 Điều chỉnh DOC-01/DB-R01/DB-R02/DB-R03 theo giải thích mới nhất: cần minh
 chứng hành vi SQL, không dừng ở tra metadata. Bộ SSMS gồm fixture HS0001,
 SELECT xem actual plan, INSERT/UPDATE gây lỗi hai trigger, EXEC6+5 rollback,

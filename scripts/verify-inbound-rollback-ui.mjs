@@ -56,6 +56,8 @@ try {
       };
       assert.equal((await historyForReceipt()).totalElements, 0, "draft must not appear in history");
       const parts = page.locator("#liveDocAllocations tr");
+      await page.locator("#liveDocAddAllocation").click();
+      await parts.first().locator('[name="maSanPham"]').selectOption(product);
       await parts.first().locator('[name="maViTri"]').selectOption(firstPosition);
       await parts.first().locator('[name="soLuong"]').fill("6");
       await page.locator("#liveDocAddAllocation").click();

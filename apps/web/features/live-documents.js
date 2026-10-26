@@ -1,4 +1,4 @@
-import { documentScreens, draftBody, actualBody } from "../data/document-models.js?v=session-shell-4";
+import { documentScreens, draftBody, actualBody } from "../data/document-models.js?v=inbound-drafts-1";
 import { nextCode, selectOptions } from "../data/master-api.js?v=session-shell-4";
 import { createLiveInboundHistory } from "./live-inbound-history.js?v=inbound-history-2";
 
@@ -150,7 +150,7 @@ export function createLiveDocuments({ documents, masters, products, inventory, i
     actions();
   }
   function addAllocation(part = {}) {
-    const defaultLoc = part.maViTri || cache.locations[0]?.maViTri || "";
+    const defaultLoc = part.maViTri ?? cache.locations[0]?.maViTri ?? "";
     el("liveDocAllocations").insertAdjacentHTML("beforeend", `<tr>${[["maSanPham"], ["maViTri"], ["soLuong", "quantity"]].map(([key, type]) =>
       `<td>${input(key, type, key === "maViTri" ? defaultLoc : part[key])}</td>`).join("")}
       <td><input name="ngaySanXuat" type="date" aria-label="Ngày sản xuất" value="${esc(part.ngaySanXuat || "")}"></td>
@@ -159,7 +159,7 @@ export function createLiveDocuments({ documents, masters, products, inventory, i
     actions();
   }
   const rows = (id) => [...el(id).rows].map((row) => Object.fromEntries([...row.querySelectorAll("input, select")].map((i) => [i.name, i.value])));
-  function display(data, allocations = null) {
+  function display(data) {
     reconciliationTicket++;
     current = data;
     el("liveDocState").textContent = `${code()} · ${data.trangThai} · ${data.chiTiet.length} dòng`;
@@ -174,7 +174,7 @@ export function createLiveDocuments({ documents, masters, products, inventory, i
     for (const line of data.chiTiet) addLine(line, true);
     el("liveDocAllocations").replaceChildren();
     if (mode === "inbound" && data.trangThai === "NHAP") {
-      for (const part of allocations || data.chiTiet) addAllocation(part);
+      for (const part of data.phanBo ?? data.chiTiet) addAllocation(part);
     }
     actions();
     if (!el("liveDocReconciliation").hidden) loadReconciliation(data, reconciliationTicket);
@@ -264,10 +264,11 @@ export function createLiveDocuments({ documents, masters, products, inventory, i
       display(await documents.count.get(code()));
       return;
     }
-    const allocations = rows("liveDocAllocations");
-    const body = draftBody(mode, el("liveDocPartner").value, el("liveDocNote").value, lines, !!current);
+    const allocations = mode === "inbound" ? rows("liveDocAllocations") : null;
+    const body = draftBody(mode, el("liveDocPartner").value, el("liveDocNote").value,
+      lines, !!current, allocations);
     const data = current ? await documents[mode].update(code(), body) : await documents[mode].create(body);
-    display(data, mode === "inbound" && allocations.length ? allocations : null);
+    display(data);
   }
   function show(nextMode) {
     if (pending) return;

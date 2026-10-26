@@ -1,5 +1,8 @@
 package vn.edu.dbms.bluestock.inbound.infrastructure;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -10,6 +13,7 @@ import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.DraftAllocation;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundView;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundSummary;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundPage;
@@ -21,9 +25,11 @@ import vn.edu.dbms.bluestock.inbound.application.InboundModels.HistoryPage;
 @Repository
 public class InboundJdbcRepository {
     private final JdbcTemplate jdbc;
+    private final ObjectMapper objectMapper;
 
-    public InboundJdbcRepository(JdbcTemplate jdbc) {
+    public InboundJdbcRepository(JdbcTemplate jdbc, ObjectMapper objectMapper) {
         this.jdbc = jdbc;
+        this.objectMapper = objectMapper;
     }
 
     public int nextCodeNumber() {
@@ -32,10 +38,12 @@ public class InboundJdbcRepository {
         return number;
     }
 
-    public void insertHeader(String code, String supplier, String employee, String note) {
+    public void insertHeader(String code, String supplier, String employee, String note,
+        String allocationsJson) {
         jdbc.update("""
-            INSERT INTO dbo.PHIEU_NHAP (MaPN, MaNCC, MaNV, GhiChu) VALUES (?, ?, ?, ?)
-            """, code, supplier, employee, note);
+            INSERT INTO dbo.PHIEU_NHAP (MaPN, MaNCC, MaNV, GhiChu, PhanBoNhapJson)
+            VALUES (?, ?, ?, ?, ?)
+            """, code, supplier, employee, note, allocationsJson);
     }
 
     public void insertLine(String code, LineData line) {
@@ -114,9 +122,12 @@ public class InboundJdbcRepository {
         return new HistoryPage(items, page, size, total, (total + size - 1) / size);
     }
 
-    public void updateHeader(String code, String supplier, String note) {
-        jdbc.update("UPDATE dbo.PHIEU_NHAP SET MaNCC = ?, GhiChu = ? WHERE MaPN = ?",
-            supplier, note, code);
+    public void updateHeader(String code, String supplier, String note, String allocationsJson) {
+        jdbc.update("""
+            UPDATE dbo.PHIEU_NHAP
+            SET MaNCC = ?, GhiChu = ?, PhanBoNhapJson = COALESCE(?, PhanBoNhapJson)
+            WHERE MaPN = ?
+            """, supplier, note, allocationsJson, code);
     }
 
     public void replaceLines(String code, List<LineData> lines) {
@@ -132,7 +143,7 @@ public class InboundJdbcRepository {
     public Optional<InboundView> findByCode(String code) {
         List<InboundView> headers = jdbc.query("""
             SELECT pn.MaPN, pn.NgayNhap, pn.MaNCC, ncc.TenNCC, pn.MaNV,
-                   pn.TrangThai, pn.GhiChu, pn.NgayHoanTat
+                   pn.TrangThai, pn.GhiChu, pn.NgayHoanTat, pn.PhanBoNhapJson
             FROM dbo.PHIEU_NHAP pn
             JOIN dbo.NHA_CUNG_CAP ncc ON ncc.MaNCC = pn.MaNCC
             WHERE pn.MaPN = ?
@@ -141,7 +152,7 @@ public class InboundJdbcRepository {
                 row.getString("MaNCC").trim(), row.getString("TenNCC"),
                 row.getString("MaNV").trim(), row.getString("TrangThai"),
                 row.getString("GhiChu"), utc(row.getObject("NgayHoanTat", LocalDateTime.class)),
-                List.of()), code);
+                List.of(), readDraftAllocations(row.getString("PhanBoNhapJson"))), code);
         if (headers.isEmpty()) return Optional.empty();
         List<LineView> lines = jdbc.query("""
             SELECT ct.MaSP, sp.TenSP, ct.SoLuong, ct.DonGiaNhap
@@ -154,7 +165,17 @@ public class InboundJdbcRepository {
         InboundView header = headers.getFirst();
         return Optional.of(new InboundView(header.maPhieuNhap(), header.ngayNhap(),
             header.maNhaCungCap(), header.tenNhaCungCap(), header.maNhanVien(),
-            header.trangThai(), header.ghiChu(), header.ngayHoanTat(), lines));
+            header.trangThai(), header.ghiChu(), header.ngayHoanTat(), lines,
+            header.phanBo()));
+    }
+
+    private List<DraftAllocation> readDraftAllocations(String json) {
+        if (json == null) return null;
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<DraftAllocation>>() {});
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("Phân bổ nháp trong database không hợp lệ", exception);
+        }
     }
 
     public CompletionView complete(String code, String allocationsJson, String actorAccount) {

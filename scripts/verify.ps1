@@ -167,7 +167,8 @@ if ($WithDatabase) {
         'database\tests\022_application_roles.sql',
         'database\tests\023_inventory_indexes.sql',
         'database\tests\024_inventory_guard_triggers.sql',
-        'database\tests\025_accounting_reconciliation.sql'
+        'database\tests\025_accounting_reconciliation.sql',
+        'database\tests\026_inbound_draft_allocations.sql'
     )
     foreach ($testFile in $databaseTests) {
         & $sqlcmd -S $SqlServer @sqlAuth -C -b -f i:65001 -d $DatabaseName -i (Join-Path $root $testFile)

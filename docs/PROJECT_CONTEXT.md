@@ -29,8 +29,15 @@ Migration 031 rút gọn thủ tục hoàn tất nhập theo năm bước, giữ
 transaction. Hướng dẫn trình bày và demo UI tại
 [`development/INBOUND_WALKTHROUGH.md`](development/INBOUND_WALKTHROUGH.md).
 
+Migration 032 dùng `fn_TonTheoLo` trong procedure nhập để đối chiếu tổng tồn
+của lô vừa tạo với lượng phân bổ trước khi ghi sổ; lệch trả SQL 51114 và
+rollback toàn bộ transaction. Không thay giao diện hoặc payload API.
+
 API `GET /api/phieu-nhap/lich-su` đọc trực tiếp `vw_LichSuNhapKho`; màn Phiếu
 nhập có tab Lịch sử nhập kho cho QLKHO/KETOAN, tra cứu và phân trang từng lô.
+
+Migration 033 lưu các dòng phân bổ nhập đang soạn cùng phiếu nháp, nên mở lại
+sau khi chuyển màn vẫn giữ đủ dòng; lô và tồn chỉ được tạo khi hoàn tất.
 
 ## Công nghệ đã chốt
 

@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.dao.DataIntegrityViolationException;
 import vn.edu.dbms.bluestock.audit.application.AuditTrail;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.AllocationData;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.DraftAllocation;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineData;
 import vn.edu.dbms.bluestock.inbound.infrastructure.InboundJdbcRepository;
 
@@ -56,7 +57,7 @@ class InboundServiceTest {
         var lines = List.of(new LineData("sp0001", 1, BigDecimal.ONE),
             new LineData("SP0001", 2, BigDecimal.ONE));
         var error = assertThrows(InboundException.class,
-            () -> service.create("NCC001", "NV0001", null, lines));
+            () -> service.create("NCC001", "NV0001", null, lines, null));
         assertEquals("DUPLICATE_PRODUCT", error.code());
     }
 
@@ -65,11 +66,29 @@ class InboundServiceTest {
         when(repository.nextCodeNumber()).thenReturn(1);
         when(repository.findByCode("PN0001")).thenReturn(Optional.of(new InboundModels.InboundView(
             "PN0001", null, "NCC001", "Nhà cung cấp", "NV0001", "NHAP", null, null,
-            List.of())));
+            List.of(), List.of())));
         service.create(" ncc001 ", " nv0001 ", null,
-            List.of(new LineData(" sp0001 ", 2, new BigDecimal("1.2345"))));
+            List.of(new LineData(" sp0001 ", 2, new BigDecimal("1.2345"))), null);
         verify(repository).insertLine("PN0001",
             new LineData("SP0001", 2, new BigDecimal("1.2345")));
+    }
+
+    @Test
+    void savesEveryDraftAllocationIncludingAnIncompleteRow() {
+        when(repository.nextCodeNumber()).thenReturn(1);
+        when(repository.findByCode("PN0001")).thenReturn(Optional.of(new InboundModels.InboundView(
+            "PN0001", null, "NCC001", "Nhà cung cấp", "NV0001", "NHAP", null, null,
+            List.of(), List.of())));
+        service.create("NCC001", "NV0001", null,
+            List.of(new LineData("SP0001", 10, BigDecimal.ONE)), List.of(
+                new DraftAllocation("SP0001", "VT0001", "6", "", ""),
+                new DraftAllocation("SP0001", "", "4", "", "")));
+        var savedJson = ArgumentCaptor.forClass(String.class);
+        verify(repository).insertHeader(eq("PN0001"), eq("NCC001"), eq("NV0001"), eq(null),
+            savedJson.capture());
+        assertTrue(savedJson.getValue().contains("\"maViTri\":\"VT0001\""));
+        assertTrue(savedJson.getValue().contains("\"maViTri\":\"\""));
+        assertEquals(2, savedJson.getValue().split("maSanPham", -1).length - 1);
     }
 
     @Test
@@ -134,7 +153,7 @@ class InboundServiceTest {
         when(repository.lockedStatus("PN0001")).thenReturn(Optional.of("DA_HOAN_THANH"));
         var error = assertThrows(InboundException.class,
             () -> service.update("PN0001", "NCC001", null,
-                List.of(new LineData("SP0001", 1, BigDecimal.ONE))));
+                List.of(new LineData("SP0001", 1, BigDecimal.ONE)), null));
         assertEquals("INBOUND_NOT_DRAFT", error.code());
         verify(repository).lockedStatus("PN0001");
         verifyNoMoreInteractions(repository);
@@ -146,7 +165,7 @@ class InboundServiceTest {
         when(repository.cancel("PN0001")).thenReturn(1);
         when(repository.findByCode("PN0001")).thenReturn(Optional.of(new InboundModels.InboundView(
             "PN0001", null, "NCC001", "Nhà cung cấp", "NV0001", "DA_HUY",
-            null, null, List.of())));
+            null, null, List.of(), List.of())));
         assertEquals("DA_HUY", service.cancel("pn0001", "tk0001").trangThai());
         verify(repository).cancel("PN0001");
         verify(audit).record("TK0001", "CANCEL", "PHIEU_NHAP", "PN0001",

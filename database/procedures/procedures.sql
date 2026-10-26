@@ -151,6 +151,11 @@ BEGIN
             VALUES (@MaLo, @MaPN, @MaSP, @NgaySanXuat, @HanSuDung, @SoLuong);
             INSERT INTO dbo.TON_KHO (MaViTri, MaLo, SoLuongTon)
             VALUES (@MaViTri, @MaLo, @SoLuong);
+
+            -- Lô vừa nhập phải có tổng tồn đúng bằng lượng phân bổ trước khi ghi sổ.
+            IF dbo.fn_TonTheoLo(@MaLo) <> @SoLuong
+                THROW 51114, N'Tổng tồn của lô mới không khớp số lượng nhập.', 1;
+
             INSERT INTO dbo.BIEN_DONG_TON_KHO
                 (LoaiNghiepVu, MaChungTu, MaViTri, MaLo, SoLuongThayDoi, NgayGhiSo)
             VALUES (N'NHAP', @MaPN, @MaViTri, @MaLo, @SoLuong, @NgayHoanTat);

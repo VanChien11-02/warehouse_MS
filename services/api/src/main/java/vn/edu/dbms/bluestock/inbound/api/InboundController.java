@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import vn.edu.dbms.bluestock.auth.infrastructure.AccountPrincipal;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.AllocationData;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.CompletionView;
+import vn.edu.dbms.bluestock.inbound.application.InboundModels.DraftAllocation;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundView;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.InboundPage;
 import vn.edu.dbms.bluestock.inbound.application.InboundModels.LineData;
@@ -71,7 +72,8 @@ public class InboundController {
         @AuthenticationPrincipal AccountPrincipal principal
     ) {
         InboundView created = service.create(body.maNhaCungCap(), principal.maNhanVien(),
-            body.ghiChu(), body.chiTiet().stream().map(LineRequest::data).toList());
+            body.ghiChu(), body.chiTiet().stream().map(LineRequest::data).toList(),
+            body.phanBo() == null ? null : body.phanBo().stream().map(DraftAllocationRequest::data).toList());
         return ResponseEntity.created(URI.create("/api/phieu-nhap/" + created.maPhieuNhap()))
             .body(created);
     }
@@ -80,7 +82,8 @@ public class InboundController {
     public InboundView update(@PathVariable String maPhieuNhap,
         @Valid @RequestBody CreateInboundRequest body) {
         return service.update(maPhieuNhap, body.maNhaCungCap(), body.ghiChu(),
-            body.chiTiet().stream().map(LineRequest::data).toList());
+            body.chiTiet().stream().map(LineRequest::data).toList(),
+            body.phanBo() == null ? null : body.phanBo().stream().map(DraftAllocationRequest::data).toList());
     }
 
     @PostMapping("/{maPhieuNhap}/huy")
@@ -99,7 +102,16 @@ public class InboundController {
 
     public record CreateInboundRequest(@NotBlank String maNhaCungCap,
         @Size(max = 1000) String ghiChu,
-        @NotEmpty List<@NotNull @Valid LineRequest> chiTiet) {}
+        @NotEmpty List<@NotNull @Valid LineRequest> chiTiet,
+        @Size(max = 100) List<@NotNull @Valid DraftAllocationRequest> phanBo) {}
+
+    public record DraftAllocationRequest(@Size(max = 6) String maSanPham,
+        @Size(max = 6) String maViTri, @Size(max = 12) String soLuong,
+        @Size(max = 10) String ngaySanXuat, @Size(max = 10) String hanSuDung) {
+        DraftAllocation data() {
+            return new DraftAllocation(maSanPham, maViTri, soLuong, ngaySanXuat, hanSuDung);
+        }
+    }
 
     public record LineRequest(@NotBlank String maSanPham,
         @Positive int soLuong,

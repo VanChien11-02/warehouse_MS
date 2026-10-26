@@ -11,12 +11,19 @@ export const documentScreens = {
     fields: [["maLo", "Mã lô"], ["maViTri", "Vị trí nhận"], ["soLuong", "Số lượng", "quantity"], ["tinhTrang", "Tình trạng", "condition"]] }
 };
 
-export function draftBody(mode, partner, note, lines, updating = false) {
+export function draftBody(mode, partner, note, lines, updating = false, allocations = null) {
   const screen = documentScreens[mode];
   const body = { ghiChu: note.trim() || null };
   if (screen.partner && !(mode === "return" && updating)) body[screen.partner] = partner.trim();
   if (mode !== "count") body.chiTiet = lines.map((line) => Object.fromEntries(screen.fields.map(([key, , type]) =>
     [key, ["quantity", "money"].includes(type) ? Number(line[key]) : String(line[key] ?? "").trim()])));
+  if (mode === "inbound" && allocations !== null) body.phanBo = allocations.map((part) => ({
+    maSanPham: String(part.maSanPham ?? "").trim(),
+    maViTri: String(part.maViTri ?? "").trim(),
+    soLuong: String(part.soLuong ?? "").trim(),
+    ngaySanXuat: String(part.ngaySanXuat ?? ""),
+    hanSuDung: String(part.hanSuDung ?? "")
+  }));
   return body;
 }
 

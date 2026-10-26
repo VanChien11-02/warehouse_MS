@@ -71,6 +71,15 @@ test("draft payloads exclude server owned fields and preserve multiple lines", (
     { maSanPham: "SP0001", soLuong: 2, donGiaNhap: 12.3456 }, { maSanPham: "SP0002", soLuong: 3, donGiaNhap: 0 }
   ] });
   assert.deepEqual(actualBody({ soLuongHeThong: 99999, soLuongThucTe: "0", lyDoChenhLech: " Hao hụt " }), { soLuongThucTe: 0, lyDoChenhLech: "Hao hụt" });
+  assert.deepEqual(draftBody("inbound", "NCC001", "", [
+    { maSanPham: "SP0001", soLuong: "10", donGiaNhap: "1" }
+  ], true, [
+    { maSanPham: "SP0001", maViTri: "VT0001", soLuong: "6", ngaySanXuat: "", hanSuDung: "" },
+    { maSanPham: "SP0001", maViTri: "VT0002", soLuong: "4", ngaySanXuat: "", hanSuDung: "" }
+  ]).phanBo, [
+    { maSanPham: "SP0001", maViTri: "VT0001", soLuong: "6", ngaySanXuat: "", hanSuDung: "" },
+    { maSanPham: "SP0001", maViTri: "VT0002", soLuong: "4", ngaySanXuat: "", hanSuDung: "" }
+  ]);
   assert.equal(Object.hasOwn(draftBody("return", "PX0001", "", [], true), "maPhieuXuat"), false);
   assert.deepEqual(draftBody("count", "VT0001", "", []), { maViTri: "VT0001", ghiChu: null });
 });

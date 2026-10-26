@@ -256,3 +256,19 @@ Hướng dẫn trình bày kết quả tại
 [`../development/TV1_DEMO_HANH_VI_SSMS.md`](../development/TV1_DEMO_HANH_VI_SSMS.md).
 File01 tra metadata vẫn giữ làm tài liệu phụ. Chưa thao tác SSMS desktop tự
 động; plan kiểm tra bằng SQL Server actual XML, ảnh SSMS do người học cung cấp.
+
+## Sửa ca demo thủ tục sức chứa và lỗi FK khi thử trigger (2026-10-26)
+
+Ảnh người học báo547/FK_LO_HANG_CT_PN. Kiểm tra chỉ đọc Docker BlueStock
+thấy chưa có phiếu/dòng/kệ HS0001; chưa đến AFTER trigger. File02 thêm kiểm
+tra dòng nhập tồn tại, báo52903 hướng dẫn chuẩn bị thay vì nhầm547 thành51820.
+File00 thêm kệ HS0002 sức chứa5; mục3A gọi hoàn tất10 vào kệ này nhận51112
+từ procedure. Ca rollback ghi6 rồi lỗi lô5 giữ riêng ở mục3B. File03 dọn cả
+hai kệ, có kiểm tra marker/quan hệ. Không sửa object nghiệp vụ/API/UI.
+
+| Lệnh/kiểm tra | Kết quả |
+| --- | --- |
+| Init database tạm BlueStockCapacityCheck01a17217; INSERT lô khi chưa có dòng cha | Tái hiện đúng547, xác nhận nguyên nhân ảnh. |
+| File00 → file02 kèm assertions → file03 trên database tạm | Exit0; trigger51820, sức chứa51112 (nguồn sp_HoanTatPhieuNhap), rollback không để lô/tồn/sổ, commit6+4, view/function, bảo quản51825, chống lặp51102 đạt; cả hai kệ và phiếu fixture được dọn. Database tạm đã DROP. Harness chuẩn hóa ERROR_PROCEDURE bằng PARSENAME để chấp nhận tên có schema dbo. |
+| `pwsh -File scripts/verify.ps1` JDK24 | Exit0;187Java,17frontend,Markdown/cú pháp đạt. Không chạy lại browser vì không đổi app. |
+| Pipe file00 vào `docker compose exec -T db ... sqlcmd -S localhost -U sa -C -b -f i:65001 -d BlueStock` | Exit0; đã chuẩn bị sẵn fixture học trên đúng DB Docker cho người học: dòngHS0001 lượng10 giá12500; kệHS0001 sức chứa100 và HS0002 sức chứa5. Giữ phiếu NHAP/chưa có lô để người học tự chạy demo. Không chạy ghi sổ trên phiếu này và không dọn fixture Docker ngay. |
